@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Merkle Speed Run (Advanced) - Treecks or Treets</title>
+  <title>Merkle Consistency Run (Advanced) - Treecks or Treets</title>
   <link rel="stylesheet" href="merkle.css">
   <style>
     :root {
@@ -11,11 +11,11 @@
       --panel-bg: #18181c;
       --border-color: #2b2b35;
       --text-main: #e2e2e9;
-      --accent: #ff9f1c; /* Neon Orange */
+      --accent: #e71d36; /* Neon Red */
       --accent-blue: #00b4d8; /* Neon Blue */
       --accent-green: #2ec4b6; /* Neon Mint */
-      --accent-red: #e71d36; /* Neon Red */
       --accent-gold: #ffb703; /* Neon Gold */
+      --accent-orange: #ff9f1c; /* Neon Orange */
     }
 
     body {
@@ -43,7 +43,7 @@
     h1 {
       margin: 0;
       font-size: 1.3rem;
-      color: var(--accent);
+      color: var(--accent-green);
       display: flex;
       align-items: center;
       gap: 10px;
@@ -89,11 +89,11 @@
     }
 
     .stat-value.highlight {
-      color: var(--accent-gold);
+      color: var(--accent-green);
     }
 
     .stat-value.danger {
-      color: var(--accent-red);
+      color: var(--accent);
     }
 
     .lives-container {
@@ -103,7 +103,7 @@
     }
 
     .heart {
-      color: var(--accent-red);
+      color: var(--accent);
       text-shadow: 0 0 5px rgba(231, 29, 54, 0.5);
       transition: all 0.3s ease;
     }
@@ -166,7 +166,7 @@
       flex-shrink: 0;
       overflow-y: auto;
       padding: 20px;
-      gap: 20px;
+      gap: 15px;
     }
 
     /* Panels */
@@ -174,13 +174,13 @@
       background-color: #1e1e24;
       border: 1px solid var(--border-color);
       border-radius: 8px;
-      padding: 15px;
+      padding: 12px 15px;
     }
 
     .panel-section h3 {
       margin-top: 0;
-      margin-bottom: 12px;
-      font-size: 0.95rem;
+      margin-bottom: 10px;
+      font-size: 0.9rem;
       border-bottom: 1px solid var(--border-color);
       padding-bottom: 6px;
       color: var(--accent-blue);
@@ -190,34 +190,47 @@
 
     /* Target Box Neon Highlight */
     .target-card {
-      background: linear-gradient(135deg, #251c14 0%, #1a1518 100%);
-      border: 1px solid var(--accent);
+      background: linear-gradient(135deg, #172225 0%, #121c22 100%);
+      border: 1px solid var(--accent-green);
       border-radius: 8px;
       padding: 16px;
       text-align: center;
-      box-shadow: 0 0 15px rgba(255, 159, 28, 0.15);
+      box-shadow: 0 0 15px rgba(46, 196, 182, 0.15);
       margin-bottom: 5px;
     }
 
-    .target-val {
-      font-size: 1.6rem;
+    .target-sizes {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 10px;
+      margin: 8px 0;
+    }
+
+    .size-box {
+      background-color: rgba(0, 0, 0, 0.3);
+      border: 1px solid rgba(255,255,255,0.05);
+      border-radius: 6px;
+      padding: 8px;
+    }
+
+    .size-val {
+      font-size: 1.8rem;
       font-weight: bold;
       color: var(--accent-gold);
-      margin: 8px 0;
-      font-family: monospace;
+      font-family: 'Courier New', Courier, monospace;
       text-shadow: 0 0 10px rgba(255, 183, 3, 0.3);
     }
 
     .hash-display {
       font-family: monospace;
-      font-size: 0.8rem;
+      font-size: 0.75rem;
       background-color: #111115;
-      padding: 8px;
+      padding: 6px 8px;
       border-radius: 4px;
       border: 1px solid var(--border-color);
       word-break: break-all;
       color: #aaa;
-      margin-top: 5px;
+      margin-top: 4px;
     }
 
     /* Proof list styling */
@@ -227,28 +240,19 @@
       margin: 0;
       display: flex;
       flex-direction: column;
-      gap: 8px;
+      gap: 6px;
     }
 
     .proof-item {
       display: flex;
       justify-content: space-between;
       align-items: center;
-      padding: 10px 12px;
+      padding: 8px 10px;
       background-color: #151518;
       border: 1px solid var(--border-color);
       border-radius: 4px;
       font-family: monospace;
       font-size: 0.78rem;
-      transition: border-color 0.2s;
-    }
-
-    .proof-item:hover {
-      border-color: var(--accent-blue);
-    }
-
-    .proof-item.target-node {
-      border-left: 3px solid var(--accent-gold);
     }
 
     .proof-item.proof-node {
@@ -260,17 +264,17 @@
       border: none;
       color: #666;
       cursor: pointer;
-      font-size: 0.9rem;
-      padding: 0 4px;
+      font-size: 0.95rem;
+      padding: 0 2px;
     }
 
     .remove-node-btn:hover {
-      color: var(--accent-red);
+      color: var(--accent);
     }
 
     /* Buttons */
     button.action-btn {
-      background-color: var(--accent-blue);
+      background-color: var(--accent-green);
       color: #000;
       border: none;
       padding: 12px 20px;
@@ -282,13 +286,13 @@
       width: 100%;
       text-transform: uppercase;
       letter-spacing: 0.5px;
-      box-shadow: 0 4px 10px rgba(0, 180, 216, 0.2);
+      box-shadow: 0 4px 10px rgba(46, 196, 182, 0.2);
     }
 
     button.action-btn:hover {
-      background-color: #00d4ff;
+      background-color: #3dfed7;
       transform: translateY(-1px);
-      box-shadow: 0 6px 15px rgba(0, 180, 216, 0.3);
+      box-shadow: 0 6px 15px rgba(46, 196, 182, 0.3);
     }
 
     button.action-btn:disabled {
@@ -332,7 +336,7 @@
     }
 
     .sound-toggle:hover {
-      border-color: var(--accent-blue);
+      border-color: var(--accent-green);
       color: #fff;
     }
 
@@ -347,10 +351,23 @@
 
     .timer-bar {
       height: 100%;
-      background: linear-gradient(90deg, var(--accent-green) 0%, var(--accent-gold) 60%, var(--accent-red) 100%);
+      background: linear-gradient(90deg, var(--accent-green) 0%, var(--accent-gold) 60%, var(--accent) 100%);
       width: 100%;
       transition: width 0.1s linear, background-color 0.5s ease;
       box-shadow: 0 0 8px rgba(46, 196, 182, 0.5);
+    }
+
+    /* Dimmed styling for yesterday's historical tree nodes (Channel A / Red Theme) */
+    .node-highlight-old-tree-node .merkle-node-circle {
+      stroke: #e71d36 !important;
+      stroke-dasharray: 4, 2;
+      fill: #1c1012 !important; /* Shaded dark red background */
+      opacity: 0.75;
+    }
+    
+    .node-highlight-old-tree-node .merkle-node-coord {
+      fill: #e71d36 !important;
+      opacity: 0.8;
     }
 
     /* Game Over / HUD Overlays */
@@ -394,7 +411,7 @@
     .overlay-card h2 {
       margin: 0;
       font-size: 2.2rem;
-      color: var(--accent-red);
+      color: var(--accent);
       text-shadow: 0 0 15px rgba(231, 29, 54, 0.3);
       text-transform: uppercase;
       letter-spacing: 1px;
@@ -425,26 +442,45 @@
       font-family: 'Courier New', Courier, monospace;
     }
 
+    .verifier-channel {
+      border: 1px solid var(--border-color);
+      border-radius: 6px;
+      padding: 8px;
+      background-color: #121215;
+      margin-bottom: 10px;
+    }
+
+    .verifier-channel h4 {
+      margin-top: 0;
+      margin-bottom: 6px;
+      font-size: 0.75rem;
+      color: #888;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+      border-bottom: 1px dashed var(--border-color);
+      padding-bottom: 2px;
+    }
+
     /* Verification steps for audit review */
     .step-list {
       font-family: monospace;
-      font-size: 0.8rem;
+      font-size: 0.75rem;
       display: flex;
       flex-direction: column;
-      gap: 8px;
+      gap: 6px;
     }
 
     .step-item {
-      padding: 10px;
+      padding: 6px 8px;
       border-radius: 4px;
-      background: #151518;
+      background: #18181c;
       border-left: 3px solid #888;
     }
 
-    .step-item.step-path { border-left-color: var(--accent); }
+    .step-item.step-path { border-left-color: var(--accent-orange); }
     .step-item.step-proof { border-left-color: var(--accent-blue); }
     .step-item.step-success { border-left-color: var(--accent-green); background: #112a22; }
-    .step-item.step-fail { border-left-color: var(--accent-red); background: #2c1619; }
+    .step-item.step-fail { border-left-color: var(--accent); background: #2c1619; }
 
     /* Tooltip */
     #tooltip {
@@ -460,29 +496,13 @@
       z-index: 10;
       box-shadow: 0 4px 12px rgba(0,0,0,0.5);
     }
-
-    .combo-badge {
-      font-size: 0.75rem;
-      background-color: var(--accent-gold);
-      color: #000;
-      padding: 2px 6px;
-      border-radius: 4px;
-      font-weight: bold;
-      margin-left: 5px;
-      animation: pulse 1s infinite alternate;
-    }
-
-    @keyframes pulse {
-      from { transform: scale(1); box-shadow: 0 0 2px rgba(255, 183, 3, 0.5); }
-      to { transform: scale(1.1); box-shadow: 0 0 8px rgba(255, 183, 3, 0.8); }
-    }
   </style>
 </head>
 <body>
   <header>
     <h1>
-      ⚡ Merkle Speed Run
-      <span class="subtitle">Arcade Inclusion Proofs</span>
+      ⚡ Merkle Consistency Run
+      <span class="subtitle">Arcade Append-Only Verification</span>
     </h1>
     
     <div class="dashboard-stats">
@@ -499,7 +519,7 @@
       <!-- Time Left Box -->
       <div class="stat-box">
         <span class="stat-label">Time Left</span>
-        <span class="stat-value" id="timer-text">30s</span>
+        <span class="stat-value" id="timer-text">35s</span>
       </div>
 
       <!-- Combo Box -->
@@ -537,25 +557,40 @@
     <div class="sidebar">
       <div class="panel-section" style="padding: 0; background: none; border: none;">
         <div class="target-card">
-          <span class="stat-label" style="color: var(--accent); font-weight: bold; letter-spacing: 1px;">Target Leaf</span>
-          <div class="target-val" id="target-value">---</div>
-          <span style="font-size: 0.75rem; color: #888;">Leaf Index: <strong id="target-index-text" style="color:#fff;">-</strong></span>
+          <span class="stat-label" style="color: var(--accent-green); font-weight: bold; letter-spacing: 1px;">Auditor Target</span>
+          <div class="target-sizes">
+            <div class="size-box">
+              <div class="stat-label" style="font-size: 0.55rem; color:#aaa;">Old Size (M)</div>
+              <div class="size-val" id="old-size-val">-</div>
+            </div>
+            <div class="size-box">
+              <div class="stat-label" style="font-size: 0.55rem; color:#aaa;">New Size (N)</div>
+              <div class="size-val" id="new-size-val">-</div>
+            </div>
+          </div>
+          <span style="font-size: 0.75rem; color: #888;">Prove yesterday's log is a prefix of today's!</span>
+          <div style="font-size: 0.72rem; color: var(--accent-gold); margin-top: 8px; font-family: monospace; border-top: 1px dashed rgba(255,255,255,0.1); padding-top: 6px;" id="decomp-hint-text">
+            Decomposition: M = -
+          </div>
         </div>
       </div>
 
       <div class="panel-section">
-        <h3>Public Ledger</h3>
-        <div>
-          <span style="font-size: 0.75rem; color: #888;">Expected Root Hash:</span>
-          <div class="hash-display" id="expected-root-display">0x00000000...</div>
-        </div>
-        <div style="margin-top: 10px; font-size: 0.8rem; color: #888;">
-          Tree size: <strong id="tree-size-text" style="color:#fff;">0 leaves</strong>
+        <h3>Public Ledger Snapshot</h3>
+        <div style="display: flex; flex-direction: column; gap: 8px;">
+          <div>
+            <span style="font-size: 0.7rem; color: #888;">Expected Old Root (M):</span>
+            <div class="hash-display" id="old-root-display">0x00000000...</div>
+          </div>
+          <div>
+            <span style="font-size: 0.7rem; color: #888;">Expected New Root (N):</span>
+            <div class="hash-display" id="new-root-display">0x00000000...</div>
+          </div>
         </div>
       </div>
 
       <div style="margin-top: auto; display: flex; flex-direction: column; gap: 10px;">
-        <button id="submit-btn" class="action-btn" disabled>Submit Proof</button>
+        <button id="submit-btn" class="action-btn" disabled style="background-color: var(--accent-green); color:#000;">Submit Proof</button>
         <button id="clear-btn" class="secondary-btn">Clear Selection</button>
         <a href="play.html" style="text-decoration: none; display: block;"><button class="secondary-btn" style="width:100%">← Exit Game</button></a>
       </div>
@@ -565,8 +600,8 @@
     <div class="visualizer-pane">
       <!-- Instruction Banner -->
       <div style="background-color: rgba(24, 24, 28, 0.8); border-bottom: 1px solid var(--border-color); padding: 10px 20px; font-size: 0.82rem; color: #aaa; z-index: 10; display: flex; justify-content: space-between;">
-        <span>🕵️ <strong>Auditor Directive:</strong> Find and click the sibling hashes in order from <strong>bottom-to-top</strong> to build your inclusion proof!</span>
-        <span style="color: var(--accent-blue); font-weight: bold;">No hints. No safety net.</span>
+        <span>🕵️ <strong>Auditor Directive:</strong> Identify and click the **entire set of nodes** that construct the consistency proof between M and N.</span>
+        <span style="color: var(--accent-green); font-weight: bold;">No Phase guidance. Any order.</span>
       </div>
 
       <div class="svg-container">
@@ -578,16 +613,16 @@
 
       <!-- Start Overlay -->
       <div class="overlay show" id="start-overlay">
-        <div class="overlay-card win" style="border-color: var(--accent-blue);">
-          <h2 style="color: var(--accent-blue); text-shadow: 0 0 15px rgba(0, 180, 216, 0.3);">Merkle Speed Run</h2>
-          <p style="font-size: 0.95rem; line-height: 1.5; color: #bbb; max-width: 400px; margin: 0;">
-            Prove as many transaction inclusion proofs as you can before the timer expires!
+        <div class="overlay-card win" style="border-color: var(--accent-green);">
+          <h2 style="color: var(--accent-green); text-shadow: 0 0 15px rgba(46, 196, 182, 0.3);">Merkle Consistency Run</h2>
+          <p style="font-size: 0.95rem; line-height: 1.5; color: #bbb; max-width: 420px; margin: 0;">
+            Prove that yesterday's log of size M has not been modified and is a prefix of today's log of size N!
             <br><br>
             <strong>Rules:</strong>
-            <br>• Click the correct siblings in order from <strong>bottom-to-top</strong>.
-            <br>• Clicking nodes adds them to your Proof Bag.
-            <br>• Submit when ready. Wrong submissions cost a Shield.
-            <br>• Time scales down as your score increases!
+            <br>• Select **all** required old roots and bridging siblings in the tree.
+            <br>• You can select them in **any order**.
+            <br>• Submit when ready. Wrong selections cost a Shield.
+            <br>• As you win rounds, sizes scale up to complex size-16 trees!
           </p>
           <button id="start-btn" class="action-btn">Initialize Quiz</button>
         </div>
@@ -596,8 +631,8 @@
       <!-- Game Over Overlay -->
       <div class="overlay" id="gameover-overlay">
         <div class="overlay-card">
-          <h2>Shields Depleted!</h2>
-          <p style="font-size: 0.95rem; color: #aaa; margin: 0;">The system has logged your final audit score. Better luck next run!</p>
+          <h2>Audit Shields Depleted!</h2>
+          <p style="font-size: 0.95rem; color: #aaa; margin: 0;">The system has logged your consistency audit score. Secure the ledger next run!</p>
           
           <div class="overlay-stats">
             <div class="stat-box">
@@ -610,17 +645,17 @@
             </div>
           </div>
           
-          <button id="restart-btn" class="action-btn" style="background-color: var(--accent);">Run New Audit</button>
+          <button id="restart-btn" class="action-btn" style="background-color: var(--accent-green); color:#000;">Run New Audit</button>
         </div>
       </div>
     </div>
 
     <!-- Right Sidebar: Collected Proof Bag & Real-time Auditor Console -->
     <div class="details-pane">
-      <div class="panel-section" style="display: flex; flex-direction: column; min-height: 200px;">
-        <h3>Collected Proof Bag</h3>
-        <p style="font-size: 0.78rem; color: #888; margin-top: 0; margin-bottom: 12px;">
-          Your assembled siblings in order of selection (must be bottom-to-top):
+      <div class="panel-section" style="display: flex; flex-direction: column; min-height: 180px;">
+        <h3>Collected Proof Nodes</h3>
+        <p style="font-size: 0.75rem; color: #888; margin-top: 0; margin-bottom: 8px;">
+          Your selected proof node coordinates:
         </p>
         <ul class="proof-bag" id="proof-bag-list" style="flex: 1; overflow-y: auto;">
           <!-- Selected nodes listed here -->
@@ -628,15 +663,26 @@
       </div>
 
       <div class="panel-section" style="flex: 1; display: flex; flex-direction: column; overflow: hidden;">
-        <h3>Audit Report Console</h3>
-        <p style="font-size: 0.78rem; color: #888; margin-top: 0; margin-bottom: 12px;" id="console-desc">
-          Submit your proof to run the cryptographic verification pipeline.
+        <h3>Two-Channel Verifier Console</h3>
+        <p style="font-size: 0.75rem; color: #888; margin-top: 0; margin-bottom: 10px;" id="console-desc">
+          Submit selection to execute double-channel verification trace.
         </p>
-        <div class="step-list" id="console-steps" style="flex: 1; overflow-y: auto;">
-          <div style="color: #555; text-align: center; padding: 30px 10px; font-size: 0.85rem; border: 1px dashed var(--border-color); border-radius: 6px;">
-            Auditor Console Idle.
-            <br><br>
-            Assembling proof siblings and submitting will print the verification trace here.
+        
+        <div style="flex: 1; overflow-y: auto; display: flex; flex-direction: column; gap: 10px;" id="console-channels">
+          <!-- Channel A -->
+          <div class="verifier-channel">
+            <h4>Channel A: Reconstruct Old Root (M)</h4>
+            <div class="step-list" id="channel-a-steps">
+              <div style="color: #555; text-align: center; padding: 10px; font-size:0.75rem;">Waiting for submission...</div>
+            </div>
+          </div>
+
+          <!-- Channel B -->
+          <div class="verifier-channel">
+            <h4>Channel B: Reconstruct New Root (N)</h4>
+            <div class="step-list" id="channel-b-steps">
+              <div style="color: #555; text-align: center; padding: 10px; font-size:0.75rem;">Waiting for submission...</div>
+            </div>
           </div>
         </div>
       </div>
@@ -644,8 +690,109 @@
   </div>
 
   <script type="module">
-    import { MerkleTree, verifyInclusion, bytesToHex, hexToBytes, Hasher } from './merkle.js';
+    import { MerkleTree, verifyConsistency, bytesToHex, hexToBytes, Hasher } from './merkle.js';
     import { MerkleVisualizer } from './merkle-visualizer.js';
+
+    // Pure Mathematical Helpers duplicated from merkle.js to compute expected proof coordinates
+    function decompose(begin, end) {
+      if (begin === 0) return [0, end];
+      const xbegin = begin - 1;
+      const xor = xbegin ^ end;
+      const d = xor === 0 ? 0 : xor.toString(2).length - 1;
+      const mask = (1 << d) - 1;
+      return [(~xbegin) & mask, end & mask];
+    }
+
+    function getTrailingZeros(n) {
+      if (n === 0) return 32;
+      return n.toString(2).split('').reverse().indexOf('1');
+    }
+
+    function getRangeSize(begin, end) {
+      const [left, right] = decompose(begin, end);
+      return countOnes(left) + countOnes(right);
+    }
+
+    function countOnes(n) {
+      if (n === 0) return 0;
+      return n.toString(2).split('1').length - 1;
+    }
+
+    function getRangeNodes(begin, end) {
+      const [left, right] = decompose(begin, end);
+      const ids = [];
+      let pos = begin;
+      let tempLeft = left;
+      while (tempLeft !== 0) {
+        const level = getTrailingZeros(tempLeft);
+        const bit = 1 << level;
+        ids.push({ level, index: pos >> level });
+        pos += bit;
+        tempLeft ^= bit;
+      }
+      let tempRight = right;
+      const rightIds = [];
+      while (tempRight !== 0) {
+        const level = tempRight.toString(2).length - 1;
+        const bit = 1 << level;
+        rightIds.push({ level, index: pos >> level });
+        pos += bit;
+        tempRight ^= bit;
+      }
+      ids.push(...rightIds);
+      return ids;
+    }
+
+    function getProofNodes(index, level, size) {
+      const xor = index ^ (size >> level);
+      const inner = xor === 0 ? 0 : xor.toString(2).length - 1;
+      const forkLevel = level + inner;
+      const forkIndex = index >> inner;
+
+      const fork = { level: forkLevel, index: forkIndex };
+      const begin = forkIndex << forkLevel;
+      const end = (forkIndex + 1) << forkLevel;
+
+      const node = { level, index };
+      const proof = [node];
+
+      let curr = { ...node };
+      while (curr.level < fork.level) {
+        const sibling = { level: curr.level, index: curr.index ^ 1 };
+        proof.push(sibling);
+        curr = { level: curr.level + 1, index: Math.floor(curr.index / 2) };
+      }
+
+      const len1 = proof.length;
+
+      const rightNodes = getRangeNodes(end, size);
+      rightNodes.reverse();
+      proof.push(...rightNodes);
+      const len2 = proof.length;
+
+      const leftNodes = getRangeNodes(0, begin);
+      leftNodes.reverse();
+      proof.push(...leftNodes);
+
+      return {
+        IDs: proof,
+        begin: len1,
+        end: len2,
+        ephem: { level: fork.level, index: fork.index ^ 1 }
+      };
+    }
+    function getDecompositionString(M) {
+      if (M <= 0) return "";
+      const parts = [];
+      const binary = M.toString(2);
+      const len = binary.length;
+      for (let i = 0; i < len; i++) {
+        if (binary[i] === '1') {
+          parts.push(Math.pow(2, len - 1 - i));
+        }
+      }
+      return parts.join(' + ');
+    }
 
     // Retro Synth Audio Utility (Web Audio API)
     const AudioSynth = {
@@ -682,19 +829,16 @@
       },
 
       playCorrectNode() {
-        // High, pleasant synth chime
-        this.playBeep(659.25, 'sine', 0.15, 0.08); // E5
-        setTimeout(() => this.playBeep(880, 'sine', 0.25, 0.08), 80); // A5
+        this.playBeep(523.25, 'sine', 0.12, 0.08); // C5
+        setTimeout(() => this.playBeep(783.99, 'sine', 0.22, 0.08), 80); // G5
       },
 
       playWrongNode() {
-        // Low, raspy saw buzz
         this.playBeep(180, 'sawtooth', 0.2, 0.15);
       },
 
       playCorrectProof() {
-        // Upward celebratory arpeggio
-        const notes = [523.25, 659.25, 783.99, 1046.50]; // C5, E5, G5, C6
+        const notes = [587.33, 698.46, 880, 1174.66]; // D5, F5, A5, D6
         notes.forEach((freq, idx) => {
           setTimeout(() => {
             this.playBeep(freq, 'triangle', 0.3, 0.1);
@@ -703,13 +847,11 @@
       },
 
       playIncorrectProof() {
-        // Downward industrial buzzer
         this.playBeep(220, 'sawtooth', 0.25, 0.15);
         setTimeout(() => this.playBeep(147, 'sawtooth', 0.35, 0.2), 120);
       },
 
       playGameOver() {
-        // Slow melancholy downward spiral
         const notes = [392, 349.23, 311.13, 220]; // G4, F4, Eb4, A3
         notes.forEach((freq, idx) => {
           setTimeout(() => {
@@ -736,18 +878,20 @@
     let combo = 0;
     
     let tree = null;
+    let oldTree = null;
     let visualizer = null;
-    let targetIndex = null;
-    let targetValue = "";
-    let expectedRootHex = "";
     
-    let selectedNodesOrder = []; // Ordered array of { id, level, index, hash }
-    let selectedNodesSet = new Set(); // For faster lookup
+    let oldSize = 0;
+    let newSize = 0;
+    let oldRootHex = "";
+    let newRootHex = "";
+    
+    let selectedNodesSet = new Set(); // Set of node IDs clicked
+    let expectedNodesSet = new Set(); // Expected set of constituent node IDs
+    
     let currentRoundTimer = null;
     let secondsRemaining = 0;
-    let roundMaxSeconds = 30;
-    
-    let isMuted = false;
+    let roundMaxSeconds = 35;
     let roundActive = false;
     let inReviewState = false;
 
@@ -759,13 +903,13 @@
     const highscoreText = document.getElementById('highscore-text');
     const comboText = document.getElementById('combo-text');
     const comboBox = document.getElementById('combo-box');
-    const targetValueDisplay = document.getElementById('target-value');
-    const targetIndexDisplay = document.getElementById('target-index-text');
-    const treeSizeDisplay = document.getElementById('tree-size-text');
-    const expectedRootDisplay = document.getElementById('expected-root-display');
+    const oldSizeVal = document.getElementById('old-size-val');
+    const newSizeVal = document.getElementById('new-size-val');
+    const oldRootDisplay = document.getElementById('old-root-display');
+    const newRootDisplay = document.getElementById('new-root-display');
     const proofBagList = document.getElementById('proof-bag-list');
-    const consoleSteps = document.getElementById('console-steps');
-    const consoleDesc = document.getElementById('console-desc');
+    const channelASteps = document.getElementById('channel-a-steps');
+    const channelBSteps = document.getElementById('channel-b-steps');
     const submitBtn = document.getElementById('submit-btn');
     const clearBtn = document.getElementById('clear-btn');
     const startOverlay = document.getElementById('start-overlay');
@@ -786,7 +930,7 @@
       });
 
       // Load High Score
-      const storedHighScore = localStorage.getItem('merkle_speedrun_highscore');
+      const storedHighScore = localStorage.getItem('merkle_consistency_highscore');
       if (storedHighScore) {
         highscore = parseInt(storedHighScore);
         highscoreText.textContent = String(highscore).padStart(4, '0');
@@ -817,7 +961,7 @@
       scoreText.textContent = "0000";
       comboBox.style.display = "none";
       
-      // Reset shields icons
+      // Reset shields
       Array.from(livesContainer.children).forEach(el => el.classList.remove('lost'));
       
       startOverlay.classList.remove('show');
@@ -831,8 +975,8 @@
     function startNewRound() {
       if (currentRoundTimer) clearInterval(currentRoundTimer);
       
-      selectedNodesOrder = [];
       selectedNodesSet.clear();
+      expectedNodesSet.clear();
       
       // Reset Submit Button
       submitBtn.textContent = "Submit Proof";
@@ -845,47 +989,66 @@
       renderProofBag();
       renderInitialConsole();
 
-      // Determine tree size dynamically based on score
-      // Starts at size 4, scales up, introduces odd/ephemeral sizes, caps at size 12-16.
-      let treeSize = 4;
-      if (score >= 1 && score < 3) {
-        treeSize = 5; // Introduce odd size!
+      // Determine tree sizes dynamically based on score
+      // Starts with easy M=2, N=4, then M=3, N=4, up to complex M=5, N=11 or large size 16.
+      oldSize = 2;
+      newSize = 4;
+
+      if (score === 1) {
+        oldSize = 3;
+        newSize = 4;
+      } else if (score === 2) {
+        oldSize = 2;
+        newSize = 5; // Ephemeral odd sizes!
       } else if (score >= 3 && score < 5) {
-        treeSize = 6;
-      } else if (score >= 5 && score < 7) {
-        treeSize = 8; // Power of 2 (3 levels)
-      } else if (score >= 7 && score < 10) {
-        treeSize = 9 + Math.floor(Math.random() * 3); // size 9, 10, 11 (complex ephemeral paths!)
-      } else if (score >= 10) {
-        treeSize = 12 + Math.floor(Math.random() * 5); // size 12 to 16
+        oldSize = 3 + Math.floor(Math.random() * 2); // 3, 4
+        newSize = 6 + Math.floor(Math.random() * 3); // 6, 7, 8
+      } else if (score >= 5 && score < 9) {
+        oldSize = 4 + Math.floor(Math.random() * 3); // 4, 5, 6
+        newSize = 9 + Math.floor(Math.random() * 3); // 9, 10, 11
+      } else if (score >= 9) {
+        oldSize = 5 + Math.floor(Math.random() * 4); // 5, 6, 7, 8
+        newSize = 12 + Math.floor(Math.random() * 5); // 12 to 16
       }
 
-      // Generate random unique words for leaves
+      // Generate leaves
       const leaves = [];
       const shuffledWords = [...WORDS].sort(() => 0.5 - Math.random());
-      for (let i = 0; i < treeSize; i++) {
+      for (let i = 0; i < newSize; i++) {
         leaves.push(shuffledWords[i]);
       }
 
       tree = new MerkleTree(leaves);
-      expectedRootHex = tree.getRootHashHex();
+      newRootHex = tree.getRootHashHex();
 
-      // Pick a random leaf as target
-      targetIndex = Math.floor(Math.random() * treeSize);
-      targetValue = leaves[targetIndex];
+      oldTree = new MerkleTree(leaves.slice(0, oldSize));
+      oldRootHex = oldTree.getRootHashHex();
 
-      // Update UI displays
-      targetValueDisplay.textContent = `"${targetValue}"`;
-      targetIndexDisplay.textContent = targetIndex;
-      treeSizeDisplay.textContent = `${treeSize} leaves`;
-      expectedRootDisplay.textContent = `0x${expectedRootHex.substring(0, 16)}...`;
+      // Calculate the expected constituent node IDs
+      const trailingZeros = getTrailingZeros(oldSize);
+      const level = trailingZeros;
+      const index = (oldSize - 1) >> level;
+      const p = getProofNodes(index, level, newSize);
+      const startIdx = (index === 0) ? 1 : 0;
+      
+      const expectedIDs = p.IDs.slice(startIdx).map(id => `L${id.level}_I${id.index}`);
+      expectedIDs.forEach(id => expectedNodesSet.add(id));
 
-      // Set Round Timer based on score
-      // Easy levels give 30s. Higher scores drop the timer down to a frantic 15s.
-      roundMaxSeconds = 30;
-      if (score >= 3 && score < 7) roundMaxSeconds = 25;
-      else if (score >= 7 && score < 10) roundMaxSeconds = 20;
-      else if (score >= 10) roundMaxSeconds = 15;
+      // Update HUD Displays
+      oldSizeVal.textContent = oldSize;
+      newSizeVal.textContent = newSize;
+      oldRootDisplay.textContent = `0x${oldRootHex.substring(0, 14)}...`;
+      newRootDisplay.textContent = `0x${newRootHex.substring(0, 14)}...`;
+
+      // Update Decomposition Hint
+      const decompStr = getDecompositionString(oldSize);
+      document.getElementById('decomp-hint-text').innerHTML = `Decomposition: M = ${oldSize} (${decompStr})`;
+
+      // Set Round Timer based on score (Generous limits for mental decomposition!)
+      roundMaxSeconds = 60;
+      if (score >= 3 && score < 6) roundMaxSeconds = 50;
+      else if (score >= 6 && score < 9) roundMaxSeconds = 40;
+      else if (score >= 9) roundMaxSeconds = 30;
 
       secondsRemaining = roundMaxSeconds;
       timerText.textContent = `${secondsRemaining}s`;
@@ -906,11 +1069,9 @@
       secondsRemaining--;
       timerText.textContent = `${secondsRemaining}s`;
 
-      // Update visual bar
       const pct = (secondsRemaining / roundMaxSeconds) * 100;
       timerBar.style.width = `${pct}%`;
 
-      // Warning color triggers
       if (secondsRemaining <= 5) {
         timerText.classList.add('danger');
         timerBar.style.boxShadow = "0 0 10px rgba(231, 29, 54, 0.8)";
@@ -923,30 +1084,19 @@
       }
     }
 
-    // Timer ran out
+    // Timer Timeout
     function handleRoundTimeout() {
       AudioSynth.playWrongNode();
       deductLife("Time Expired!");
     }
 
-    // Sibling Node Click Handler
+    // Node Click Handler
     function handleNodeClick(node) {
       if (!roundActive) return;
-
-      // Clicked on a leaf node directly
-      if (node.isLeaf) {
-        // Enforce: They shouldn't include the target leaf itself as a sibling!
-        if (node.index === targetIndex) {
-          AudioSynth.playWrongNode();
-          printConsoleMessage("ℹ️ Target leaf is the starting seed of the proof. You must collect its siblings, not the target itself!");
-          return;
-        }
-      }
 
       // Cannot select root node
       if (node.level === tree.levels.length - 1) {
         AudioSynth.playWrongNode();
-        printConsoleMessage("ℹ️ The Root Node is what we are trying to prove. You cannot include the root in the proof itself!");
         return;
       }
 
@@ -954,31 +1104,20 @@
 
       // Toggle Selection
       if (selectedNodesSet.has(nodeId)) {
-        // Deselect
-        selectedNodesOrder = selectedNodesOrder.filter(n => n.id !== nodeId);
         selectedNodesSet.delete(nodeId);
-        AudioSynth.playBeep(330, 'sine', 0.08, 0.05); // short low beep for remove
+        AudioSynth.playBeep(330, 'sine', 0.08, 0.05);
       } else {
-        // Select
-        const hash = tree.getHash(node.level, node.index);
-        selectedNodesOrder.push({
-          id: nodeId,
-          level: node.level,
-          index: node.index,
-          hash: hash
-        });
         selectedNodesSet.add(nodeId);
-        AudioSynth.playBeep(440, 'sine', 0.08, 0.08); // short pleasant chirp for add
+        AudioSynth.playBeep(440, 'sine', 0.08, 0.08);
       }
 
-      // Enable submit button if they collected at least 1 node
-      submitBtn.disabled = selectedNodesOrder.length === 0;
+      submitBtn.disabled = selectedNodesSet.size === 0;
 
       renderProofBag();
       updateVisualization();
     }
 
-    // Hover tooltip info
+    // Hover tooltip
     function handleNodeHover(node, event, isHovering) {
       const tooltip = document.getElementById('tooltip');
       if (!isHovering || !roundActive) {
@@ -998,14 +1137,35 @@
       tooltip.style.display = 'block';
     }
 
-    // Render tree with Highlights
+    // Calculate which nodes belonged to yesterday's tree of size M
+    function getOldTreeNodes(M) {
+      const oldNodes = new Set();
+      if (!tree || M <= 0) return oldNodes;
+      
+      // A node L, I is part of yesterday's tree of size M if all its leaf descendants are < M
+      // The leaf descendants range is [I * 2^L, (I + 1) * 2^L)
+      for (let L = 0; L < tree.levels.length; L++) {
+        const levelNodesCount = tree.levels[L].length;
+        for (let I = 0; I < levelNodesCount; I++) {
+          if ((I + 1) * (1 << L) <= M) {
+            oldNodes.add(`L${L}_I${I}`);
+          }
+        }
+      }
+      return oldNodes;
+    }
+
+    // Render tree highlights
     function updateVisualization() {
       const scannedNodes = {};
-      
-      // Always highlight target leaf in Gold
-      scannedNodes[`L0_I${targetIndex}`] = 'target';
+      const oldNodes = getOldTreeNodes(oldSize);
 
-      // Highlight selected nodes in Neon Blue (Proof class)
+      // 1. Highlight yesterday's tree in a dimmed history style (Red Theme)
+      oldNodes.forEach(id => {
+        scannedNodes[id] = 'old-tree-node';
+      });
+
+      // 2. Highlight selected proof nodes (Teal) - overrides old tree style
       selectedNodesSet.forEach(id => {
         scannedNodes[id] = 'proof';
       });
@@ -1018,7 +1178,6 @@
 
     // Clear Selected Nodes
     function clearSelection() {
-      selectedNodesOrder = [];
       selectedNodesSet.clear();
       submitBtn.disabled = true;
       renderProofBag();
@@ -1030,86 +1189,81 @@
     function renderProofBag() {
       proofBagList.innerHTML = '';
 
-      // Target Leaf Node shown at bottom of bag
-      const liTarget = document.createElement('li');
-      liTarget.className = 'proof-item target-node';
-      const targetHash = bytesToHex(Hasher.hashLeaf(stringToBytes(targetValue))).substring(0, 12);
-      liTarget.innerHTML = `
-        <span>🌱 Seed: [${targetIndex}] "${targetValue}"</span>
-        <span style="color: var(--accent-gold);">${targetHash}...</span>
-      `;
-      proofBagList.appendChild(liTarget);
+      selectedNodesSet.forEach(id => {
+        const parts = id.substring(1).split('_I');
+        const L = parseInt(parts[0]);
+        const I = parseInt(parts[1]);
+        const hashHex = bytesToHex(tree.getHash(L, I)).substring(0, 12);
 
-      // Selected Siblings
-      selectedNodesOrder.forEach((n, idx) => {
-        const hashHex = bytesToHex(n.hash).substring(0, 12);
         const li = document.createElement('li');
         li.className = 'proof-item proof-node';
         li.innerHTML = `
-          <span>#${idx + 1}: Sibling (L${n.level},I${n.index})</span>
+          <span>Node (L${L},I${I})</span>
           <div style="display:flex; align-items:center; gap:8px;">
             <span style="color: var(--accent-blue);">${hashHex}...</span>
-            <button class="remove-node-btn" data-id="${n.id}">✕</button>
+            <button class="remove-node-btn" data-id="${id}">✕</button>
           </div>
         `;
         
-        // Remove individual node event
         li.querySelector('.remove-node-btn').addEventListener('click', (e) => {
           e.stopPropagation();
           const idToRemove = e.target.getAttribute('data-id');
-          selectedNodesOrder = selectedNodesOrder.filter(item => item.id !== idToRemove);
           selectedNodesSet.delete(idToRemove);
-          submitBtn.disabled = selectedNodesOrder.length === 0;
+          submitBtn.disabled = selectedNodesSet.size === 0;
           renderProofBag();
           updateVisualization();
         });
 
         proofBagList.appendChild(li);
       });
+
+      if (selectedNodesSet.size === 0) {
+        const emptyLi = document.createElement('li');
+        emptyLi.style.cssText = "padding: 10px; text-align: center; color: #555; border: 1px dashed #333; border-radius: 4px; font-size: 0.8rem;";
+        emptyLi.textContent = "No nodes selected. Click the tree!";
+        proofBagList.appendChild(emptyLi);
+      }
     }
 
-    // Verify and Submit Assembled Proof
+    // Submit and Audit Selection
     function submitProof() {
       if (!roundActive) return;
-      
       clearInterval(currentRoundTimer);
-      
-      // Assemble proof array of Uint8Arrays
-      const proofHashes = selectedNodesOrder.map(n => n.hash);
-      
-      // Perform verification
-      const expectedRootBytes = hexToBytes(expectedRootHex);
-      const isCorrect = verifyInclusion(
-        targetIndex,
-        tree.leaves.length,
-        targetValue,
-        proofHashes,
-        expectedRootBytes
-      );
 
-      renderConsoleReport(isCorrect, proofHashes);
+      // Calculate the correct expected proof nodes and expected hashes
+      const trailingZeros = getTrailingZeros(oldSize);
+      const level = trailingZeros;
+      const index = (oldSize - 1) >> level;
+      const p = getProofNodes(index, level, newSize);
+      const startIdx = (index === 0) ? 1 : 0;
+      const hashes = p.IDs.map(id => tree.getHash(id.level, id.index));
 
-      if (isCorrect) {
+      // Check if player selection matches expected set exactly
+      const hasExactlyExpected = (selectedNodesSet.size === expectedNodesSet.size) && 
+        [...selectedNodesSet].every(id => expectedNodesSet.has(id));
+
+      // Render the console report using the correct expected proof data
+      // Pass hasExactlyExpected so the console displays a warning if they failed
+      renderConsoleReport(hasExactlyExpected, p, hashes);
+
+      if (hasExactlyExpected) {
         handleRoundSuccess();
       } else {
         handleRoundFailure();
       }
     }
 
-    // Correct Proof submitted!
+    // Success Round
     function handleRoundSuccess() {
       AudioSynth.playCorrectProof();
       
-      // Score calculation:
-      // Base 100 pts + speed bonus (remaining seconds * 15)
-      const basePoints = 100;
-      const speedBonus = secondsRemaining * 15;
+      const basePoints = 150; // Consistency is harder!
+      const speedBonus = secondsRemaining * 20;
       const roundScore = basePoints + speedBonus;
       
       combo++;
       score += roundScore * combo;
       
-      // Update HUD
       scoreText.textContent = String(score).padStart(4, '0');
       
       if (combo > 1) {
@@ -1117,9 +1271,6 @@
         comboBox.style.display = "flex";
       }
 
-      // Show win message and load next round after 2.5 seconds (to let them study the successful console log)
-      printConsoleSuccessMessage(`🎉 <strong>SUCCESS!</strong> Inclusion proof verified. Assembled hash matched the ledger root! +${roundScore * combo} pts.`);
-      
       roundActive = false;
       inReviewState = true;
       submitBtn.textContent = "Next Round";
@@ -1127,50 +1278,34 @@
       submitBtn.disabled = false;
     }
 
-    // Incorrect Proof submitted!
+    // Failure Round
     function handleRoundFailure() {
       AudioSynth.playIncorrectProof();
       combo = 0;
       comboBox.style.display = "none";
       
-      deductLife("Verification Failed!");
+      deductLife("Proof Selection Incomplete or Incorrect!");
     }
 
-    // Deduct a shield life
+    // Deduct Life
     function deductLife(reason) {
       lives--;
       
-      // Update UI shield icons
-      const heartIdx = 2 - lives; // shields go left to right
       const heart = livesContainer.querySelector(`[data-idx="${lives}"]`);
       if (heart) heart.classList.add('lost');
 
-      printConsoleFailureMessage(`❌ <strong>AUDIT FAILURE:</strong> ${reason} Shield depleted!`);
-
-      // Highlight the correct expected siblings in neon green and incorrect in red
-      const expectedProofIDs = new Set();
-      let tempIdx = targetIndex;
-      for (let L = 0; L < tree.levels.length - 1; L++) {
-        const siblingIdx = tempIdx ^ 1;
-        if (siblingIdx < tree.levels[L].length) {
-          expectedProofIDs.add(`L${L}_I${siblingIdx}`);
-        }
-        tempIdx = Math.floor(tempIdx / 2);
-      }
-
+      // Highlight the correct expected nodes in neon green and incorrect in red
       const scannedNodes = {};
-      scannedNodes[`L0_I${targetIndex}`] = 'target'; // Target leaf in Gold
-
       selectedNodesSet.forEach(id => {
-        if (expectedProofIDs.has(id)) {
+        if (expectedNodesSet.has(id)) {
           scannedNodes[id] = 'safe'; // green (uses existing CSS class .node-highlight-safe)
         } else {
           scannedNodes[id] = 'wrong'; // red
         }
       });
-      expectedProofIDs.forEach(id => {
+      expectedNodesSet.forEach(id => {
         if (!selectedNodesSet.has(id)) {
-          scannedNodes[id] = 'safe'; // show missing expected nodes in green too
+          scannedNodes[id] = 'safe'; // show missing nodes in green too
         }
       });
 
@@ -1179,14 +1314,13 @@
         scannedNodes: scannedNodes
       });
 
-      // If no shields left, game over!
       if (lives <= 0) {
         triggerGameOver();
       } else {
         roundActive = false;
         inReviewState = true;
         submitBtn.textContent = "Next Round";
-        submitBtn.style.backgroundColor = "var(--accent-red)"; // Red color for failure review in inclusion game (uses --accent-red)
+        submitBtn.style.backgroundColor = "var(--accent)"; // Red color for failure review
         submitBtn.disabled = false;
       }
     }
@@ -1197,25 +1331,23 @@
       if (currentRoundTimer) clearInterval(currentRoundTimer);
       AudioSynth.playGameOver();
 
-      // Check High Score
       if (score > highscore) {
         highscore = score;
-        localStorage.setItem('merkle_speedrun_highscore', highscore);
+        localStorage.setItem('merkle_consistency_highscore', highscore);
         highscoreText.textContent = String(highscore).padStart(4, '0');
       }
 
-      // Show GameOver Screen
       finalScoreDisplay.textContent = String(score).padStart(4, '0');
       finalHighscoreDisplay.textContent = String(highscore).padStart(4, '0');
       gameoverOverlay.classList.add('show');
     }
 
-    // Mute button handler
+    // Mute
     function toggleMute() {
       AudioSynth.muted = !AudioSynth.muted;
       if (AudioSynth.muted) {
         soundIcon.textContent = "🔇";
-        soundToggleBtn.style.borderColor = "var(--accent-red)";
+        soundToggleBtn.style.borderColor = "var(--accent)";
       } else {
         soundIcon.textContent = "🔊";
         soundToggleBtn.style.borderColor = "var(--border-color)";
@@ -1223,189 +1355,154 @@
       }
     }
 
-    // Helper functions for building byte arrays from strings
-    function stringToBytes(str) {
-      return new TextEncoder().encode(str);
-    }
-
-    // Console rendering utilities
+    // Console Utilities
     function renderInitialConsole() {
-      consoleDesc.textContent = "Console Active. Awaiting cryptographic verification pipeline...";
-      consoleSteps.innerHTML = `
-        <div style="color: #666; text-align: center; padding: 30px 10px; font-size: 0.85rem; border: 1px dashed var(--border-color); border-radius: 6px;">
-          Verifier Idle.
-          <br><br>
-          Select siblings from bottom-to-top and submit to execute verification trace.
-        </div>
-      `;
+      channelASteps.innerHTML = `<div style="color: #555; text-align: center; padding: 10px; font-size:0.75rem;">Waiting for submission...</div>`;
+      channelBSteps.innerHTML = `<div style="color: #555; text-align: center; padding: 10px; font-size:0.75rem;">Waiting for submission...</div>`;
     }
 
-    function printConsoleMessage(msg) {
-      consoleSteps.innerHTML = `
-        <div style="color: var(--accent-gold); border: 1px solid var(--accent); border-radius: 4px; padding: 10px; font-size: 0.85rem; background: #251c14;">
-          ${msg}
-        </div>
-      `;
-    }
-
-    // Prepend messages
-    function printConsoleSuccessMessage(msg) {
-      consoleSteps.innerHTML = `
-        <div class="step-item step-success" style="font-size:0.85rem; padding: 12px; margin-bottom:10px;">
-          ${msg}
-        </div>
-      ` + consoleSteps.innerHTML;
-    }
-
-    function printConsoleFailureMessage(msg) {
-      consoleSteps.innerHTML = `
-        <div class="step-item step-fail" style="font-size:0.85rem; padding: 12px; margin-bottom:10px;">
-          ${msg}
-        </div>
-      ` + consoleSteps.innerHTML;
-    }
-
-    function renderConsoleReport(isCorrect, proofHashes) {
-      consoleSteps.innerHTML = '';
+    function renderConsoleReport(isCorrect, p, hashes) {
+      channelASteps.innerHTML = '';
+      channelBSteps.innerHTML = '';
 
       if (!isCorrect) {
-        // Calculate and format the correct sibling path answer key on failure
-        const expectedSiblings = [];
-        let tempIdx = targetIndex;
-        for (let L = 0; L < tree.levels.length - 1; L++) {
-          const siblingIdx = tempIdx ^ 1;
-          if (siblingIdx < tree.levels[L].length) {
-            expectedSiblings.push(`L${L}_I${siblingIdx}`);
-          }
-          tempIdx = Math.floor(tempIdx / 2);
-        }
-
-        const answerKey = document.createElement('div');
-        answerKey.className = 'step-item step-fail';
-        answerKey.style.cssText = 'font-size:0.85rem; padding: 12px; margin-bottom:15px; border-left-color: var(--accent-red);';
-        answerKey.innerHTML = `
+        // Prepend warning alerts at the top of both channels showing that the audit failed
+        // but we are still displaying the correct math trace for study!
+        const alertA = document.createElement('div');
+        alertA.className = 'step-item step-fail';
+        alertA.style.marginBottom = '10px';
+        alertA.innerHTML = `
           <strong>❌ AUDIT FAILED (Shield Lost)</strong>
-          <div style="margin-top: 4px; font-weight: bold; color: #fff;">Correct Sibling Path Answer Key (Bottom-to-Top):</div>
-          <div style="margin-top: 6px; font-family: monospace; font-size: 0.78rem; line-height: 1.5; color: #eee;">
-            ${expectedSiblings.map((id, idx) => {
-              const parts = id.substring(1).split('_I');
-              const L = parseInt(parts[0]);
-              const I = parseInt(parts[1]);
-              const hashHex = bytesToHex(tree.getHash(L, I)).substring(0, 12);
-              return `Sibling #${idx + 1}: Node (L${L},I${I}) ➔ <span style="color:var(--accent-blue);">${hashHex}...</span>`;
-            }).join('<br>')}
-          </div>
-          <div style="margin-top: 6px; font-size: 0.75rem; color: #aaa;">Click these correct nodes in this order next time!</div>
+          <div style="font-size:0.72rem; margin-top:2px; color:#ccc;">Showing correct root reconstruction for study:</div>
         `;
-        consoleSteps.appendChild(answerKey);
+        channelASteps.appendChild(alertA);
+
+        const alertB = document.createElement('div');
+        alertB.className = 'step-item step-fail';
+        alertB.style.marginBottom = '10px';
+        alertB.innerHTML = `
+          <strong>❌ AUDIT FAILED (Shield Lost)</strong>
+          <div style="font-size:0.72rem; margin-top:2px; color:#ccc;">Showing correct bridge sequence for study:</div>
+        `;
+        channelBSteps.appendChild(alertB);
       }
+
+      // 1. Render Channel A: Old History Reconstruction
+      const startIdx = (p.IDs[0].index === 0 && p.begin > 0) ? 1 : 0; // Wait! If index===0, first node (p.IDs[0]) is not part of proof if M was power of 2
+      // Actually, let's look at the old roots. The old roots are exactly the nodes representing size M!
+      // They are the left forest nodes (p.end onwards) and the path nodes (if any).
+      // Let's print the step-by-step merge.
       
-      const leafBytes = stringToBytes(targetValue);
-      const leafHash = Hasher.hashLeaf(leafBytes);
-
-      // Step 1: Hash target leaf
-      const step1 = document.createElement('div');
-      step1.className = 'step-item step-path';
-      step1.innerHTML = `
-        <div><strong>Step 1: Hash Target Leaf</strong></div>
-        <div>SHA256(0x00 || "${targetValue}")</div>
-        <div class="hash-val">${bytesToHex(leafHash)}</div>
-      `;
-      verificationStepsAppend(step1);
-
-      let currentHash = leafHash;
-      let idx = targetIndex;
-      let stepNum = 2;
-
-      // We run the verification calculations and log them step-by-step
-      const numLevels = tree.levels.length - 1;
+      // Yesterday's roots are:
+      // The nodes returned by getRangeNodes(0, oldSize).
+      const oldRootsIDs = getRangeNodes(0, oldSize);
       
-      for (let L = 0; L < numLevels; L++) {
-        const siblingIdx = idx ^ 1;
-        const levelNodesCount = tree.levels[L].length;
+      let currentHashA = null;
+      oldRootsIDs.forEach((id, idx) => {
+        const hash = tree.getHash(id.level, id.index);
+        const step = document.createElement('div');
+        step.className = 'step-item step-old-root';
         
-        if (siblingIdx < levelNodesCount) {
-          // A sibling exists
-          const submittedSiblingHash = proofHashes[stepNum - 2];
-          
-          if (submittedSiblingHash) {
-            const isLeftSibling = siblingIdx < idx;
-            let expr = '';
-            
-            if (isLeftSibling) {
-              expr = `SHA256(0x01 || sibling || current)`;
-              currentHash = Hasher.hashChildren(submittedSiblingHash, currentHash);
-            } else {
-              expr = `SHA256(0x01 || current || sibling)`;
-              currentHash = Hasher.hashChildren(currentHash, submittedSiblingHash);
-            }
-
-            const step = document.createElement('div');
-            step.className = 'step-item step-path';
-            step.innerHTML = `
-              <div><strong>Step ${stepNum}: Merge Sibling</strong></div>
-              <div>${expr}</div>
-              <div class="hash-val" style="color: var(--accent-blue);">Sibling: ${bytesToHex(submittedSiblingHash).substring(0, 16)}...</div>
-              <div class="hash-val">Result: ${bytesToHex(currentHash)}</div>
-            `;
-            verificationStepsAppend(step);
-            stepNum++;
-          } else {
-            // Sibling was expected but they didn't provide one
-            const failStep = document.createElement('div');
-            failStep.className = 'step-item step-fail';
-            failStep.innerHTML = `
-              <div><strong>Step ${stepNum}: Verification Interrupted</strong></div>
-              <div style="color: var(--accent-red);">Expected sibling at L${L},I${siblingIdx} is missing from proof!</div>
-            `;
-            verificationStepsAppend(failStep);
-            break;
-          }
-        } else {
-          // Sibling is ephemeral (propagates up)
-          const ephemStep = document.createElement('div');
-          ephemStep.className = 'step-item';
-          ephemStep.style.opacity = 0.7;
-          ephemStep.innerHTML = `
-            <div><strong>Step ${stepNum}: Ephemeral Propagate</strong></div>
-            <div style="font-size:0.75rem; color:#888;">No sibling exists at L${L},I${siblingIdx}. Hash propagates up.</div>
-            <div class="hash-val">Result: ${bytesToHex(currentHash)}</div>
+        if (idx === 0) {
+          currentHashA = hash;
+          step.innerHTML = `
+            <div><strong>Component 1: L${id.level},I${id.index}</strong></div>
+            <div class="hash-val">${bytesToHex(currentHashA).substring(0,24)}...</div>
           `;
-          verificationStepsAppend(ephemStep);
-          stepNum++;
+        } else {
+          currentHashA = Hasher.hashChildren(currentHashA, hash);
+          step.innerHTML = `
+            <div><strong>Merge Component ${idx + 1}</strong></div>
+            <div class="hash-val">Result: ${bytesToHex(currentHashA).substring(0,24)}...</div>
+          `;
         }
-        idx = Math.floor(idx / 2);
-      }
+        channelASteps.appendChild(step);
+      });
 
-      // Check if they provided EXTRA hashes that weren't needed
-      if (proofHashes.length > (stepNum - 2) && isCorrect === false) {
-        const extraStep = document.createElement('div');
-        extraStep.className = 'step-item step-fail';
-        extraStep.innerHTML = `
-          <div><strong>Verification Error</strong></div>
-          <div style="color: var(--accent-red);">Proof contains extra unused hashes! (Provided ${proofHashes.length}, needed ${stepNum - 2}).</div>
-        `;
-        verificationStepsAppend(extraStep);
-      }
-
-      // Final Step: Compare Root
-      const matched = bytesToHex(currentHash) === expectedRootHex;
-      const finalStep = document.createElement('div');
-      finalStep.className = `step-item ${matched ? 'step-success' : 'step-fail'}`;
-      finalStep.innerHTML = `
-        <div><strong>Final Step: Compare Root Hash</strong></div>
-        <div class="hash-val" style="color:#fff;">Calc:  ${bytesToHex(currentHash)}</div>
-        <div class="hash-val" style="color:#888;">Expected: ${expectedRootHex}</div>
-        <div style="margin-top: 8px; font-weight: bold;">
-          ${matched ? '✅ Root hashes match! Inclusion verified.' : '❌ Mismatch! Proof invalid.'}
+      // Compare Old Root
+      const matchedA = bytesToHex(currentHashA) === oldRootHex;
+      const finalA = document.createElement('div');
+      finalA.className = `step-item ${matchedA ? 'step-success' : 'step-fail'}`;
+      finalA.innerHTML = `
+        <div><strong>Compare Old Root</strong></div>
+        <div style="font-weight:bold; margin-top:4px;">
+          ${matchedA ? '✅ Old History verified consistent!' : '❌ Old History mismatched!'}
         </div>
       `;
-      verificationStepsAppend(finalStep);
-    }
+      channelASteps.appendChild(finalA);
 
-    function verificationStepsAppend(el) {
-      consoleSteps.appendChild(el);
-      consoleSteps.scrollTop = consoleSteps.scrollHeight;
+
+      // 2. Render Channel B: Bridge to today's root
+      // Channel B starts with the seed (which is either old root or the first proof element)
+      const shift = getTrailingZeros(oldSize);
+      const seed = hashes[0];
+      
+      const stepSeed = document.createElement('div');
+      stepSeed.className = 'step-item step-path';
+      stepSeed.innerHTML = `
+        <div><strong>Channel B Seed</strong></div>
+        <div class="hash-val">${bytesToHex(seed).substring(0,24)}...</div>
+      `;
+      channelBSteps.appendChild(stepSeed);
+
+      // Assemble bridging siblings and show merges
+      const activeProofHashes = hashes.slice(1);
+      const inner = (oldSize - 1) === (newSize - 1) ? 0 : ((oldSize - 1) ^ (newSize - 1)).toString(2).length;
+      const adjustedInner = inner - shift;
+      const mask = (oldSize - 1) >> shift;
+
+      let currentHashB = seed;
+      let stepNum = 1;
+
+      // Slices representing the path nodes and forest nodes
+      const pathHashes = activeProofHashes.slice(0, adjustedInner);
+      const borderHashes = activeProofHashes.slice(adjustedInner);
+
+      // Simulating path merges
+      pathHashes.forEach((h, i) => {
+        let expr = '';
+        if ((mask >> i) & 1) {
+          expr = 'SHA256(0x01 || sibling || current)';
+          currentHashB = Hasher.hashChildren(h, currentHashB);
+        } else {
+          expr = 'SHA256(0x01 || current || sibling)';
+          currentHashB = Hasher.hashChildren(currentHashB, h);
+        }
+        
+        const step = document.createElement('div');
+        step.className = 'step-item step-path';
+        step.innerHTML = `
+          <div><strong>Bridge Merge ${stepNum}</strong></div>
+          <div class="hash-val">Result: ${bytesToHex(currentHashB).substring(0,24)}...</div>
+        `;
+        channelBSteps.appendChild(step);
+        stepNum++;
+      });
+
+      // Simulating border merges
+      borderHashes.forEach((h) => {
+        currentHashB = Hasher.hashChildren(h, currentHashB);
+        const step = document.createElement('div');
+        step.className = 'step-item step-proof';
+        step.innerHTML = `
+          <div><strong>Border Merge ${stepNum}</strong></div>
+          <div class="hash-val">Result: ${bytesToHex(currentHashB).substring(0,24)}...</div>
+        `;
+        channelBSteps.appendChild(step);
+        stepNum++;
+      });
+
+      // Compare New Root
+      const matchedB = bytesToHex(currentHashB) === newRootHex;
+      const finalB = document.createElement('div');
+      finalB.className = `step-item ${matchedB ? 'step-success' : 'step-fail'}`;
+      finalB.innerHTML = `
+        <div><strong>Compare New Root</strong></div>
+        <div style="font-weight:bold; margin-top:4px;">
+          ${matchedB ? '✅ New Root verified consistent!' : '❌ New Root mismatched!'}
+        </div>
+      `;
+      channelBSteps.appendChild(finalB);
     }
   </script>
 </body>
