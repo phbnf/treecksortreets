@@ -1,0 +1,118 @@
+/* Merkle Tree SVG Styling */
+
+.merkle-edge {
+  stroke: #4a4a4a;
+  stroke-width: 2;
+  transition: stroke 0.3s ease, stroke-width 0.3s ease;
+}
+
+/* Edge Highlights */
+.edge-highlight-path {
+  stroke: #ff9f1c;
+  stroke-width: 4;
+}
+
+.edge-highlight-proof {
+  stroke: #2ec4b6;
+  stroke-width: 3;
+  stroke-dasharray: 4, 4;
+}
+
+.edge-highlight-old-root {
+  stroke: #e71d36;
+  stroke-width: 4;
+}
+
+/* Node Styling */
+.merkle-node-circle {
+  fill: #2c2c2c;
+  stroke: #808080;
+  stroke-width: 2;
+  cursor: pointer;
+  transition: fill 0.3s ease, stroke 0.3s ease, transform 0.2s ease;
+  transform-origin: center;
+}
+
+.merkle-node-group:hover .merkle-node-circle {
+  fill: #3e3e3e;
+  stroke: #cccccc;
+  transform: scale(1.05);
+}
+
+.node-leaf .merkle-node-circle {
+  stroke: #3a86c8;
+}
+
+/* Ephemeral (virtual) nodes */
+.node-ephemeral .merkle-node-circle {
+  stroke: #666666;
+  stroke-dasharray: 4, 4;
+  fill: #1e1e1e;
+  opacity: 0.6;
+}
+
+/* Highlighted Nodes */
+.node-highlight-path .merkle-node-circle {
+  fill: #ff9f1c !important;
+  stroke: #d07e10 !important;
+  stroke-width: 3;
+}
+
+.node-highlight-proof .merkle-node-circle {
+  fill: #2ec4b6 !important;
+  stroke: #1ca395 !important;
+  stroke-width: 3;
+}
+
+.node-highlight-old-root .merkle-node-circle {
+  fill: #e71d36 !important;
+  stroke: #b31427 !important;
+  stroke-width: 3;
+}
+
+/* Text styles */
+.merkle-node-coord {
+  fill: #e0e0e0;
+  font-size: 10px;
+  font-family: monospace;
+  text-anchor: middle;
+  pointer-events: none;
+}
+
+.node-highlight-path .merkle-node-coord,
+.node-highlight-proof .merkle-node-coord,
+.node-highlight-old-root .merkle-node-coord {
+  fill: #000000;
+  font-weight: bold;
+}
+
+.merkle-node-hash {
+  fill: #aaaaaa;
+  font-size: 8px;
+  font-family: monospace;
+  text-anchor: middle;
+  pointer-events: none;
+}
+
+.node-highlight-path .merkle-node-hash,
+.node-highlight-proof .merkle-node-hash,
+.node-highlight-old-root .merkle-node-hash {
+  fill: #333333;
+  font-weight: bold;
+}
+
+.merkle-node-label {
+  fill: #ffffff;
+  font-size: 12px;
+  font-family: inherit;
+  font-weight: bold;
+  text-anchor: middle;
+}
+
+.merkle-node-root-label {
+  fill: #ffd700;
+  font-size: 11px;
+  font-family: monospace;
+  font-weight: bold;
+  text-anchor: middle;
+}
