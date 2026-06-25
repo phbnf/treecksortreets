@@ -74,7 +74,7 @@ function runTests() {
   console.log("Visualization links:", visData.links.map(l => `${l.source} -> ${l.target}`));
   
   assert(visData.nodes.length === 6, "Expected 6 nodes for tree of size 3 (3 leaves + 2 level 1 nodes (one ephemeral) + 1 root)");
-  assert(visData.links.length === 4, "Expected 4 links (2 from root to L1 nodes, 2 from L1 to L0 nodes)");
+  assert(visData.links.length === 5, "Expected 5 links (2 from root to L1 nodes, 3 from L1 to L0 nodes)");
 
   console.log("All tests passed successfully!");
 }
