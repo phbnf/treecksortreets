@@ -1,0 +1,140 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Merkle Tree Unit Tests</title>
+  <style>
+    body {
+      font-family: monospace;
+      padding: 20px;
+      background: #1e1e1e;
+      color: #d4d4d4;
+    }
+    h1 {
+      color: #4fc1ff;
+    }
+    .pass {
+      color: #4ec9b0;
+    }
+    .fail {
+      color: #f44747;
+      font-weight: bold;
+    }
+    pre {
+      background: #252526;
+      padding: 15px;
+      border-radius: 4px;
+      border: 1px solid #3c3c3c;
+      overflow-x: auto;
+    }
+  </style>
+</head>
+<body>
+  <h1>Merkle Tree Unit Tests</h1>
+  <pre id="output">Running tests...</pre>
+
+  <script type="module">
+    import { MerkleTree, verifyInclusion, verifyConsistency, bytesToHex, Hasher } from './merkle.js';
+
+    const outputEl = document.getElementById('output');
+    function log(message, isPass = null) {
+      const span = document.createElement('span');
+      if (isPass === true) {
+        span.className = 'pass';
+      } else if (isPass === false) {
+        span.className = 'fail';
+      }
+      span.textContent = message + '\n';
+      outputEl.appendChild(span);
+    }
+
+    function assert(condition, message) {
+      if (!condition) {
+        throw new Error(message || "Assertion failed");
+      }
+    }
+
+    async function runTests() {
+      outputEl.textContent = '';
+      try {
+        log("Test 1: Empty Tree Root Hash...");
+        const emptyTree = new MerkleTree();
+        const emptyRoot = emptyTree.getRootHashHex();
+        log("  Empty tree root: " + emptyRoot);
+        assert(emptyRoot === "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855", "Empty root incorrect");
+        log("  => Pass", true);
+
+        log("\nTest 2: Tree with 1 leaf...");
+        const tree1 = new MerkleTree(["hello"]);
+        const root1 = tree1.getRootHashHex();
+        log("  Tree of 1 leaf root: " + root1);
+        const expectedLeafHash = bytesToHex(Hasher.hashLeaf(new TextEncoder().encode("hello")));
+        assert(root1 === expectedLeafHash, "Root of 1 leaf incorrect");
+        log("  => Pass", true);
+
+        log("\nTest 3: Tree with 3 leaves and inclusion proof...");
+        const leaves3 = ["apple", "banana", "cherry"];
+        const tree3 = new MerkleTree(leaves3);
+        const root3 = tree3.getRootHash();
+        log("  Tree of 3 leaves root: " + bytesToHex(root3));
+
+        for (let i = 0; i < 3; i++) {
+          const proof = tree3.getInclusionProof(i);
+          log(`  Proof for leaf ${i} (${leaves3[i]}): ` + proof.map(p => bytesToHex(p).substring(0, 8) + '...').join(', '));
+          const ok = verifyInclusion(i, 3, leaves3[i], proof, root3);
+          assert(ok, `Inclusion proof verification failed for leaf ${i}`);
+        }
+        log("  => Pass", true);
+
+        log("\nTest 4: Tree of 5 leaves and inclusion proof...");
+        const leaves5 = ["A", "B", "C", "D", "E"];
+        const tree5 = new MerkleTree(leaves5);
+        const root5 = tree5.getRootHash();
+        log("  Tree of 5 leaves root: " + bytesToHex(root5));
+
+        for (let i = 0; i < 5; i++) {
+          const proof = tree5.getInclusionProof(i);
+          const ok = verifyInclusion(i, 5, leaves5[i], proof, root5);
+          assert(ok, `Inclusion proof verification failed for leaf ${i} in tree of 5`);
+        }
+        log("  => Pass", true);
+
+        log("\nTest 5: Consistency proofs (sizes 1 to 8)...");
+        const allLeaves = ["1", "2", "3", "4", "5", "6", "7", "8"];
+        const trees = [];
+        for (let size = 0; size <= 8; size++) {
+          trees[size] = new MerkleTree(allLeaves.slice(0, size));
+        }
+
+        for (let size1 = 1; size1 <= 8; size1++) {
+          const root1 = trees[size1].getRootHash();
+          for (let size2 = size1; size2 <= 8; size2++) {
+            const root2 = trees[size2].getRootHash();
+            const proof = trees[size2].getConsistencyProof(size1, size2);
+            const ok = verifyConsistency(size1, size2, proof, root1, root2);
+            log(`  Consistency ${size1} -> ${size2}: [${proof.map(p => bytesToHex(p).substring(0, 6)).join(', ')}] - ${ok ? 'OK' : 'FAIL'}`);
+            assert(ok, `Consistency proof failed between size ${size1} and ${size2}`);
+          }
+        }
+        log("  => Pass", true);
+
+        log("\nTest 6: getVisualizationData structure...");
+        const visData = tree3.getVisualizationData();
+        log("  Nodes: " + visData.nodes.map(n => `${n.id}(ephem=${n.isEphemeral}, val=${n.value}, hash=${n.shortHash})`).join('\n         '));
+        log("  Links: " + visData.links.map(l => `${l.source} -> ${l.target}`).join('\n         '));
+        
+        assert(visData.nodes.length === 6, "Expected 6 nodes for tree of size 3");
+        assert(visData.links.length === 4, "Expected 4 links");
+        log("  => Pass", true);
+
+        log("\nALL TESTS PASSED SUCCESSFULLY! 🎉", true);
+      } catch (err) {
+        log(`\nTEST FAILED: ${err.message}`, false);
+        log(err.stack, false);
+      }
+    }
+
+    runTests();
+  </script>
+</body>
+</html>
