@@ -1,0 +1,1406 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Merkle Quest - Consistency Proofs</title>
+  <link rel="stylesheet" href="merkle.css">
+  <style>
+    :root {
+      --bg-dark: #121212;
+      --panel-bg: #1e1e1e;
+      --border-color: #333333;
+      --text-main: #e0e0e0;
+      --accent: #4fc1ff;
+      --accent-green: #4ec9b0;
+      --accent-orange: #ff9f1c;
+      --accent-teal: #2ec4b6;
+      --accent-red: #e71d36;
+      --accent-gold: #ffd700;
+    }
+
+    body {
+      background-color: var(--bg-dark);
+      color: var(--text-main);
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+      margin: 0;
+      padding: 0;
+      display: flex;
+      flex-direction: column;
+      height: 100vh;
+      overflow: hidden;
+    }
+
+    header {
+      background-color: var(--panel-bg);
+      border-bottom: 1px solid var(--border-color);
+      padding: 10px 20px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      flex-shrink: 0;
+    }
+
+    h1 {
+      margin: 0;
+      font-size: 1.4rem;
+      color: var(--accent);
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+
+    .subtitle {
+      font-size: 0.85rem;
+      color: #888;
+      margin-left: 10px;
+    }
+
+    .main-container {
+      display: flex;
+      flex: 1;
+      overflow: hidden;
+    }
+
+    .sidebar {
+      width: 350px;
+      background-color: var(--panel-bg);
+      border-right: 1px solid var(--border-color);
+      display: flex;
+      flex-direction: column;
+      flex-shrink: 0;
+      overflow-y: auto;
+      padding: 20px;
+      gap: 15px;
+    }
+
+    .visualizer-pane {
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      background-color: var(--bg-dark);
+      position: relative;
+      overflow: hidden;
+    }
+
+    .svg-container {
+      flex: 1;
+      overflow: auto;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 20px;
+    }
+
+    svg {
+      max-width: 100%;
+      min-width: 500px;
+    }
+
+    .details-pane {
+      width: 380px;
+      background-color: var(--panel-bg);
+      border-left: 1px solid var(--border-color);
+      display: flex;
+      flex-direction: column;
+      flex-shrink: 0;
+      overflow-y: auto;
+      padding: 20px;
+      gap: 20px;
+    }
+
+    .panel-section {
+      background-color: #252526;
+      border: 1px solid var(--border-color);
+      border-radius: 6px;
+      padding: 15px;
+    }
+
+    .panel-section h3 {
+      margin-top: 0;
+      margin-bottom: 10px;
+      font-size: 0.95rem;
+      border-bottom: 1px solid var(--border-color);
+      padding-bottom: 6px;
+      color: var(--accent);
+    }
+
+    .level-badge {
+      background-color: var(--accent);
+      color: #000;
+      padding: 3px 8px;
+      border-radius: 12px;
+      font-size: 0.75rem;
+      font-weight: bold;
+    }
+
+    .instruction-box {
+      background-color: #2b3a4a;
+      border: 1px solid #3c5675;
+      padding: 12px 15px;
+      border-radius: 6px;
+      font-size: 0.88rem;
+      line-height: 1.45;
+      color: #e0e0e0;
+    }
+
+    .instruction-box strong {
+      color: var(--accent-gold);
+    }
+
+    .concept-box {
+      background-color: #1a1a1a;
+      border: 1px solid var(--border-color);
+      padding: 10px 12px;
+      border-radius: 6px;
+      font-size: 0.82rem;
+      line-height: 1.4;
+      color: #bbb;
+    }
+
+    .hash-display {
+      font-family: monospace;
+      font-size: 0.75rem;
+      background-color: #1a1a1a;
+      padding: 6px 8px;
+      border-radius: 4px;
+      border: 1px solid var(--border-color);
+      word-break: break-all;
+      margin-top: 4px;
+    }
+
+    .proof-bag {
+      list-style: none;
+      padding: 0;
+      margin: 0;
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+    }
+
+    .proof-item {
+      display: flex;
+      flex-direction: column;
+      padding: 8px 12px;
+      background-color: #1e1e1e;
+      border: 1px solid var(--border-color);
+      border-radius: 4px;
+      font-family: inherit;
+      font-size: 0.82rem;
+      transition: all 0.2s ease;
+    }
+
+    .proof-item.old-root {
+      border-left: 3px solid var(--accent-red);
+      background-color: #2c1a1d;
+    }
+
+    .proof-item.correct {
+      border-left: 3px solid var(--accent-green);
+      background-color: #1b2e25;
+    }
+
+    button {
+      background-color: var(--accent);
+      color: #000;
+      border: none;
+      padding: 10px 20px;
+      border-radius: 4px;
+      font-weight: bold;
+      cursor: pointer;
+      font-size: 0.95rem;
+      transition: all 0.2s;
+      width: 100%;
+    }
+
+    button:hover {
+      background-color: #3fa8dd;
+      transform: translateY(-1px);
+    }
+
+    button:disabled {
+      background-color: #555;
+      color: #888;
+      cursor: not-allowed;
+      transform: none;
+    }
+
+    button.secondary {
+      background-color: #3c3c3c;
+      color: var(--text-main);
+    }
+
+    button.secondary:hover {
+      background-color: #4c4c4c;
+    }
+
+    button.success {
+      background-color: var(--accent-green);
+      color: #000;
+    }
+
+    button.success:hover {
+      background-color: #3cb395;
+    }
+
+    button.danger {
+      background-color: var(--accent-red);
+      color: #fff;
+    }
+
+    button.danger:hover {
+      background-color: #cf172e;
+    }
+
+    .step-list {
+      font-family: monospace;
+      font-size: 0.82rem;
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+    }
+
+    .step-item {
+      padding: 8px 10px;
+      border-radius: 4px;
+      background: #1e1e1e;
+      border-left: 3px solid #888;
+    }
+
+    .step-item.step-path {
+      border-left-color: var(--accent-orange);
+    }
+
+    .step-item.step-proof {
+      border-left-color: var(--accent-teal);
+    }
+
+    .step-item.step-old-root {
+      border-left-color: var(--accent-red);
+    }
+
+    .step-item.step-success {
+      border-left-color: var(--accent-green);
+      background: #1d332a;
+    }
+
+    .step-item.step-fail {
+      border-left-color: var(--accent-red);
+      background: #3c1e22;
+    }
+
+    .hash-val {
+      word-break: break-all;
+      color: #aaa;
+      font-size: 0.7rem;
+      margin-top: 4px;
+    }
+
+    #tooltip {
+      position: absolute;
+      background: rgba(30, 30, 30, 0.95);
+      border: 1px solid var(--border-color);
+      padding: 10px;
+      border-radius: 4px;
+      font-family: monospace;
+      font-size: 0.75rem;
+      pointer-events: none;
+      display: none;
+      z-index: 10;
+      box-shadow: 0 4px 12px rgba(0,0,0,0.5);
+    }
+
+    .game-over-overlay {
+      position: absolute;
+      top: 0;
+      left: 0;
+      right: 0;
+      bottom: 0;
+      background-color: rgba(18, 18, 18, 0.85);
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      align-items: center;
+      z-index: 20;
+      opacity: 0;
+      pointer-events: none;
+      transition: opacity 0.5s ease;
+      text-align: center;
+      padding: 20px;
+    }
+
+    .game-over-overlay.show {
+      opacity: 1;
+      pointer-events: auto;
+    }
+
+    .game-over-card {
+      background-color: var(--panel-bg);
+      border: 1px solid var(--border-color);
+      border-radius: 8px;
+      padding: 30px 40px;
+      max-width: 480px;
+      box-shadow: 0 10px 30px rgba(0,0,0,0.6);
+    }
+
+    .game-over-card h2 {
+      color: var(--accent-green);
+      margin-top: 0;
+    }
+
+    .progress-bar-container {
+      width: 100%;
+      height: 6px;
+      background-color: #333;
+      border-radius: 3px;
+      overflow: hidden;
+      margin-top: 10px;
+    }
+
+    .progress-bar {
+      height: 100%;
+      background-color: var(--accent);
+      width: 0%;
+      transition: width 0.3s ease;
+    }
+
+    .verifier-channel {
+      border: 1px solid var(--border-color);
+      border-radius: 6px;
+      padding: 10px;
+      background-color: #1a1a1a;
+      margin-bottom: 15px;
+    }
+
+    .verifier-channel h4 {
+      margin-top: 0;
+      margin-bottom: 8px;
+      font-size: 0.8rem;
+      color: #aaa;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+      border-bottom: 1px dashed var(--border-color);
+      padding-bottom: 4px;
+    }
+  </style>
+</head>
+<body>
+  <header>
+    <h1>
+      Merkle Quest
+      <span class="subtitle">Consistency Proofs</span>
+    </h1>
+    <div style="display: flex; align-items: center; gap: 15px;">
+      <span class="level-badge" id="level-badge">Level 1/4</span>
+      <a href="play.html" style="color: var(--text-main); font-size: 0.9rem; text-decoration: none;">← Exit Game</a>
+    </div>
+  </header>
+
+  <div class="progress-bar-container">
+    <div class="progress-bar" id="progress-bar"></div>
+  </div>
+
+  <div class="main-container">
+    <!-- Sidebar: Game Status & Instructions -->
+    <div class="sidebar">
+      <!-- Section: The Concept -->
+      <div class="panel-section">
+        <h3>The Goal</h3>
+        <div class="concept-box">
+          A <strong>Consistency Proof</strong> proves that a database is <strong>append-only</strong> (yesterday's data was frozen, and new data was only added at the end).
+          <br><br>
+          We do this by proving that the roots of the old database (size M) still exist inside the new database (size N) and haven't been modified!
+        </div>
+      </div>
+
+      <!-- Section: Level and Quest Instructions -->
+      <div class="panel-section">
+        <h3 id="level-title">Level 1: Perfect Alignment</h3>
+        <p id="level-desc" style="font-size: 0.8rem; color: #aaa; margin-top: 0; margin-bottom: 12px;">
+          Prove that a tree of size M is a subset of a tree of size N.
+        </p>
+        <div class="instruction-box" id="instruction-box">
+          Loading instructions...
+        </div>
+      </div>
+
+      <!-- Section: Public State -->
+      <div class="panel-section">
+        <h3>Public Ledger</h3>
+        <div style="display: flex; flex-direction: column; gap: 6px;">
+          <div>
+            <span style="font-size: 0.75rem; color: #888;" id="old-size-label">Old Root Hash (Size M):</span>
+            <div class="hash-display" id="old-root-display">0x00000000...</div>
+          </div>
+          <div>
+            <span style="font-size: 0.75rem; color: #888;" id="new-size-label">New Root Hash (Size N):</span>
+            <div class="hash-display" id="new-root-display">0x00000000...</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Section: Quest Log (Decomposer) -->
+      <div class="panel-section">
+        <h3>Quest Log</h3>
+        <p style="font-size: 0.78rem; color: #888; margin-top: 0; margin-bottom: 10px;" id="toolbox-desc">
+          Identify the roots of the old subtrees.
+        </p>
+        <ul class="proof-bag" id="toolbox-list">
+          <!-- Populated dynamically with checklist -->
+        </ul>
+      </div>
+
+      <div style="margin-top: auto; display: flex; flex-direction: column; gap: 10px;">
+        <button id="reset-btn" class="secondary">Reset Level</button>
+      </div>
+    </div>
+
+    <!-- Middle: Visualization -->
+    <div class="visualizer-pane">
+      <div class="svg-container">
+        <svg id="merkle-svg" viewBox="0 0 600 400" width="100%" height="100%"></svg>
+      </div>
+      
+      <!-- Tooltip -->
+      <div id="tooltip"></div>
+
+      <!-- Game Over / Level Win Overlay -->
+      <div class="game-over-overlay" id="game-over-overlay">
+        <div class="game-over-card">
+          <h2 id="overlay-title">Timeline Secured!</h2>
+          <p id="overlay-text">Excellent job! You successfully proved consistency between both historical versions.</p>
+          <button id="next-level-btn" class="success">Next Level</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- Right Sidebar: Two-Channel Verification -->
+    <div class="details-pane">
+      <div class="panel-section" style="height: 100%; display: flex; flex-direction: column; overflow: hidden;">
+        <h3>Two-Channel Verifier</h3>
+        <p style="font-size: 0.78rem; color: #888; margin-top: 0; margin-bottom: 15px;">
+          To verify consistency, we must prove:
+          <br><strong>A:</strong> Old roots hash to yesterday's root.
+          <br><strong>B:</strong> Old roots + bridging siblings hash to today's root.
+        </p>
+        
+        <div style="flex: 1; overflow-y: auto; display: flex; flex-direction: column; gap: 15px;">
+          <!-- Channel A: Old Root Reconstructor -->
+          <div class="verifier-channel">
+            <h4 id="channel-a-title">Channel A: Old History Reconstructor</h4>
+            <div class="step-list" id="channel-a-steps">
+              <div style="color: #666; text-align: center; padding: 20px;">Awaiting old root selection...</div>
+            </div>
+          </div>
+
+          <!-- Channel B: New Root Reconstructor -->
+          <div class="verifier-channel">
+            <h4 id="channel-b-title">Channel B: Consistency Bridge</h4>
+            <div class="step-list" id="channel-b-steps">
+              <div style="color: #666; text-align: center; padding: 20px;">Awaiting complete proof...</div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <script type="module">
+    import { MerkleTree, verifyConsistency, bytesToHex, hexToBytes, Hasher } from './merkle.js';
+    import { MerkleVisualizer } from './merkle-visualizer.js';
+
+    // Game Levels Definition
+    const LEVELS = [
+      {
+        name: "Level 1: Perfect Alignment",
+        description: "Verify consistency between perfect subtrees. When the old size is a power-of-two, the old tree had a single root.",
+        leaves: ["apple", "banana", "cherry", "date"],
+        oldSize: 2, // ["apple", "banana"]
+        newSize: 4, // ["apple", "banana", "cherry", "date"]
+        instructions: "Yesterday the log had **M = 2** records. <br><br>**Phase 1**: Since 2 is a perfect power of two ($2^1$), the old tree had just **one root**. Click the node in the current tree that represents that old root."
+      },
+      {
+        name: "Level 2: Binary Decomposition",
+        description: "Learn how arbitrary sizes are decomposed into a forest of perfect subtrees based on their binary representation.",
+        leaves: ["apple", "banana", "cherry", "date"],
+        oldSize: 3, // ["apple", "banana", "cherry"] -> 2 + 1 subtrees
+        newSize: 4,
+        instructions: "Yesterday the log had **M = 3** records. <br><br>**Phase 1**: Since 3 is not a power of two, it decomposes into **two subtrees** ($3 = 2^1 + 2^0 \rightarrow \text{size } 2 + \text{size } 1$). Identify and click their roots!"
+      },
+      {
+        name: "Level 3: Bridging the Gap",
+        description: "Prove consistency across size growth with ephemeral nodes, merging old history with new appends.",
+        leaves: ["apple", "banana", "cherry", "date", "elderberry"],
+        oldSize: 3, // 2 + 1
+        newSize: 5,
+        instructions: "Old size **M = 3**, new size **N = 5**. <br><br>**Phase 1**: Identify the two old roots representing the size-3 tree. Once verified, bridge them to the new root of size 5!"
+      },
+      {
+        name: "Level 4: The Ledger Fraud",
+        description: "A merchant claims their ledger of size 4 is a consistent continuation of the honest ledger of size 3, but we suspect fraud!",
+        leaves: ["apple", "banana", "cherry"], // Honest old leaves
+        oldSize: 3,
+        newSize: 4,
+        isTamperLevel: true,
+        tamperedLeaves: ["apple", "blueberry", "cherry", "date"], // "banana" changed to "blueberry"
+        instructions: "The merchant claims their database of size 4 is consistent with history, but we suspect they secretly changed record **[1]**! <br><br>Click **'Run Audit'** to run the verifier. It will fail. Then audit the leaves to locate the fraud!"
+      }
+    ];
+
+    // Game State
+    let currentLevelIdx = 0;
+    let tree = null;
+    let oldTree = null; // Honest old tree
+    let visualizer = null;
+    
+    let oldSize = 0;
+    let newSize = 0;
+    let oldRootHex = "";
+    let newRootHex = "";
+
+    let selectedOldRoots = new Set();  // Old roots clicked in Phase 1
+    let selectedBridgeNodes = new Set(); // Sibling bridge nodes clicked in Phase 2
+    let wrongNodes = new Set();
+    
+    let expectedOldRoots = [];      // Node IDs expected in Phase 1
+    let expectedBridgeClicks = [];   // Sibling Node IDs expected in Phase 2
+    let decompositionGoals = [];    // Array of { level, size, expectedNodeId, found }
+    
+    let currentPhase = 1; // 1: Old Roots, 2: Bridge, 3: Completed
+    let gameOver = false;
+
+    // For Level 4
+    let auditedLeafIndex = null;
+    let level4Audited = false;
+    let level4FoundTamper = false;
+
+    // DOM Elements
+    const levelBadge = document.getElementById('level-badge');
+    const progressBar = document.getElementById('progress-bar');
+    const levelTitle = document.getElementById('level-title');
+    const levelDesc = document.getElementById('level-desc');
+    const instructionBox = document.getElementById('instruction-box');
+    const oldSizeLabel = document.getElementById('old-size-label');
+    const newSizeLabel = document.getElementById('new-size-label');
+    const oldRootDisplay = document.getElementById('old-root-display');
+    const newRootDisplay = document.getElementById('new-root-display');
+    const toolboxDesc = document.getElementById('toolbox-desc');
+    const toolboxList = document.getElementById('toolbox-list');
+    const channelATitle = document.getElementById('channel-a-title');
+    const channelBTitle = document.getElementById('channel-b-title');
+    const channelASteps = document.getElementById('channel-a-steps');
+    const channelBSteps = document.getElementById('channel-b-steps');
+    const resetBtn = document.getElementById('reset-btn');
+    const gameOverOverlay = document.getElementById('game-over-overlay');
+    const overlayTitle = document.getElementById('overlay-title');
+    const overlayText = document.getElementById('overlay-text');
+    const nextLevelBtn = document.getElementById('next-level-btn');
+    const merkleSvg = document.getElementById('merkle-svg');
+    const tooltip = document.getElementById('tooltip');
+
+    // Initialize Game
+    window.addEventListener('DOMContentLoaded', () => {
+      visualizer = new MerkleVisualizer(merkleSvg, {
+        onNodeClick: handleNodeClick,
+        onNodeHover: handleNodeHover
+      });
+
+      loadLevel(0);
+
+      resetBtn.addEventListener('click', () => loadLevel(currentLevelIdx));
+      nextLevelBtn.addEventListener('click', handleNextLevel);
+    });
+
+    // Load Level State
+    function loadLevel(levelIdx) {
+      currentLevelIdx = levelIdx;
+      const level = LEVELS[levelIdx];
+      gameOver = false;
+      level4FoundTamper = false;
+      auditedLeafIndex = null;
+      currentPhase = 1;
+
+      // Update UI Header & Progress
+      levelBadge.textContent = `Level ${levelIdx + 1}/${LEVELS.length}`;
+      progressBar.style.width = `${((levelIdx) / LEVELS.length) * 100}%`;
+      levelTitle.textContent = level.name;
+      levelDesc.textContent = level.description;
+      instructionBox.innerHTML = level.instructions;
+      gameOverOverlay.classList.remove('show');
+
+      // Clear State
+      selectedOldRoots.clear();
+      selectedBridgeNodes.clear();
+      wrongNodes.clear();
+
+      oldSize = level.oldSize;
+      newSize = level.newSize;
+
+      oldSizeLabel.textContent = `Old Root Hash (Size M=${oldSize}):`;
+      newSizeLabel.textContent = `New Root Hash (Size N=${newSize}):`;
+
+      // Setup Trees
+      if (level.isTamperLevel) {
+        // Honest old tree
+        oldTree = new MerkleTree(level.leaves);
+        oldRootHex = oldTree.getRootHashHex();
+
+        // Tampered new tree in merchant's database
+        tree = new MerkleTree(level.tamperedLeaves);
+        newRootHex = tree.getRootHashHex();
+
+        expectedOldRoots = [];
+        expectedBridgeClicks = [];
+        decompositionGoals = [];
+        
+        toolboxDesc.textContent = "Audit Console: Run the audit to verify consistency.";
+        renderLevel4AuditorInitial();
+      } else {
+        // Standard levels
+        oldTree = new MerkleTree(level.leaves.slice(0, oldSize));
+        oldRootHex = oldTree.getRootHashHex();
+
+        tree = new MerkleTree(level.leaves);
+        newRootHex = tree.getRootHashHex();
+
+        // Calculate expected old roots and build decomposition goals
+        expectedOldRoots = getOldRootNodeIds(oldSize);
+        decompositionGoals = getDecompositionGoals(oldSize);
+
+        // Calculate expected bridge clicks (consistency proof nodes minus the old roots)
+        const allProofNodes = getExpectedBridgeNodes(oldSize, newSize);
+        const oldRootsSet = new Set(expectedOldRoots);
+        expectedBridgeClicks = allProofNodes.filter(id => !oldRootsSet.has(id));
+
+        toolboxDesc.textContent = `Phase 1 Quest: Identify the roots of the old subtrees.`;
+        
+        renderQuestLog();
+        renderChannelASteps();
+        renderChannelBSteps();
+      }
+
+      oldRootDisplay.textContent = `0x${oldRootHex.substring(0, 14)}...`;
+      newRootDisplay.textContent = `0x${newRootHex.substring(0, 14)}...`;
+
+      updateVisualization();
+    }
+
+    // Render SVG
+    function updateVisualization() {
+      const scannedNodes = {};
+      
+      // Highlight old roots in Red
+      selectedOldRoots.forEach(id => {
+        scannedNodes[id] = 'old-root';
+      });
+
+      // Highlight bridging siblings in Teal
+      selectedBridgeNodes.forEach(id => {
+        scannedNodes[id] = 'proof';
+      });
+
+      // Highlight wrong clicks in Red
+      wrongNodes.forEach(id => {
+        scannedNodes[id] = 'wrong';
+      });
+
+      // Calculate constructed paths (Orange)
+      if (currentPhase === 2 || currentPhase === 3) {
+        const computedPaths = getCalculatedPathNodes();
+        computedPaths.forEach(id => {
+          if (!scannedNodes[id]) {
+            scannedNodes[id] = 'path';
+          }
+        });
+      }
+
+      visualizer.render(tree, {
+        type: 'game',
+        scannedNodes: scannedNodes
+      });
+    }
+
+    // Get nodes that are calculated along the way
+    function getCalculatedPathNodes() {
+      const paths = new Set();
+      if (selectedOldRoots.size === expectedOldRoots.length) {
+        const activeNodes = new Set([...selectedOldRoots, ...selectedBridgeNodes]);
+        
+        // Simulating the bottom-up merges
+        for (let L = 0; L < tree.levels.length - 1; L++) {
+          const levelNodes = Array.from(activeNodes).filter(id => id.startsWith(`L${L}_`));
+          levelNodes.forEach(id => {
+            const idx = parseInt(id.split('_I')[1]);
+            const siblingId = `L${L}_I${idx ^ 1}`;
+            if (activeNodes.has(siblingId)) {
+              const parentId = `L${L + 1}_I${Math.floor(idx / 2)}`;
+              paths.add(parentId);
+              activeNodes.add(parentId); // propagate up
+            }
+          });
+        }
+      }
+      return paths;
+    }
+
+    // Node Click Handler
+    function handleNodeClick(node) {
+      if (gameOver) return;
+
+      const level = LEVELS[currentLevelIdx];
+      if (level.isTamperLevel) {
+        handleAuditClick(node);
+        return;
+      }
+
+      if (currentPhase === 1) {
+        // Phase 1: Clicking Old Roots
+        const goal = decompositionGoals.find(g => g.expectedNodeId === node.id);
+        
+        if (goal) {
+          if (!goal.found) {
+            goal.found = true;
+            selectedOldRoots.add(node.id);
+            wrongNodes.delete(node.id);
+            
+            renderQuestLog();
+            renderChannelASteps();
+
+            // Check if all goals are found
+            const allFound = decompositionGoals.every(g => g.found);
+            if (allFound) {
+              currentPhase = 2;
+              instructionBox.innerHTML = `✅ **Phase 1 Complete!** You identified all old subtree roots. They combine to match the Old Root Hash! <br><br>**Phase 2 Quest**: Now, let's bridge them to the new tree. Look at the rightmost unmerged node on your path. Click its **sibling node** (highlighted as Teal in your Quest Log) to merge them and climb higher!`;
+              toolboxDesc.textContent = `Phase 2: Bridge to today's root.`;
+              renderQuestLog();
+              renderChannelBSteps();
+            }
+            updateVisualization();
+          }
+        } else {
+          // Wrong click
+          wrongNodes.add(node.id);
+          updateVisualization();
+          instructionBox.innerHTML = `❌ **Not an Old Root!** Node L${node.level},I${node.index} is not one of the roots representing the old tree of size M=${oldSize}. <br><br>Use the **Quest Log** in the sidebar to see what size subtrees we are looking for!`;
+        }
+      } else if (currentPhase === 2) {
+        // Phase 2: Clicking Bridging Siblings
+        if (expectedBridgeClicks.includes(node.id)) {
+          selectedBridgeNodes.add(node.id);
+          wrongNodes.delete(node.id);
+
+          renderQuestLog();
+          renderChannelBSteps();
+
+          if (selectedBridgeNodes.size === expectedBridgeClicks.length) {
+            currentPhase = 3;
+            instructionBox.innerHTML = `🎉 **Timeline Secured!** Both verifiers succeeded. The old tree is proven to be an un-tampered prefix of the new tree! Click 'Next Level' to continue.`;
+            triggerLevelWin(false);
+          }
+          updateVisualization();
+        } else {
+          wrongNodes.add(node.id);
+          updateVisualization();
+          instructionBox.innerHTML = `❌ **Not a Bridging Sibling!** Node L${node.level},I${node.index} is not part of the consistency proof path. <br><br>Look at your active path nodes and find the node that shares a parent with them to merge!`;
+        }
+      }
+    }
+
+    // Level 4 (Tamper Detective) click
+    function handleAuditClick(node) {
+      if (!level4Audited) {
+        instructionBox.innerHTML = "ℹ️ Please click the **'Run Audit'** button in the sidebar first to run the consistency check!";
+        return;
+      }
+
+      if (!node.isLeaf) {
+        instructionBox.innerHTML = "ℹ️ Please click on a **Leaf Node** (at the bottom) to audit that specific database record.";
+        return;
+      }
+
+      auditedLeafIndex = node.index;
+      selectedOldRoots.clear();
+      selectedBridgeNodes.clear();
+      wrongNodes.clear();
+
+      selectedOldRoots.add(node.id);
+      
+      const level = LEVELS[currentLevelIdx];
+      const leafVal = level.tamperedLeaves[auditedLeafIndex];
+      const honestVal = level.leaves[auditedLeafIndex];
+      const isTampered = leafVal !== honestVal;
+
+      if (isTampered) {
+        wrongNodes.add(node.id);
+      } else {
+        selectedBridgeNodes.add(node.id);
+      }
+
+      updateVisualization();
+      renderLevel4AuditorDetails(isTampered, leafVal, honestVal);
+    }
+
+    // Render Quest Log (Replacing the old toolbox list)
+    function renderQuestLog() {
+      toolboxList.innerHTML = '';
+      
+      if (currentPhase === 1) {
+        // Show decomposition goals
+        decompositionGoals.forEach(goal => {
+          const li = document.createElement('li');
+          li.className = `proof-item ${goal.found ? 'correct' : ''}`;
+          li.style.opacity = goal.found ? 1 : 0.7;
+          
+          const status = goal.found ? '✅ Found!' : '❓ Find Root';
+          li.innerHTML = `
+            <div style="display:flex; justify-content:space-between; width:100%; align-items:center;">
+              <span><strong>Subtree of size ${goal.size}</strong> (${goal.size} leaf)</span>
+              <span style="color: ${goal.found ? 'var(--accent-green)' : 'var(--accent-red)'}; font-weight:bold;">${status}</span>
+            </div>
+            ${goal.found ? `<div style="font-size:0.75rem; color:#aaa; margin-top:4px;">Node: L${goal.level},I${goal.expectedNodeId.split('_I')[1]} (${bytesToHex(tree.getHash(goal.level, parseInt(goal.expectedNodeId.split('_I')[1]))).substring(0,8)}...)</div>` : ''}
+          `;
+          toolboxList.appendChild(li);
+        });
+      } else if (currentPhase === 2) {
+        // Show bridging goals
+        expectedBridgeClicks.forEach(id => {
+          const isSelected = selectedBridgeNodes.has(id);
+          const parts = id.substring(1).split('_I');
+          const L = parseInt(parts[0]);
+          const I = parseInt(parts[1]);
+          const hash = bytesToHex(tree.getHash(L, I)).substring(0, 8);
+
+          const li = document.createElement('li');
+          li.className = `proof-item ${isSelected ? 'correct' : ''}`;
+          li.style.opacity = isSelected ? 1 : 0.7;
+          
+          const status = isSelected ? '✅ Connected!' : '⚡ Sibling Sought';
+          li.innerHTML = `
+            <div style="display:flex; justify-content:space-between; width:100%; align-items:center;">
+              <span><strong>Bridge Sibling at Level ${L}</strong></span>
+              <span style="color: ${isSelected ? 'var(--accent-green)' : 'var(--accent-teal)'}; font-weight:bold;">${status}</span>
+            </div>
+            ${isSelected ? `<div style="font-size:0.75rem; color:#aaa; margin-top:4px;">Hash: ${hash}...</div>` : ''}
+          `;
+          toolboxList.appendChild(li);
+        });
+      }
+    }
+
+    // Render Channel A: Old Root Reconstruct steps
+    function renderChannelASteps() {
+      channelASteps.innerHTML = '';
+      
+      if (selectedOldRoots.size === 0) {
+        channelASteps.innerHTML = `<div style="color: #666; text-align: center; padding: 15px; font-size:0.8rem;">Select old subtree roots from the tree to begin.</div>`;
+        return;
+      }
+
+      // Reconstruct old root from selected components
+      const components = Array.from(selectedOldRoots).map(id => {
+        const parts = id.substring(1).split('_I');
+        const L = parseInt(parts[0]);
+        const I = parseInt(parts[1]);
+        return { id, L, I, hash: tree.getHash(L, I) };
+      });
+
+      // Sort by coordinate index to ensure consistent merge order (left-to-right)
+      components.sort((a, b) => a.I - b.I);
+
+      let currentHash = null;
+      components.forEach((comp, idx) => {
+        const step = document.createElement('div');
+        step.className = 'step-item step-old-root';
+        
+        if (idx === 0) {
+          currentHash = comp.hash;
+          step.innerHTML = `
+            <div><strong>Subtree Root 1</strong></div>
+            <div>Component at L${comp.L},I${comp.I}</div>
+            <div class="hash-val">${bytesToHex(currentHash)}</div>
+          `;
+        } else {
+          const oldHash = currentHash;
+          currentHash = Hasher.hashChildren(currentHash, comp.hash);
+          step.innerHTML = `
+            <div><strong>Merge Component ${idx + 1}</strong></div>
+            <div>SHA256(0x01 || left || right)</div>
+            <div class="hash-val">Result: ${bytesToHex(currentHash)}</div>
+          `;
+        }
+        channelASteps.appendChild(step);
+      });
+
+      // If all old roots are selected, compare with expected old root
+      if (selectedOldRoots.size === expectedOldRoots.length) {
+        const matched = bytesToHex(currentHash) === oldRootHex;
+        const finalStep = document.createElement('div');
+        finalStep.className = `step-item ${matched ? 'step-success' : 'step-fail'}`;
+        finalStep.innerHTML = `
+          <div><strong>Compare Old Root</strong></div>
+          <div class="hash-val" style="color:#fff;">Calc:  ${bytesToHex(currentHash).substring(0, 20)}...</div>
+          <div class="hash-val" style="color:#888;">Ledger: ${oldRootHex.substring(0, 20)}...</div>
+          <div style="margin-top: 6px; font-weight: bold;">
+            ${matched ? '✅ Old History Verified Consistent!' : '❌ Mismatch! History tampered!'}
+          </div>
+        `;
+        channelASteps.appendChild(finalStep);
+      }
+    }
+
+    // Render Channel B: New Root Bridge steps
+    function renderChannelBSteps() {
+      channelBSteps.innerHTML = '';
+      
+      if (currentPhase < 2) {
+        channelBSteps.innerHTML = `<div style="color: #666; text-align: center; padding: 15px; font-size:0.8rem;">Complete Phase 1 to unlock the bridge.</div>`;
+        return;
+      }
+
+      const oldRootsList = expectedOldRoots; 
+      const activeNodes = new Set([...oldRootsList, ...selectedBridgeNodes]);
+
+      let stepNum = 1;
+      let calculatedHashes = {}; 
+
+      // Populate initial hashes from tree
+      activeNodes.forEach(id => {
+        const parts = id.substring(1).split('_I');
+        const L = parseInt(parts[0]);
+        const I = parseInt(parts[1]);
+        calculatedHashes[id] = tree.getHash(L, I);
+      });
+
+      // Walk up level by level and merge
+      for (let L = 0; L < tree.levels.length - 1; L++) {
+        const levelNodes = Object.keys(calculatedHashes).filter(id => id.startsWith(`L${L}_`));
+        
+        levelNodes.forEach(id => {
+          const idx = parseInt(id.split('_I')[1]);
+          const siblingId = `L${L}_I${idx ^ 1}`;
+          
+          if (calculatedHashes[siblingId] && idx % 2 === 0) {
+            const parentIndex = Math.floor(idx / 2);
+            const parentId = `L${L + 1}_I${parentIndex}`;
+            
+            if (!calculatedHashes[parentId]) {
+              const leftHash = calculatedHashes[id];
+              const rightHash = calculatedHashes[siblingId];
+              const parentHash = Hasher.hashChildren(leftHash, rightHash);
+              
+              calculatedHashes[parentId] = parentHash;
+
+              const isOldRootMerge = oldRootsList.includes(id) && oldRootsList.includes(siblingId);
+              const step = document.createElement('div');
+              step.className = `step-item ${isOldRootMerge ? 'step-old-root' : 'step-proof'}`;
+              step.innerHTML = `
+                <div><strong>Step ${stepNum}: Merge L${L},I${idx} + L${L},I${idx ^ 1}</strong></div>
+                <div>SHA256(0x01 || left || right)</div>
+                <div style="font-size:0.7rem; color:var(--accent-teal);">Left: ${bytesToHex(leftHash).substring(0,12)}...</div>
+                <div style="font-size:0.7rem; color:var(--accent-teal);">Right: ${bytesToHex(rightHash).substring(0,12)}...</div>
+                <div class="hash-val">Parent: ${bytesToHex(parentHash)}</div>
+              `;
+              channelBSteps.appendChild(step);
+              stepNum++;
+            }
+          }
+        });
+
+        // Handle ephemeral nodes
+        levelNodes.forEach(id => {
+          const idx = parseInt(id.split('_I')[1]);
+          const siblingId = `L${L}_I${idx ^ 1}`;
+          const parentIndex = Math.floor(idx / 2);
+          const parentId = `L${L + 1}_I${parentIndex}`;
+
+          if (!calculatedHashes[siblingId] && (idx ^ 1) >= tree.levels[L].length && !calculatedHashes[parentId]) {
+            const childHash = calculatedHashes[id];
+            calculatedHashes[parentId] = childHash;
+
+            const step = document.createElement('div');
+            step.className = 'step-item';
+            step.style.opacity = 0.7;
+            step.innerHTML = `
+              <div><strong>Step ${stepNum}: Ephemeral L${L},I${idx}</strong></div>
+              <div>No sibling. Node propagates to L${L + 1},I${parentIndex}</div>
+              <div class="hash-val">Result: ${bytesToHex(childHash)}</div>
+            `;
+            channelBSteps.appendChild(step);
+            stepNum++;
+          }
+        });
+      }
+
+      // Check if we reached the final new root
+      const maxLevel = tree.levels.length - 1;
+      const calculatedRootHash = calculatedHashes[`L${maxLevel}_I0`];
+
+      if (selectedBridgeNodes.size < expectedBridgeClicks.length) {
+        const pendingStep = document.createElement('div');
+        pendingStep.className = 'step-item';
+        pendingStep.style.opacity = 0.5;
+        pendingStep.style.borderStyle = 'dashed';
+        pendingStep.innerHTML = `
+          <div><strong>Step ${stepNum}: Awaiting Sibling Clicks</strong></div>
+          <div style="color: #666;">Click Teal nodes in the tree to bridge to the root...</div>
+        `;
+        channelBSteps.appendChild(pendingStep);
+      } else if (calculatedRootHash) {
+        const matched = bytesToHex(calculatedRootHash) === newRootHex;
+        const finalStep = document.createElement('div');
+        finalStep.className = `step-item ${matched ? 'step-success' : 'step-fail'}`;
+        finalStep.innerHTML = `
+          <div><strong>Compare New Root</strong></div>
+          <div class="hash-val" style="color:#fff;">Calc:  ${bytesToHex(calculatedRootHash).substring(0, 20)}...</div>
+          <div class="hash-val" style="color:#888;">Ledger: ${newRootHex.substring(0, 20)}...</div>
+          <div style="margin-top: 6px; font-weight: bold;">
+            ${matched ? '✅ New History Verified Consistent!' : '❌ Mismatch! New history altered!'}
+          </div>
+        `;
+        channelBSteps.appendChild(finalStep);
+      }
+    }
+
+    // --- Level 4 (Tamper Detective) UI Renderers ---
+    
+    function renderLevel4AuditorInitial() {
+      toolboxList.innerHTML = '';
+      
+      const li = document.createElement('li');
+      li.style.cssText = "list-style:none; padding: 0;";
+      
+      const auditBtn = document.createElement('button');
+      auditBtn.className = "danger";
+      auditBtn.style.width = "100%";
+      auditBtn.textContent = "Run Consistency Audit";
+      auditBtn.addEventListener('click', runLevel4Audit);
+      li.appendChild(auditBtn);
+      
+      toolboxList.appendChild(li);
+    }
+
+    function runLevel4Audit() {
+      level4Audited = true;
+      selectedOldRoots.clear();
+      selectedBridgeNodes.clear();
+
+      selectedOldRoots.add("L1_I0");
+      selectedOldRoots.add("L0_I2");
+      selectedBridgeNodes.add("L0_I3");
+
+      updateVisualization();
+      
+      renderLevel4ChannelASteps();
+      renderLevel4ChannelBSteps();
+
+      instructionBox.innerHTML = `❌ **CONSISTENCY AUDIT FAILED!** <br><br>Channel A (Old History Reconstructor) failed. The old root calculated from the merchant's current database does **NOT** match the honest Old Root Hash! <br><br>This proves the merchant **tampered with history**! **Click on the leaf records** at the bottom of the tree to audit them and find the modified record.`;
+    }
+
+    function renderLevel4ChannelASteps() {
+      channelASteps.innerHTML = '';
+      
+      const leaf0Hash = Hasher.hashLeaf(new TextEncoder().encode("apple"));
+      const leaf1Hash = Hasher.hashLeaf(new TextEncoder().encode("blueberry"));
+      const L1_I0_Hash = Hasher.hashChildren(leaf0Hash, leaf1Hash);
+      const leaf2Hash = Hasher.hashLeaf(new TextEncoder().encode("cherry"));
+      
+      const calcOldRoot = Hasher.hashChildren(L1_I0_Hash, leaf2Hash);
+
+      const step1 = document.createElement('div');
+      step1.className = 'step-item step-old-root step-fail';
+      step1.innerHTML = `
+        <div><strong>Step 1: Old Subtree L1,I0</strong></div>
+        <div>Hash(apple + blueberry)</div>
+        <div class="hash-val">Result: ${bytesToHex(L1_I0_Hash)}</div>
+        <div style="color:var(--accent-red); font-size:0.75rem; font-weight:bold; margin-top:4px;">❌ Mismatch! Should be Hash(apple+banana)</div>
+      `;
+      channelASteps.appendChild(step1);
+
+      const step2 = document.createElement('div');
+      step2.className = 'step-item step-old-root step-fail';
+      step2.innerHTML = `
+        <div><strong>Step 2: Reconstruct Old Root</strong></div>
+        <div>Hash(L1_I0 + L0_I2)</div>
+        <div class="hash-val">Calc Old Root: ${bytesToHex(calcOldRoot)}</div>
+      `;
+      channelASteps.appendChild(step2);
+
+      const finalStep = document.createElement('div');
+      finalStep.className = 'step-item step-fail';
+      finalStep.innerHTML = `
+        <div><strong>Compare Old Root</strong></div>
+        <div class="hash-val" style="color:#fff;">Calc:  ${bytesToHex(calcOldRoot).substring(0,20)}...</div>
+        <div class="hash-val" style="color:#888;">Honest: ${oldRootHex.substring(0,20)}...</div>
+        <div style="margin-top: 6px; font-weight: bold; color: var(--accent-red);">
+          ❌ FAILURE! History was rewritten!
+        </div>
+      `;
+      channelASteps.appendChild(finalStep);
+    }
+
+    function renderLevel4ChannelBSteps() {
+      channelBSteps.innerHTML = '';
+      
+      const leaf0Hash = Hasher.hashLeaf(new TextEncoder().encode("apple"));
+      const leaf1Hash = Hasher.hashLeaf(new TextEncoder().encode("blueberry"));
+      const L1_I0_Hash = Hasher.hashChildren(leaf0Hash, leaf1Hash);
+      const leaf2Hash = Hasher.hashLeaf(new TextEncoder().encode("cherry"));
+      const leaf3Hash = Hasher.hashLeaf(new TextEncoder().encode("date"));
+      const L1_I1_Hash = Hasher.hashChildren(leaf2Hash, leaf3Hash);
+      
+      const calcNewRoot = Hasher.hashChildren(L1_I0_Hash, L1_I1_Hash);
+
+      const step1 = document.createElement('div');
+      step1.className = 'step-item step-success';
+      step1.innerHTML = `
+        <div><strong>Step 1: Merge L0,I2 + L0,I3</strong></div>
+        <div>Hash(cherry + date) -> L1,I1</div>
+        <div class="hash-val">Result: ${bytesToHex(L1_I1_Hash)}</div>
+      `;
+      channelBSteps.appendChild(step1);
+
+      const step2 = document.createElement('div');
+      step2.className = 'step-item step-success';
+      step2.innerHTML = `
+        <div><strong>Step 2: Merge L1,I0 + L1,I1</strong></div>
+        <div>Hash(L1_I0 + L1_I1) -> L2,I0</div>
+        <div class="hash-val">Calc New Root: ${bytesToHex(calcNewRoot)}</div>
+      `;
+      channelBSteps.appendChild(step2);
+
+      const finalStep = document.createElement('div');
+      finalStep.className = 'step-item step-success';
+      finalStep.innerHTML = `
+        <div><strong>Compare New Root</strong></div>
+        <div class="hash-val" style="color:#fff;">Calc:  ${bytesToHex(calcNewRoot).substring(0,20)}...</div>
+        <div class="hash-val" style="color:#888;">DB Root: ${newRootHex.substring(0,20)}...</div>
+        <div style="margin-top: 6px; font-weight: bold; color: var(--accent-green);">
+          ✅ Self-Consistent! (Matches tampered DB root)
+        </div>
+      `;
+      channelBSteps.appendChild(finalStep);
+    }
+
+    function renderLevel4AuditorDetails(isTamper, leafVal, honestVal) {
+      toolboxList.innerHTML = '';
+      
+      const li = document.createElement('li');
+      li.className = `proof-item ${isTamper ? 'target' : 'correct'}`;
+      li.style.flexDirection = 'column';
+      li.style.alignItems = 'flex-start';
+      li.style.gap = '5px';
+      
+      li.innerHTML = `
+        <div style="display:flex; justify-content:space-between; width:100%;">
+          <strong>Auditing Record [${auditedLeafIndex}]</strong>
+          <span style="color: ${isTamper ? 'var(--accent-red)' : 'var(--accent-green)'}; font-weight:bold;">
+            ${isTamper ? '⚠️ TAMPERED' : '✅ HONEST'}
+          </span>
+        </div>
+        <div style="font-size: 0.75rem; color:#aaa;">
+          Ledger expected: <code style="color:var(--accent); font-size: 0.8rem;">"${honestVal}"</code><br>
+          Database contains: <code style="color:${isTamper ? 'var(--accent-red)' : '#fff'}; font-size: 0.8rem;">"${leafVal}"</code>
+        </div>
+      `;
+      toolboxList.appendChild(li);
+
+      if (isTamper) {
+        const reportBtn = document.createElement('button');
+        reportBtn.className = "danger";
+        reportBtn.style.marginTop = "10px";
+        reportBtn.textContent = "Report Tamper & Secure Ledger!";
+        reportBtn.addEventListener('click', () => {
+          level4FoundTamper = true;
+          triggerLevelWin(true);
+        });
+        toolboxList.appendChild(reportBtn);
+        instructionBox.innerHTML = `⚠️ **Fraud Uncovered!** <br><br>Record **[${auditedLeafIndex}]** contains <code>"${leafVal}"</code>, but the public ledger says it should be <code>"${honestVal}"</code>! <br><br>This is why the consistency proof failed to reconstruct the old root. Click the **'Report Tamper'** button in the sidebar to secure the ledger!`;
+      } else {
+        instructionBox.innerHTML = `ℹ️ Record **[${auditedLeafIndex}]** is honest (contains <code>"${leafVal}"</code>). Keep auditing other leaves to find the one that was tampered with!`;
+      }
+    }
+
+    // Trigger Level Win
+    function triggerLevelWin(isTamperLevel) {
+      gameOver = true;
+      progressBar.style.width = `${((currentLevelIdx + 1) / LEVELS.length) * 100}%`;
+
+      if (isTamperLevel) {
+        overlayTitle.textContent = "Fraud Prevented, Auditor!";
+        overlayText.innerHTML = `Outstanding! You successfully audited the ledger and proved that record **[1]** was tampered with (changed from **"banana"** to **"blueberry"**).<br><br>By running a **Consistency Proof Check**, you proved that the merchant's current tree is *not* a valid continuation of history, preventing them from rewriting past transactions!`;
+      } else {
+        overlayTitle.textContent = "Timeline Secured!";
+        overlayText.innerHTML = `Excellent job! You successfully identified the old subtree roots and bridged them to the new root, verifying that history is append-only and intact.`;
+      }
+
+      if (currentLevelIdx === LEVELS.length - 1) {
+        nextLevelBtn.textContent = "Back to Main Menu";
+        overlayTitle.textContent = "🎉 Consistency Proof Master!";
+        overlayText.innerHTML += "<br><br>Congratulations! You have completed all levels and mastered Merkle consistency auditing!";
+      } else {
+        nextLevelBtn.textContent = "Next Level";
+      }
+
+      setTimeout(() => {
+        gameOverOverlay.classList.add('show');
+      }, 800);
+    }
+
+    // Next Level Button Handler
+    function handleNextLevel() {
+      if (currentLevelIdx === LEVELS.length - 1) {
+        window.location.href = "play.html";
+      } else {
+        loadLevel(currentLevelIdx + 1);
+      }
+    }
+
+    // Mathematical Helpers
+    function decompose(begin, end) {
+      if (begin === 0) return [0, end];
+      const xbegin = begin - 1;
+      const xor = xbegin ^ end;
+      const d = xor === 0 ? 0 : xor.toString(2).length - 1;
+      const mask = (1 << d) - 1;
+      return [(~xbegin) & mask, end & mask];
+    }
+
+    function getTrailingZeros(n) {
+      if (n === 0) return 32;
+      return n.toString(2).split('').reverse().indexOf('1');
+    }
+
+    function getRangeNodes(begin, end) {
+      const [left, right] = decompose(begin, end);
+      const ids = [];
+      let pos = begin;
+      let tempLeft = left;
+      while (tempLeft !== 0) {
+        const trailingZeros = tempLeft.toString(2).split('').reverse().indexOf('1');
+        const level = trailingZeros >= 0 ? trailingZeros : 32;
+        const bit = 1 << level;
+        ids.push({ level, index: pos >> level });
+        pos += bit;
+        tempLeft ^= bit;
+      }
+      let tempRight = right;
+      const rightIds = [];
+      while (tempRight !== 0) {
+        const level = tempRight.toString(2).length - 1;
+        const bit = 1 << level;
+        rightIds.push({ level, index: pos >> level });
+        pos += bit;
+        tempRight ^= bit;
+      }
+      ids.push(...rightIds);
+      return ids;
+    }
+
+    // Replicates CT consistency proof index math to get proof node IDs
+    function getProofNodes(index, level, size) {
+      const xor = index ^ (size >> level);
+      const inner = xor === 0 ? 0 : xor.toString(2).length - 1;
+      const forkLevel = level + inner;
+      const forkIndex = index >> inner;
+
+      const fork = { level: forkLevel, index: forkIndex };
+      const begin = forkIndex << forkLevel;
+      const end = (forkIndex + 1) << forkLevel;
+
+      const proof = [{ level, index }];
+      let curr = { level, index };
+      while (curr.level < fork.level) {
+        const sibling = { level: curr.level, index: curr.index ^ 1 };
+        proof.push(sibling);
+        curr = { level: curr.level + 1, index: Math.floor(curr.index / 2) };
+      }
+
+      const rightNodes = getRangeNodes(end, size);
+      rightNodes.reverse();
+      proof.push(...rightNodes);
+
+      const leftNodes = getRangeNodes(0, begin);
+      leftNodes.reverse();
+      proof.push(...leftNodes);
+
+      return { IDs: proof };
+    }
+
+    // Get subtree roots for yesterday's tree of size1
+    function getOldRootNodeIds(size1) {
+      if (size1 <= 0) return [];
+      const ids = [];
+      let pos = 0;
+      let remaining = size1;
+      while (remaining !== 0) {
+        const level = remaining.toString(2).length - 1;
+        const bit = 1 << level;
+        ids.push(`L${level}_I${pos >> level}`);
+        pos += bit;
+        remaining ^= bit;
+      }
+      return ids;
+    }
+
+    // Get expected bridge sibling node IDs
+    function getExpectedBridgeNodes(size1, size2) {
+      if (size1 === size2 || size1 === 0) return [];
+      const trailingZeros = getTrailingZeros(size1);
+      const level = trailingZeros;
+      const index = (size1 - 1) >> level;
+      const p = getProofNodes(index, level, size2);
+      const ids = p.IDs;
+      const startIdx = (index === 0) ? 1 : 0;
+      
+      const bridgeNodeIds = [];
+      for (let i = startIdx; i < ids.length; i++) {
+        bridgeNodeIds.push(`L${ids[i].level}_I${ids[i].index}`);
+      }
+      return bridgeNodeIds;
+    }
+
+    // Dynamic Quest Log builder based on binary size decomposition
+    function getDecompositionGoals(size) {
+      const goals = [];
+      let pos = 0;
+      let remaining = size;
+      while (remaining > 0) {
+        // Find the largest power of 2 <= remaining
+        const level = remaining.toString(2).length - 1;
+        const subtreeSize = 1 << level;
+        
+        goals.push({
+          level: level,
+          size: subtreeSize,
+          expectedNodeId: `L${level}_I${pos >> level}`,
+          found: false
+        });
+        
+        pos += subtreeSize;
+        remaining -= subtreeSize;
+      }
+      return goals; // Already in left-to-right order (largest first)
+    }
+
+    // Node Hover Tooltip
+    function handleNodeHover(node, coord) {
+      if (!node || !coord) {
+        tooltip.style.display = 'none';
+        return;
+      }
+
+      const rect = merkleSvg.getBoundingClientRect();
+      tooltip.innerHTML = `
+        <div style="font-weight: bold; color: var(--accent); margin-bottom: 4px;">Node L${node.level}, I${node.index}</div>
+        <div style="color: #e0e0e0;">Hash:</div>
+        <div style="color: var(--accent-green); word-break: break-all;">${node.hash}</div>
+        ${node.isEphemeral ? '<div style="color: #ff9f1c; margin-top: 4px;">(Ephemeral Node)</div>' : ''}
+        ${node.value ? `<div style="color: #ffffff; margin-top: 4px;">Value: "${node.value}"</div>` : ''}
+      `;
+      tooltip.style.left = `${coord.x + 30}px`;
+      tooltip.style.top = `${coord.y - 40}px`;
+      tooltip.style.display = 'block';
+    }
+  </script>
+</body>
+</html>
