@@ -1,0 +1,886 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Subtrees Game - Binary Sub-Forests</title>
+  <style>
+    :root {
+      --bg-dark: #121212;
+      --panel-bg: #1e1e1e;
+      --border-color: #333333;
+      --text-main: #e0e0e0;
+      --accent: #4fc1ff;
+      --accent-green: #4ec9b0;
+      --accent-orange: #ff9f1c;
+      --accent-purple: #b180d7;
+      --accent-red: #e71d36;
+    }
+
+    body {
+      background-color: var(--bg-dark);
+      color: var(--text-main);
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+      margin: 0;
+      padding: 0;
+      display: flex;
+      flex-direction: column;
+      height: 100vh;
+      overflow: hidden;
+    }
+
+    header {
+      background-color: var(--panel-bg);
+      border-bottom: 1px solid var(--border-color);
+      padding: 12px 25px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      flex-shrink: 0;
+    }
+
+    h1 {
+      margin: 0;
+      font-size: 1.4rem;
+      color: var(--accent);
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+
+    .header-links a {
+      color: var(--text-main);
+      text-decoration: none;
+      font-size: 0.95rem;
+      margin-left: 20px;
+    }
+
+    .header-links a:hover {
+      color: var(--accent);
+    }
+
+    .main-container {
+      display: flex;
+      flex: 1;
+      overflow: hidden;
+    }
+
+    .sidebar {
+      width: 380px;
+      background-color: var(--panel-bg);
+      border-right: 1px solid var(--border-color);
+      display: flex;
+      flex-direction: column;
+      padding: 20px;
+      gap: 16px;
+      overflow-y: auto;
+      flex-shrink: 0;
+    }
+
+    .panel-section {
+      background-color: #252526;
+      border: 1px solid var(--border-color);
+      border-radius: 6px;
+      padding: 14px;
+    }
+
+    .panel-section h3 {
+      margin-top: 0;
+      margin-bottom: 10px;
+      font-size: 1rem;
+      color: var(--accent);
+      border-bottom: 1px solid var(--border-color);
+      padding-bottom: 6px;
+    }
+
+    .level-btn {
+      background-color: #1e1e1e;
+      border: 1px solid var(--border-color);
+      color: var(--text-main);
+      padding: 9px 12px;
+      border-radius: 4px;
+      cursor: pointer;
+      font-size: 0.88rem;
+      width: 100%;
+      text-align: left;
+      margin-bottom: 6px;
+      transition: all 0.2s;
+    }
+
+    .level-btn:hover {
+      border-color: var(--accent);
+    }
+
+    .level-btn.active {
+      background-color: #2b3a4a;
+      border-color: var(--accent);
+      color: #fff;
+      font-weight: bold;
+    }
+
+    .instruction-text {
+      font-size: 0.85rem;
+      color: #ccc;
+      line-height: 1.5;
+      margin: 0;
+    }
+
+    .subtree-list {
+      list-style: none;
+      padding: 0;
+      margin: 0;
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+    }
+
+    .subtree-item {
+      background-color: #1e1e1e;
+      border: 1px solid var(--border-color);
+      border-left: 4px solid #555;
+      padding: 10px;
+      border-radius: 4px;
+      font-size: 0.85rem;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+
+    .subtree-item.completed {
+      background-color: #1d332a;
+      border-color: var(--accent-green);
+      border-left-color: var(--accent-green);
+      color: #fff;
+    }
+
+    .subtree-name {
+      font-weight: bold;
+      font-size: 0.92rem;
+    }
+
+    .btn-group {
+      display: flex;
+      gap: 8px;
+      margin-top: 5px;
+    }
+
+    .submit-btn {
+      background-color: var(--accent-green);
+      color: #000;
+      border: none;
+      padding: 10px;
+      border-radius: 4px;
+      font-weight: bold;
+      cursor: pointer;
+      flex: 2;
+      transition: background 0.2s;
+    }
+
+    .submit-btn:hover {
+      opacity: 0.9;
+    }
+
+    .clear-btn {
+      background-color: #3c3c3c;
+      color: #fff;
+      border: none;
+      padding: 10px;
+      border-radius: 4px;
+      font-weight: bold;
+      cursor: pointer;
+      flex: 1;
+      transition: background 0.2s;
+    }
+
+    .clear-btn:hover {
+      background-color: #4c4c4c;
+    }
+
+    .reset-btn {
+      background-color: #252526;
+      color: #aaa;
+      border: 1px solid var(--border-color);
+      padding: 8px;
+      border-radius: 4px;
+      cursor: pointer;
+      font-size: 0.85rem;
+      transition: all 0.2s;
+    }
+
+    .reset-btn:hover {
+      color: #fff;
+      border-color: #666;
+    }
+
+    .feedback-msg {
+      margin-top: 10px;
+      font-size: 0.88rem;
+      font-weight: bold;
+      min-height: 20px;
+    }
+
+    .canvas-container {
+      flex: 1;
+      background-color: var(--bg-dark);
+      position: relative;
+      overflow: hidden;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      user-select: none;
+    }
+
+    svg {
+      width: 100%;
+      height: 100%;
+      cursor: crosshair;
+    }
+
+    /* Victory Banner */
+    #victory-banner {
+      display: none;
+      position: absolute;
+      top: 20px;
+      background: linear-gradient(135deg, #1d332a, #2b3a4a);
+      border: 2px solid var(--accent-green);
+      padding: 15px 30px;
+      border-radius: 8px;
+      box-shadow: 0 8px 24px rgba(0,0,0,0.7);
+      text-align: center;
+      z-index: 10;
+      animation: popIn 0.3s ease;
+    }
+
+    @keyframes popIn {
+      from { transform: scale(0.8); opacity: 0; }
+      to { transform: scale(1); opacity: 1; }
+    }
+
+    #victory-banner h2 {
+      margin: 0 0 5px 0;
+      color: var(--accent-green);
+    }
+
+    #victory-banner p {
+      margin: 0 0 12px 0;
+      font-size: 0.9rem;
+      color: #e0e0e0;
+    }
+
+    .next-level-btn {
+      background-color: var(--accent-green);
+      color: #000;
+      border: none;
+      padding: 8px 16px;
+      border-radius: 4px;
+      font-weight: bold;
+      cursor: pointer;
+    }
+
+    .next-level-btn:hover {
+      background-color: #3cb89f;
+    }
+
+    /* SVG Styling */
+    .tree-edge {
+      stroke: #444;
+      stroke-width: 3;
+      fill: none;
+      transition: stroke 0.2s, stroke-width 0.2s;
+    }
+
+    .tree-node-circle {
+      fill: #2c2c2c;
+      stroke: #888;
+      stroke-width: 2;
+      transition: fill 0.2s, stroke 0.2s;
+    }
+
+    .tree-node:hover .tree-node-circle {
+      stroke: var(--accent);
+      stroke-width: 3;
+    }
+
+    /* Selected state */
+    .tree-node.selected .tree-node-circle {
+      stroke: var(--accent-orange);
+      stroke-width: 4;
+      fill: #3a2e1e;
+    }
+
+    /* Validate challenge active state */
+    .tree-node.validate-active .tree-node-circle {
+      stroke: var(--accent-purple);
+      stroke-width: 4;
+      fill: #2d223a;
+    }
+
+    .tree-node-text {
+      fill: #fff;
+      font-family: monospace;
+      font-size: 12px;
+      text-anchor: middle;
+      dominant-baseline: central;
+      pointer-events: none;
+    }
+
+    .selection-rect {
+      fill: rgba(255, 159, 28, 0.15);
+      stroke: var(--accent-orange);
+      stroke-width: 2;
+      stroke-dasharray: 6;
+      pointer-events: none;
+    }
+  </style>
+</head>
+<body>
+  <header>
+    <h1>🌲 Subtrees Game: Binary Sub-Forests</h1>
+    <div class="header-links">
+      <a href="play.html">← Back to Play Mode</a>
+      <a href="tree-generator.html">Tree Generator ↗</a>
+    </div>
+  </header>
+
+  <div class="main-container">
+    <!-- Sidebar -->
+    <div class="sidebar">
+      <!-- Mode Switcher -->
+      <div class="panel-section">
+        <h3>Select Game Mode</h3>
+        <div style="display:flex; gap:8px;">
+          <button class="level-btn active" id="mode-select-btn" onclick="switchMode('select')" style="margin:0; text-align:center; flex:1;">✏️ Select Subtrees</button>
+          <button class="level-btn" id="mode-validate-btn" onclick="switchMode('validate')" style="margin:0; text-align:center; flex:1;">⚖️ Valid or Invalid?</button>
+        </div>
+      </div>
+
+      <!-- Scenario Selector -->
+      <div class="panel-section">
+        <h3>Select Scenario</h3>
+        <button class="level-btn active" onclick="loadLevel(1)" id="btn-lvl-1">Level 1: Small Log N=4 (Height 1 Subtrees)</button>
+        <button class="level-btn" onclick="loadLevel(2)" id="btn-lvl-2">Level 2: Standard Log N=8 (Height 2 Subtrees)</button>
+        <button class="level-btn" onclick="loadLevel(3)" id="btn-lvl-3">Level 3: Forest Log N=6 (Decomposed Subtrees)</button>
+      </div>
+
+      <!-- Select Mode Panel -->
+      <div id="panel-select-mode">
+        <div class="panel-section">
+          <h3>Subtree Rules</h3>
+          <p class="instruction-text">
+            👉 Click individual nodes or drag multiple selection boxes to accumulate nodes into your current selection!
+            <br><br>
+            Once your highlighted nodes form a complete required subtree, click <strong>Submit Subtree</strong>!
+          </p>
+        </div>
+
+        <div class="panel-section">
+          <h3>Required Subtrees</h3>
+          <ul class="subtree-list" id="target-subtrees-list"></ul>
+        </div>
+
+        <div class="panel-section">
+          <h3>Current Selection (<span id="sel-count">0</span> nodes)</h3>
+          <div class="btn-group">
+            <button class="submit-btn" onclick="submitSelection()">Submit Subtree</button>
+            <button class="clear-btn" onclick="clearSelection()">Clear</button>
+          </div>
+          <div class="feedback-msg" id="select-feedback-msg"></div>
+        </div>
+      </div>
+
+      <!-- Validate Mode Panel -->
+      <div id="panel-validate-mode" style="display:none;">
+        <div class="panel-section">
+          <h3>Valid or Invalid?</h3>
+          <p class="instruction-text">
+            Inspect the purple highlighted nodes on the tree canvas. Does this highlighted group represent a valid complete binary subtree (or valid binary sub-forest covering a leaf range)?
+          </p>
+          <div style="display:flex; gap:10px; margin-top:14px;">
+            <button class="submit-btn" onclick="checkValidateAnswer(true)" style="background:var(--accent-green); color:#000; flex:1;">Valid ✅</button>
+            <button class="submit-btn" onclick="checkValidateAnswer(false)" style="background:var(--accent-red); color:#fff; flex:1;">Invalid ❌</button>
+          </div>
+          <div class="feedback-msg" id="validate-feedback-msg"></div>
+        </div>
+
+        <div class="panel-section">
+          <h3>Validation Progress</h3>
+          <ul class="subtree-list" id="validate-list"></ul>
+        </div>
+      </div>
+
+      <button class="reset-btn" onclick="resetCurrentLevel()">Reset Scenario Progress</button>
+    </div>
+
+    <!-- Main Canvas Area -->
+    <div class="canvas-container" id="canvas-container">
+      <div id="victory-banner">
+        <h2>🎉 Scenario Complete!</h2>
+        <p id="victory-text">You authenticated all required binary sub-forests!</p>
+        <button class="next-level-btn" onclick="nextLevel()">Next Scenario ➔</button>
+      </div>
+      <svg id="game-svg" viewBox="0 0 800 500"></svg>
+    </div>
+  </div>
+
+  <script>
+    const svg = document.getElementById('game-svg');
+    const subtreeListEl = document.getElementById('target-subtrees-list');
+    const validateListEl = document.getElementById('validate-list');
+    const victoryBanner = document.getElementById('victory-banner');
+    const selectFeedbackEl = document.getElementById('select-feedback-msg');
+    const validateFeedbackEl = document.getElementById('validate-feedback-msg');
+    const selCountEl = document.getElementById('sel-count');
+
+    let currentGameMode = 'select'; // 'select' or 'validate'
+    let currentLevelIdx = 1;
+    let isDragging = false;
+    let dragStart = { x: 0, y: 0 };
+    let selRectEl = null;
+
+    let treeNodes = [];
+    let treeEdges = [];
+    let targetSubtrees = [];
+    let completedSubtrees = new Map();
+    let selectedNodes = new Set();
+
+    let validateChallenges = [];
+    let completedValidations = new Set();
+    let activeValIdx = 0;
+
+    const levels = {
+      1: {
+        name: "Small Log N=4",
+        leaves: 4,
+        subtrees: [
+          { id: "s0", name: "Subtree [0, 2)", root: "L1_I0", nodes: ["L0_I0", "L0_I1", "L1_I0"], color: "#4ec9b0" },
+          { id: "s1", name: "Subtree [2, 4)", root: "L1_I1", nodes: ["L0_I2", "L0_I3", "L1_I1"], color: "#ff9f1c" }
+        ],
+        validations: [
+          { id: "v0", name: "Selection [0, 2)", nodes: ["L0_I0", "L0_I1", "L1_I0"], isValid: true, explanation: "Complete height-1 subtree." },
+          { id: "v1", name: "Selection [1, 3)", nodes: ["L0_I1", "L0_I2"], isValid: false, explanation: "Crosses subtree boundaries; leaves 1 and 2 do not share a root." },
+          { id: "v2", name: "Missing Leaf [0, 2)", nodes: ["L0_I0", "L1_I0"], isValid: false, explanation: "Incomplete subtree; descendant leaf L0_I1 is missing." }
+        ]
+      },
+      2: {
+        name: "Standard Log N=8",
+        leaves: 8,
+        subtrees: [
+          { id: "s0", name: "Subtree [0, 4)", root: "L2_I0", nodes: ["L0_I0", "L0_I1", "L0_I2", "L0_I3", "L1_I0", "L1_I1", "L2_I0"], color: "#4ec9b0" },
+          { id: "s1", name: "Subtree [4, 8)", root: "L2_I1", nodes: ["L0_I4", "L0_I5", "L0_I6", "L0_I7", "L1_I2", "L1_I3", "L2_I1"], color: "#ff9f1c" },
+          { id: "s2", name: "Subtree [4, 6)", root: "L1_I2", nodes: ["L0_I4", "L0_I5", "L1_I2"], color: "#4fc1ff" }
+        ],
+        validations: [
+          { id: "v0", name: "Selection [0, 4)", nodes: ["L0_I0", "L0_I1", "L0_I2", "L0_I3", "L1_I0", "L1_I1", "L2_I0"], isValid: true, explanation: "Complete height-2 subtree." },
+          { id: "v1", name: "Selection [2, 6)", nodes: ["L0_I2", "L0_I3", "L0_I4", "L0_I5", "L1_I1", "L1_I2", "L2_I0"], isValid: false, explanation: "Leaves straddle across two major branch roots." },
+          { id: "v2", name: "Selection [4, 6)", nodes: ["L0_I4", "L0_I5", "L1_I2"], isValid: true, explanation: "Valid height-1 subtree nested inside the right half." }
+        ]
+      },
+      3: {
+        name: "Forest Log N=6",
+        leaves: 6,
+        customTree: true,
+        subtrees: [
+          { id: "s0", name: "Subtree [0, 4)", root: "L2_I0", nodes: ["L0_I0", "L0_I1", "L0_I2", "L0_I3", "L1_I0", "L1_I1", "L2_I0"], color: "#4ec9b0" },
+          { id: "s1", name: "Subtree [4, 6)", root: "L1_I2", nodes: ["L0_I4", "L0_I5", "L1_I2"], color: "#ff9f1c" },
+          { id: "s2", name: "Subtree [0, 5)", root: "forest", nodes: ["L0_I0", "L0_I1", "L0_I2", "L0_I3", "L1_I0", "L1_I1", "L2_I0", "L0_I4"], color: "#b180d7" }
+        ],
+        validations: [
+          { id: "v0", name: "Selection [0, 5)", nodes: ["L0_I0", "L0_I1", "L0_I2", "L0_I3", "L1_I0", "L1_I1", "L2_I0", "L0_I4"], isValid: true, explanation: "Valid sub-forest combining size-4 subtree [0, 4) and size-1 leaf [4, 5)." },
+          { id: "v1", name: "Selection [3, 6)", nodes: ["L0_I3", "L0_I4", "L0_I5", "L1_I2"], isValid: false, explanation: "Leaf L0_I3 is orphaned from its left parent branch." },
+          { id: "v2", name: "Selection [4, 6)", nodes: ["L0_I4", "L0_I5", "L1_I2"], isValid: true, explanation: "Complete size-2 subtree covering leaves 4 and 5." }
+        ]
+      }
+    };
+
+    window.addEventListener('DOMContentLoaded', () => {
+      setupMouseEvents();
+      loadLevel(1);
+    });
+
+    function switchMode(mode) {
+      currentGameMode = mode;
+      document.getElementById('mode-select-btn').classList.toggle('active', mode === 'select');
+      document.getElementById('mode-validate-btn').classList.toggle('active', mode === 'validate');
+      document.getElementById('panel-select-mode').style.display = mode === 'select' ? 'block' : 'none';
+      document.getElementById('panel-validate-mode').style.display = mode === 'validate' ? 'block' : 'none';
+      resetCurrentLevel();
+    }
+
+    function loadLevel(lvl) {
+      currentLevelIdx = lvl;
+      completedSubtrees.clear();
+      selectedNodes.clear();
+      completedValidations.clear();
+      activeValIdx = 0;
+      victoryBanner.style.display = 'none';
+      selectFeedbackEl.textContent = '';
+      validateFeedbackEl.textContent = '';
+      updateSelCount();
+
+      [1, 2, 3].forEach(num => {
+        const btn = document.getElementById(`btn-lvl-${num}`);
+        if (btn) btn.classList.toggle('active', num === lvl);
+      });
+
+      const data = levels[lvl];
+      targetSubtrees = data.subtrees;
+      validateChallenges = data.validations;
+
+      if (data.customTree && lvl === 3) {
+        buildCustomTreeN6();
+      } else {
+        buildTreeStructure(data.leaves);
+      }
+
+      renderSidebar();
+      renderScene();
+    }
+
+    function resetCurrentLevel() {
+      completedSubtrees.clear();
+      selectedNodes.clear();
+      completedValidations.clear();
+      activeValIdx = 0;
+      victoryBanner.style.display = 'none';
+      selectFeedbackEl.textContent = '';
+      validateFeedbackEl.textContent = '';
+      updateSelCount();
+      renderSidebar();
+      renderScene();
+    }
+
+    function nextLevel() {
+      if (currentLevelIdx < 3) {
+        loadLevel(currentLevelIdx + 1);
+      } else {
+        loadLevel(1);
+      }
+    }
+
+    function buildTreeStructure(leafCount) {
+      treeNodes = [];
+      treeEdges = [];
+
+      const height = Math.log2(leafCount);
+      const widthSvg = 800;
+      const heightSvg = 500;
+      const marginY = 80;
+      const levelSpacing = (heightSvg - marginY * 2) / height;
+
+      for (let l = 0; l <= height; l++) {
+        const count = leafCount / Math.pow(2, l);
+        const spacingX = widthSvg / count;
+
+        for (let i = 0; i < count; i++) {
+          const x = spacingX * i + spacingX / 2;
+          const y = heightSvg - marginY - l * levelSpacing;
+          const id = `L${l}_I${i}`;
+          treeNodes.push({ id, level: l, index: i, x, y });
+
+          if (l < height) {
+            const parentIndex = Math.floor(i / 2);
+            const parentId = `L${l+1}_I${parentIndex}`;
+            treeEdges.push({ from: id, to: parentId });
+          }
+        }
+      }
+    }
+
+    function buildCustomTreeN6() {
+      treeNodes = [];
+      treeEdges = [];
+      const widthSvg = 800;
+      const heightSvg = 500;
+      const marginY = 80;
+      const levelSpacing = (heightSvg - marginY * 2) / 3;
+
+      const spacingX0 = widthSvg / 8;
+      for (let i = 0; i < 6; i++) {
+        treeNodes.push({ id: `L0_I${i}`, level: 0, index: i, x: spacingX0 * i + spacingX0, y: heightSvg - marginY });
+      }
+      treeNodes.push({ id: `L1_I0`, level: 1, index: 0, x: spacingX0 * 0.5 + spacingX0, y: heightSvg - marginY - levelSpacing });
+      treeNodes.push({ id: `L1_I1`, level: 1, index: 1, x: spacingX0 * 2.5 + spacingX0, y: heightSvg - marginY - levelSpacing });
+      treeNodes.push({ id: `L1_I2`, level: 1, index: 2, x: spacingX0 * 4.5 + spacingX0, y: heightSvg - marginY - levelSpacing });
+
+      treeNodes.push({ id: `L2_I0`, level: 2, index: 0, x: spacingX0 * 1.5 + spacingX0, y: heightSvg - marginY - 2 * levelSpacing });
+      treeNodes.push({ id: `L3_I0`, level: 3, index: 0, x: spacingX0 * 3 + spacingX0, y: heightSvg - marginY - 3 * levelSpacing });
+
+      treeEdges.push({ from: 'L0_I0', to: 'L1_I0' }, { from: 'L0_I1', to: 'L1_I0' });
+      treeEdges.push({ from: 'L0_I2', to: 'L1_I1' }, { from: 'L0_I3', to: 'L1_I1' });
+      treeEdges.push({ from: 'L0_I4', to: 'L1_I2' }, { from: 'L0_I5', to: 'L1_I2' });
+      treeEdges.push({ from: 'L1_I0', to: 'L2_I0' }, { from: 'L1_I1', to: 'L2_I0' });
+      treeEdges.push({ from: 'L2_I0', to: 'L3_I0' }, { from: 'L1_I2', to: 'L3_I0' });
+    }
+
+    function renderSidebar() {
+      if (currentGameMode === 'select') {
+        subtreeListEl.innerHTML = '';
+        targetSubtrees.forEach(sub => {
+          const isDone = completedSubtrees.has(sub.id);
+          const li = document.createElement('li');
+          li.className = `subtree-item ${isDone ? 'completed' : ''}`;
+          li.innerHTML = `
+            <span class="subtree-name">${isDone ? '✅' : '🔲'} ${sub.name}</span>
+            <span style="display:inline-block; width:12px; height:12px; border-radius:2px; background:${sub.color};"></span>
+          `;
+          subtreeListEl.appendChild(li);
+        });
+      } else {
+        validateListEl.innerHTML = '';
+        validateChallenges.forEach((val, idx) => {
+          const isDone = completedValidations.has(val.id);
+          const isCurrent = idx === activeValIdx;
+          const li = document.createElement('li');
+          li.className = `subtree-item ${isDone ? 'completed' : ''}`;
+          li.style.borderColor = isCurrent ? 'var(--accent-purple)' : '';
+          li.innerHTML = `
+            <span class="subtree-name">${isDone ? '✅ ' + val.name : (isCurrent ? '🔍 Mystery Highlight' : '🔒 Locked')}</span>
+            <span style="font-size:0.8rem; color:#aaa;">${isDone ? (val.isValid ? 'Valid' : 'Invalid') : ''}</span>
+          `;
+          validateListEl.appendChild(li);
+        });
+      }
+    }
+
+    function updateSelCount() {
+      selCountEl.textContent = selectedNodes.size;
+    }
+
+    function clearSelection() {
+      selectedNodes.clear();
+      selectFeedbackEl.textContent = '';
+      updateSelCount();
+      renderScene();
+    }
+
+    function submitSelection() {
+      if (selectedNodes.size === 0) {
+        selectFeedbackEl.style.color = "var(--accent-red)";
+        selectFeedbackEl.textContent = "⚠️ No nodes selected!";
+        return;
+      }
+
+      let matched = null;
+      for (const sub of targetSubtrees) {
+        if (!completedSubtrees.has(sub.id)) {
+          if (selectedNodes.size === sub.nodes.length && sub.nodes.every(id => selectedNodes.has(id))) {
+            matched = sub;
+            break;
+          }
+        }
+      }
+
+      if (matched) {
+        completedSubtrees.set(matched.id, matched);
+        selectedNodes.clear();
+        selectFeedbackEl.style.color = "var(--accent-green)";
+        selectFeedbackEl.textContent = `🎉 Correct! Isolated ${matched.name}.`;
+        updateSelCount();
+        renderSidebar();
+        renderScene();
+        if (completedSubtrees.size === targetSubtrees.length) {
+          document.getElementById('victory-text').textContent = "You authenticated all required binary sub-forests!";
+          victoryBanner.style.display = 'block';
+        }
+      } else {
+        selectFeedbackEl.style.color = "var(--accent-red)";
+        selectFeedbackEl.textContent = `❌ Not a valid target subtree! Ensure exact node coverage.`;
+      }
+    }
+
+    function checkValidateAnswer(userGuessedValid) {
+      if (currentGameMode !== 'validate' || activeValIdx >= validateChallenges.length) return;
+      const challenge = validateChallenges[activeValIdx];
+
+      if (userGuessedValid === challenge.isValid) {
+        completedValidations.add(challenge.id);
+        validateFeedbackEl.style.color = "var(--accent-green)";
+        validateFeedbackEl.textContent = `🎉 Correct! ${challenge.explanation}`;
+        activeValIdx++;
+        renderSidebar();
+        renderScene();
+        if (completedValidations.size === validateChallenges.length) {
+          document.getElementById('victory-text').textContent = "You completed all subtree validation challenges!";
+          victoryBanner.style.display = 'block';
+        }
+      } else {
+        validateFeedbackEl.style.color = "var(--accent-red)";
+        validateFeedbackEl.textContent = `❌ Incorrect! Look closely at the branch connections.`;
+      }
+    }
+
+    function renderScene() {
+      svg.innerHTML = '';
+
+      const gEdges = document.createElementNS('http://www.w3.org/2000/svg', 'g');
+      const gNodes = document.createElementNS('http://www.w3.org/2000/svg', 'g');
+
+      svg.appendChild(gEdges);
+      svg.appendChild(gNodes);
+
+      const activeChallenge = currentGameMode === 'validate' && activeValIdx < validateChallenges.length ? validateChallenges[activeValIdx] : null;
+
+      treeEdges.forEach(edge => {
+        const n1 = treeNodes.find(n => n.id === edge.from);
+        const n2 = treeNodes.find(n => n.id === edge.to);
+        if (n1 && n2) {
+          const line = document.createElementNS('http://www.w3.org/2000/svg', 'line');
+          line.setAttribute('x1', n1.x);
+          line.setAttribute('y1', n1.y);
+          line.setAttribute('x2', n2.x);
+          line.setAttribute('y2', n2.y);
+          line.setAttribute('class', 'tree-edge');
+
+          if (currentGameMode === 'select') {
+            for (const sub of completedSubtrees.values()) {
+              if (sub.nodes.includes(edge.from) && sub.nodes.includes(edge.to)) {
+                line.style.stroke = sub.color;
+                line.style.strokeWidth = "5";
+                break;
+              }
+            }
+          } else if (activeChallenge) {
+            if (activeChallenge.nodes.includes(edge.from) && activeChallenge.nodes.includes(edge.to)) {
+              line.style.stroke = "var(--accent-purple)";
+              line.style.strokeWidth = "5";
+            }
+          }
+          gEdges.appendChild(line);
+        }
+      });
+
+      treeNodes.forEach(node => {
+        const isSelected = currentGameMode === 'select' && selectedNodes.has(node.id);
+        const isValidateActive = currentGameMode === 'validate' && activeChallenge && activeChallenge.nodes.includes(node.id);
+
+        let completedColor = null;
+        if (currentGameMode === 'select') {
+          for (const sub of completedSubtrees.values()) {
+            if (sub.nodes.includes(node.id)) {
+              completedColor = sub.color;
+              break;
+            }
+          }
+        }
+
+        const g = document.createElementNS('http://www.w3.org/2000/svg', 'g');
+        g.setAttribute('class', `tree-node ${isSelected ? 'selected' : ''} ${isValidateActive ? 'validate-active' : ''}`);
+        g.setAttribute('transform', `translate(${node.x}, ${node.y})`);
+        g.addEventListener('click', (e) => {
+          e.stopPropagation();
+          if (currentGameMode === 'select' && !completedColor) {
+            if (selectedNodes.has(node.id)) {
+              selectedNodes.delete(node.id);
+            } else {
+              selectedNodes.add(node.id);
+            }
+            selectFeedbackEl.textContent = '';
+            updateSelCount();
+            renderScene();
+          }
+        });
+
+        const circle = document.createElementNS('http://www.w3.org/2000/svg', 'circle');
+        circle.setAttribute('r', 22);
+        circle.setAttribute('class', 'tree-node-circle');
+
+        if (completedColor) {
+          circle.style.fill = completedColor + '44';
+          circle.style.stroke = completedColor;
+          circle.style.strokeWidth = "3";
+        }
+
+        const text = document.createElementNS('http://www.w3.org/2000/svg', 'text');
+        text.setAttribute('class', 'tree-node-text');
+        text.textContent = `${node.level},${node.index}`;
+
+        g.appendChild(circle);
+        g.appendChild(text);
+        gNodes.appendChild(g);
+      });
+    }
+
+    function setupMouseEvents() {
+      svg.addEventListener('mousedown', (e) => {
+        if (currentGameMode !== 'select') return; // box dragging only in select mode
+
+        isDragging = true;
+        const pt = getSvgCoord(e);
+        dragStart = pt;
+
+        selRectEl = document.createElementNS('http://www.w3.org/2000/svg', 'rect');
+        selRectEl.setAttribute('class', 'selection-rect');
+        selRectEl.setAttribute('x', pt.x);
+        selRectEl.setAttribute('y', pt.y);
+        selRectEl.setAttribute('width', 0);
+        selRectEl.setAttribute('height', 0);
+        svg.appendChild(selRectEl);
+      });
+
+      svg.addEventListener('mousemove', (e) => {
+        if (!isDragging || !selRectEl) return;
+        const pt = getSvgCoord(e);
+        const x = Math.min(dragStart.x, pt.x);
+        const y = Math.min(dragStart.y, pt.y);
+        const w = Math.abs(pt.x - dragStart.x);
+        const h = Math.abs(pt.y - dragStart.y);
+
+        selRectEl.setAttribute('x', x);
+        selRectEl.setAttribute('y', y);
+        selRectEl.setAttribute('width', w);
+        selRectEl.setAttribute('height', h);
+      });
+
+      window.addEventListener('mouseup', (e) => {
+        if (!isDragging) return;
+        isDragging = false;
+
+        if (selRectEl) {
+          const rx = parseFloat(selRectEl.getAttribute('x'));
+          const ry = parseFloat(selRectEl.getAttribute('y'));
+          const rw = parseFloat(selRectEl.getAttribute('width'));
+          const rh = parseFloat(selRectEl.getAttribute('height'));
+          selRectEl.remove();
+          selRectEl = null;
+
+          if (rw > 20 && rh > 20) {
+            addSelectionBox(rx, ry, rx + rw, ry + rh);
+          }
+        }
+      });
+    }
+
+    function getSvgCoord(e) {
+      const pt = svg.createSVGPoint();
+      pt.x = e.clientX;
+      pt.y = e.clientY;
+      const svgPt = pt.matrixTransform(svg.getScreenCTM().inverse());
+      return { x: svgPt.x, y: svgPt.y };
+    }
+
+    function addSelectionBox(x1, y1, x2, y2) {
+      const enclosed = treeNodes.filter(n => n.x >= x1 && n.x <= x2 && n.y >= y1 && n.y <= y2 && !completedSubtrees.hasNode(n.id));
+      if (enclosed.length === 0) return;
+
+      const allAlreadySelected = enclosed.every(n => selectedNodes.has(n.id));
+
+      if (allAlreadySelected) {
+        enclosed.forEach(n => selectedNodes.delete(n.id));
+      } else {
+        enclosed.forEach(n => selectedNodes.add(n.id));
+      }
+
+      selectFeedbackEl.textContent = '';
+      updateSelCount();
+      renderScene();
+    }
+
+    Map.prototype.hasNode = function(nodeId) {
+      for (const sub of this.values()) {
+        if (sub.nodes.includes(nodeId)) return true;
+      }
+      return false;
+    };
+  </script>
+</body>
+</html>
