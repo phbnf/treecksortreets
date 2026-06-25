@@ -142,3 +142,26 @@
   font-weight: bold;
 }
 
+.node-highlight-target .merkle-node-circle {
+  fill: #ffd700 !important;
+  stroke: #cca300 !important;
+  stroke-width: 3;
+}
+
+.node-highlight-target .merkle-node-coord,
+.node-highlight-target .merkle-node-hash {
+  fill: #000000;
+  font-weight: bold;
+}
+
+.node-highlight-wrong .merkle-node-circle {
+  fill: #e71d36 !important;
+  stroke: #b31427 !important;
+  stroke-width: 3;
+}
+
+.node-highlight-wrong .merkle-node-coord,
+.node-highlight-wrong .merkle-node-hash {
+  fill: #ffffff;
+  font-weight: bold;
+}

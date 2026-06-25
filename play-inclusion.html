@@ -1,0 +1,1087 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Merkle Quest - Play</title>
+  <link rel="stylesheet" href="merkle.css">
+  <style>
+    :root {
+      --bg-dark: #121212;
+      --panel-bg: #1e1e1e;
+      --border-color: #333333;
+      --text-main: #e0e0e0;
+      --accent: #4fc1ff;
+      --accent-green: #4ec9b0;
+      --accent-orange: #ff9f1c;
+      --accent-teal: #2ec4b6;
+      --accent-red: #e71d36;
+      --accent-gold: #ffd700;
+    }
+
+    body {
+      background-color: var(--bg-dark);
+      color: var(--text-main);
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+      margin: 0;
+      padding: 0;
+      display: flex;
+      flex-direction: column;
+      height: 100vh;
+      overflow: hidden;
+    }
+
+    header {
+      background-color: var(--panel-bg);
+      border-bottom: 1px solid var(--border-color);
+      padding: 10px 20px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      flex-shrink: 0;
+    }
+
+    h1 {
+      margin: 0;
+      font-size: 1.4rem;
+      color: var(--accent);
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+
+    .subtitle {
+      font-size: 0.85rem;
+      color: #888;
+      margin-left: 10px;
+    }
+
+    .main-container {
+      display: flex;
+      flex: 1;
+      overflow: hidden;
+    }
+
+    .sidebar {
+      width: 340px;
+      background-color: var(--panel-bg);
+      border-right: 1px solid var(--border-color);
+      display: flex;
+      flex-direction: column;
+      flex-shrink: 0;
+      overflow-y: auto;
+      padding: 20px;
+      gap: 20px;
+    }
+
+    .visualizer-pane {
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      background-color: var(--bg-dark);
+      position: relative;
+      overflow: hidden;
+    }
+
+    .svg-container {
+      flex: 1;
+      overflow: auto;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 20px;
+    }
+
+    svg {
+      max-width: 100%;
+      min-width: 500px;
+    }
+
+    .details-pane {
+      width: 360px;
+      background-color: var(--panel-bg);
+      border-left: 1px solid var(--border-color);
+      display: flex;
+      flex-direction: column;
+      flex-shrink: 0;
+      overflow-y: auto;
+      padding: 20px;
+      gap: 20px;
+    }
+
+    .panel-section {
+      background-color: #252526;
+      border: 1px solid var(--border-color);
+      border-radius: 6px;
+      padding: 15px;
+    }
+
+    .panel-section h3 {
+      margin-top: 0;
+      margin-bottom: 12px;
+      font-size: 1rem;
+      border-bottom: 1px solid var(--border-color);
+      padding-bottom: 6px;
+      color: var(--accent);
+    }
+
+    .level-badge {
+      background-color: var(--accent);
+      color: #000;
+      padding: 3px 8px;
+      border-radius: 12px;
+      font-size: 0.75rem;
+      font-weight: bold;
+    }
+
+    .instruction-box {
+      background-color: #2b3a4a;
+      border: 1px solid #3c5675;
+      padding: 12px 15px;
+      border-radius: 6px;
+      font-size: 0.9rem;
+      line-height: 1.4;
+      color: #e0e0e0;
+    }
+
+    .instruction-box strong {
+      color: var(--accent-gold);
+    }
+
+    .hash-display {
+      font-family: monospace;
+      font-size: 0.8rem;
+      background-color: #1a1a1a;
+      padding: 8px;
+      border-radius: 4px;
+      border: 1px solid var(--border-color);
+      word-break: break-all;
+      margin-top: 5px;
+    }
+
+    .proof-bag {
+      list-style: none;
+      padding: 0;
+      margin: 0;
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+    }
+
+    .proof-item {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 8px 12px;
+      background-color: #1e1e1e;
+      border: 1px solid var(--border-color);
+      border-radius: 4px;
+      font-family: monospace;
+      font-size: 0.8rem;
+    }
+
+    .proof-item.correct {
+      border-left: 3px solid var(--accent-teal);
+    }
+
+    .proof-item.target {
+      border-left: 3px solid var(--accent-gold);
+      background-color: #2a2515;
+    }
+
+    button {
+      background-color: var(--accent);
+      color: #000;
+      border: none;
+      padding: 10px 20px;
+      border-radius: 4px;
+      font-weight: bold;
+      cursor: pointer;
+      font-size: 0.95rem;
+      transition: all 0.2s;
+      width: 100%;
+    }
+
+    button:hover {
+      background-color: #3fa8dd;
+      transform: translateY(-1px);
+    }
+
+    button:disabled {
+      background-color: #555;
+      color: #888;
+      cursor: not-allowed;
+      transform: none;
+    }
+
+    button.secondary {
+      background-color: #3c3c3c;
+      color: var(--text-main);
+    }
+
+    button.secondary:hover {
+      background-color: #4c4c4c;
+    }
+
+    button.success {
+      background-color: var(--accent-green);
+      color: #000;
+    }
+
+    button.success:hover {
+      background-color: #3cb395;
+    }
+
+    button.danger {
+      background-color: var(--accent-red);
+      color: #fff;
+    }
+
+    button.danger:hover {
+      background-color: #cf172e;
+    }
+
+    .step-list {
+      font-family: monospace;
+      font-size: 0.85rem;
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+    }
+
+    .step-item {
+      padding: 10px;
+      border-radius: 4px;
+      background: #1e1e1e;
+      border-left: 3px solid #888;
+    }
+
+    .step-item.step-path {
+      border-left-color: var(--accent-orange);
+    }
+
+    .step-item.step-proof {
+      border-left-color: var(--accent-teal);
+    }
+
+    .step-item.step-success {
+      border-left-color: var(--accent-green);
+      background: #1d332a;
+    }
+
+    .step-item.step-fail {
+      border-left-color: var(--accent-red);
+      background: #3c1e22;
+    }
+
+    .hash-val {
+      word-break: break-all;
+      color: #aaa;
+      font-size: 0.75rem;
+      margin-top: 4px;
+    }
+
+    #tooltip {
+      position: absolute;
+      background: rgba(30, 30, 30, 0.95);
+      border: 1px solid var(--border-color);
+      padding: 10px;
+      border-radius: 4px;
+      font-family: monospace;
+      font-size: 0.75rem;
+      pointer-events: none;
+      display: none;
+      z-index: 10;
+      box-shadow: 0 4px 12px rgba(0,0,0,0.5);
+    }
+
+    .game-over-overlay {
+      position: absolute;
+      top: 0;
+      left: 0;
+      right: 0;
+      bottom: 0;
+      background-color: rgba(18, 18, 18, 0.85);
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      align-items: center;
+      z-index: 20;
+      opacity: 0;
+      pointer-events: none;
+      transition: opacity 0.5s ease;
+      text-align: center;
+      padding: 20px;
+    }
+
+    .game-over-overlay.show {
+      opacity: 1;
+      pointer-events: auto;
+    }
+
+    .game-over-card {
+      background-color: var(--panel-bg);
+      border: 1px solid var(--border-color);
+      border-radius: 8px;
+      padding: 30px 40px;
+      max-width: 450px;
+      box-shadow: 0 10px 30px rgba(0,0,0,0.6);
+    }
+
+    .game-over-card h2 {
+      color: var(--accent-green);
+      margin-top: 0;
+    }
+
+    .progress-bar-container {
+      width: 100%;
+      height: 6px;
+      background-color: #333;
+      border-radius: 3px;
+      overflow: hidden;
+      margin-top: 10px;
+    }
+
+    .progress-bar {
+      height: 100%;
+      background-color: var(--accent);
+      width: 0%;
+      transition: width 0.3s ease;
+    }
+  </style>
+</head>
+<body>
+  <header>
+    <h1>
+      Merkle Quest
+      <span class="subtitle">Learn Cryptographic Proofs</span>
+    </h1>
+    <div style="display: flex; align-items: center; gap: 15px;">
+      <span class="level-badge" id="level-badge">Level 1/4</span>
+      <a href="play.html" style="color: var(--text-main); font-size: 0.9rem; text-decoration: none;">← Exit Game</a>
+    </div>
+  </header>
+
+  <div class="progress-bar-container">
+    <div class="progress-bar" id="progress-bar"></div>
+  </div>
+
+  <div class="main-container">
+    <!-- Sidebar: Game Status & Instructions -->
+    <div class="sidebar">
+      <div class="panel-section">
+        <h3 id="level-title">Level 1: The Basics</h3>
+        <p id="level-desc" style="font-size: 0.85rem; color: #aaa; margin-top: 0; margin-bottom: 15px;">
+          Learn how to prove that a leaf is in the tree. Select the correct sibling at each level to climb up to the root.
+        </p>
+        <div class="instruction-box" id="instruction-box">
+          Loading instructions...
+        </div>
+      </div>
+
+      <div class="panel-section">
+        <h3>Public State</h3>
+        <div>
+          <span style="font-size: 0.85rem; color: #888;">Expected Root Hash:</span>
+          <div class="hash-display" id="expected-root-display">0x00000000...</div>
+        </div>
+      </div>
+
+      <div class="panel-section">
+        <h3>Your Proof Bag</h3>
+        <p style="font-size: 0.8rem; color: #888; margin-top: 0; margin-bottom: 10px;" id="proof-bag-desc">
+          Click nodes in the tree to collect sibling hashes for your proof.
+        </p>
+        <ul class="proof-bag" id="proof-bag">
+          <!-- Populated dynamically -->
+        </ul>
+      </div>
+
+      <div style="margin-top: auto; display: flex; flex-direction: column; gap: 10px;">
+        <button id="reset-btn" class="secondary">Reset Level</button>
+      </div>
+    </div>
+
+    <!-- Middle: Visualization -->
+    <div class="visualizer-pane">
+      <div class="svg-container">
+        <svg id="merkle-svg" viewBox="0 0 600 400" width="100%" height="100%"></svg>
+      </div>
+      
+      <!-- Tooltip -->
+      <div id="tooltip"></div>
+
+      <!-- Game Over / Level Win Overlay -->
+      <div class="game-over-overlay" id="game-over-overlay">
+        <div class="game-over-card">
+          <h2 id="overlay-title">Level Complete!</h2>
+          <p id="overlay-text">Excellent job! You successfully built the inclusion proof and verified it against the Root Hash.</p>
+          <button id="next-level-btn" class="success">Next Level</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- Right Sidebar: Verification Steps -->
+    <div class="details-pane">
+      <div class="panel-section" style="height: 100%; display: flex; flex-direction: column; overflow: hidden;">
+        <h3>Verification Machine</h3>
+        <p style="font-size: 0.8rem; color: #888; margin-top: 0; margin-bottom: 15px;" id="verifier-desc">
+          This machine hashes your proof step-by-step to see if it matches the Expected Root.
+        </p>
+        <div class="step-list" id="verification-steps" style="flex: 1; overflow-y: auto;">
+          <!-- Steps shown here -->
+          <div style="color: #666; text-align: center; padding: 40px 20px;">
+            Start selecting siblings to run the verification machine.
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <script type="module">
+    import { MerkleTree, verifyInclusion, bytesToHex, hexToBytes, Hasher } from './merkle.js';
+    import { MerkleVisualizer } from './merkle-visualizer.js';
+
+    // Game Levels Definition
+    const LEVELS = [
+      {
+        name: "Level 1: The Basics",
+        description: "Learn how to prove that a leaf is in the tree. Select the correct sibling at each level to climb up to the root.",
+        leaves: ["apple", "banana", "cherry", "date"],
+        targetIndex: 2, // "cherry"
+        instructions: "Your target is leaf <strong>[2] 'cherry'</strong> (highlighted in Gold). First, find and click its **sibling node** at the leaf level (Level 0) to combine their hashes."
+      },
+      {
+        name: "Level 2: The Odd One Out",
+        description: "Trees don't always have an even power-of-2 number of leaves. Learn how RFC 6962 handles odd sizes using 'ephemeral' nodes.",
+        leaves: ["apple", "banana", "cherry", "date", "elderberry"],
+        targetIndex: 4, // "elderberry"
+        instructions: "Your target is leaf <strong>[4] 'elderberry'</strong>. Notice it has no sibling at Level 0 (dashed node)! It propagates up. Click its first sibling at **Level 1**."
+      },
+      {
+        name: "Level 3: Scale & Efficiency",
+        description: "See how efficient Merkle proofs are. Prove a leaf in a larger tree with very few steps.",
+        leaves: ["apple", "banana", "cherry", "date", "elderberry", "fig", "grape", "honey"],
+        targetIndex: 5, // "fig"
+        instructions: "Your target is leaf <strong>[5] 'fig'</strong>. Work your way up by clicking the correct sibling at each level. Notice how few hashes you need compared to the tree size!"
+      },
+      {
+        name: "Level 4: Tamper Detective",
+        description: "A merchant tampered with their database! The public Root Hash is locked, but one leaf was modified. Find the tampered leaf by auditing.",
+        leaves: ["apple", "banana", "cherry", "date"], // Original honest leaves
+        targetIndex: 1, // We will fake a tamper on index 1
+        isTamperLevel: true,
+        tamperedLeaves: ["apple", "blueberry", "cherry", "date"], // "banana" changed to "blueberry"
+        instructions: "The Public Root Hash is locked. The merchant claims their database is honest, but we suspect a record was changed! **Click on the leaf records** to run an audit. Find the one whose proof fails at **Step 1 (Leaf Hash)**."
+      }
+    ];
+
+    // Game State
+    let currentLevelIdx = 0;
+    let tree = null;
+    let honestTree = null; // Used for Level 4 honest root
+    let visualizer = null;
+    
+    let targetLeafIndex = null;
+    let expectedRootHex = "";
+    let selectedNodes = new Set();  // Sibling nodes clicked by player
+    let pathNodes = new Set();      // Calculated path nodes
+    let wrongNodes = new Set();      // Wrong nodes clicked
+    let expectedClicks = [];        // Node IDs expected to be clicked in order
+    let currentClickStep = 0;
+    let gameOver = false;
+
+    // For Level 4 (Audit Mode)
+    let auditedLeafIndex = null;
+    let level4FoundTamper = false;
+
+    // DOM Elements
+    const levelBadge = document.getElementById('level-badge');
+    const progressBar = document.getElementById('progress-bar');
+    const levelTitle = document.getElementById('level-title');
+    const levelDesc = document.getElementById('level-desc');
+    const instructionBox = document.getElementById('instruction-box');
+    const expectedRootDisplay = document.getElementById('expected-root-display');
+    const proofBag = document.getElementById('proof-bag');
+    const proofBagDesc = document.getElementById('proof-bag-desc');
+    const verifierDesc = document.getElementById('verifier-desc');
+    const verificationSteps = document.getElementById('verification-steps');
+    const resetBtn = document.getElementById('reset-btn');
+    const gameOverOverlay = document.getElementById('game-over-overlay');
+    const overlayTitle = document.getElementById('overlay-title');
+    const overlayText = document.getElementById('overlay-text');
+    const nextLevelBtn = document.getElementById('next-level-btn');
+    const merkleSvg = document.getElementById('merkle-svg');
+    const tooltip = document.getElementById('tooltip');
+
+    // Initialize Game
+    window.addEventListener('DOMContentLoaded', () => {
+      visualizer = new MerkleVisualizer(merkleSvg, {
+        onNodeClick: handleNodeClick,
+        onNodeHover: handleNodeHover
+      });
+
+      loadLevel(0);
+
+      resetBtn.addEventListener('click', () => loadLevel(currentLevelIdx));
+      nextLevelBtn.addEventListener('click', handleNextLevel);
+    });
+
+    // Load Level State
+    function loadLevel(levelIdx) {
+      currentLevelIdx = levelIdx;
+      const level = LEVELS[levelIdx];
+      gameOver = false;
+      level4FoundTamper = false;
+      auditedLeafIndex = null;
+
+      // Update UI Header & Progress
+      levelBadge.textContent = `Level ${levelIdx + 1}/${LEVELS.length}`;
+      progressBar.style.width = `${((levelIdx) / LEVELS.length) * 100}%`;
+      levelTitle.textContent = level.name;
+      levelDesc.textContent = level.description;
+      instructionBox.innerHTML = level.instructions;
+      gameOverOverlay.classList.remove('show');
+
+      // Clear State
+      selectedNodes.clear();
+      pathNodes.clear();
+      wrongNodes.clear();
+      currentClickStep = 0;
+
+      if (level.isTamperLevel) {
+        // Level 4: Tamper Level
+        // Honest tree represents what the root *should* be
+        honestTree = new MerkleTree(level.leaves);
+        expectedRootHex = honestTree.getRootHashHex();
+
+        // Actual tree has the tampered data
+        tree = new MerkleTree(level.tamperedLeaves);
+        
+        targetLeafIndex = null; // No single target, player must audit
+        expectedClicks = [];
+        
+        proofBagDesc.textContent = "Audit Log: Click leaves to request their proof from the merchant's server.";
+        verifierDesc.textContent = "Auditor: Compares the merchant's server proof against the honest Public Root.";
+        
+        // Populate initial empty proof bag for audit
+        renderAuditBag();
+        renderAuditDetails();
+      } else {
+        // Standard Levels 1-3
+        tree = new MerkleTree(level.leaves);
+        expectedRootHex = tree.getRootHashHex();
+        targetLeafIndex = level.targetIndex;
+
+        // Path starts at the target leaf
+        pathNodes.add(`L0_I${targetLeafIndex}`);
+
+        // Calculate expected clicks (siblings in order from bottom to top)
+        expectedClicks = [];
+        let idx = targetLeafIndex;
+        for (let L = 0; L < tree.levels.length - 1; L++) {
+          const siblingIdx = idx ^ 1;
+          if (siblingIdx < tree.levels[L].length) {
+            expectedClicks.push(`L${L}_I${siblingIdx}`);
+          }
+          idx = Math.floor(idx / 2);
+        }
+
+        proofBagDesc.textContent = "Click nodes in the tree to collect sibling hashes for your proof.";
+        verifierDesc.textContent = "This machine hashes your proof step-by-step to see if it matches the Expected Root.";
+        
+        renderProofBag();
+        renderVerificationSteps();
+      }
+
+      expectedRootDisplay.textContent = `0x${expectedRootHex.substring(0, 16)}...`;
+
+      updateVisualization();
+    }
+
+    // Render SVG
+    function updateVisualization() {
+      const scannedNodes = {};
+      const isTamper = LEVELS[currentLevelIdx].isTamperLevel;
+      const activeTargetIdx = isTamper ? auditedLeafIndex : targetLeafIndex;
+
+      // 1. Highlight target leaf (Gold)
+      if (activeTargetIdx !== null) {
+        scannedNodes[`L0_I${activeTargetIdx}`] = 'target';
+      }
+
+      // 2. Highlight path nodes (Orange)
+      pathNodes.forEach(id => {
+        // Keep target gold, other path nodes orange
+        if (activeTargetIdx === null || id !== `L0_I${activeTargetIdx}`) {
+          scannedNodes[id] = 'path';
+        }
+      });
+
+      // 3. Highlight selected proof sibling nodes (Teal)
+      selectedNodes.forEach(id => {
+        scannedNodes[id] = 'proof';
+      });
+
+      // 4. Highlight wrong clicks (Red)
+      wrongNodes.forEach(id => {
+        scannedNodes[id] = 'wrong';
+      });
+
+      visualizer.render(tree, {
+        type: 'game',
+        scannedNodes: scannedNodes
+      });
+    }
+
+    // Node Click Handler
+    function handleNodeClick(node) {
+      if (gameOver) return;
+
+      const level = LEVELS[currentLevelIdx];
+
+      if (level.isTamperLevel) {
+        handleAuditClick(node);
+      } else {
+        handleGamePlayClick(node);
+      }
+    }
+
+    // Core Game Play Click (Levels 1-3)
+    function handleGamePlayClick(node) {
+      const expectedNodeId = expectedClicks[currentClickStep];
+
+      // If they clicked the correct sibling
+      if (node.id === expectedNodeId) {
+        selectedNodes.add(node.id);
+        wrongNodes.delete(node.id); // Clear if they previously got it wrong
+        
+        // Add the corresponding parent node to the calculated path
+        // Sibling of current path node combines to form parent
+        const pathLevel = node.level;
+        const pathIndex = node.index ^ 1; // Sibling of the clicked node is the path node
+        const parentIndex = Math.floor(node.index / 2);
+        const parentId = `L${pathLevel + 1}_I${parentIndex}`;
+        
+        pathNodes.add(parentId);
+        
+        currentClickStep++;
+        
+        // Play success sound / feedback
+        renderProofBag();
+        renderVerificationSteps();
+
+        // Update instructions based on progress
+        if (currentClickStep < expectedClicks.length) {
+          const nextExpected = expectedClicks[currentClickStep];
+          const nextLevel = parseInt(nextExpected.substring(1, nextExpected.indexOf('_')));
+          instructionBox.innerHTML = `Great job! Sibling hash collected. Now, find the sibling at **Level ${nextLevel}** to continue up.`;
+        } else {
+          // Check if we reached the root (there might be ephemeral levels where we don't click but propagate)
+          const maxLevel = tree.levels.length - 1;
+          pathNodes.add(`L${maxLevel}_I0`); // Add final root to path
+          
+          instructionBox.innerHTML = "🎉 **Proof Complete!** All siblings collected. The Verification Machine has run and matches the Public Root! Click 'Next Level' to continue.";
+          triggerLevelWin(false);
+        }
+
+        updateVisualization();
+      } else {
+        // Wrong click
+        // Only trigger wrong if they clicked on the current level's row or if it's an active candidate
+        // To make it friendly, let's highlight the clicked node red
+        wrongNodes.add(node.id);
+        updateVisualization();
+
+        // Give instructional feedback
+        const expected = expectedClicks[currentClickStep];
+        const expectedLevel = parseInt(expected.substring(1, expected.indexOf('_')));
+        
+        if (node.level !== expectedLevel) {
+          instructionBox.innerHTML = `❌ **Wrong Level!** You clicked a node at Level ${node.level}, but we currently need a sibling at **Level ${expectedLevel}** to merge with our current path.`;
+        } else {
+          instructionBox.innerHTML = `❌ **Not the Sibling!** You clicked L${node.level},I${node.index}. That node is not adjacent to our active path. Look for the node that shares a parent with our highlighted path node.`;
+        }
+      }
+    }
+
+    // Tamper Detective Click (Level 4)
+    function handleAuditClick(node) {
+      if (!node.isLeaf) {
+        instructionBox.innerHTML = "ℹ️ Please click on a **Leaf Node** (at the bottom) to audit that specific database record.";
+        return;
+      }
+
+      auditedLeafIndex = node.index;
+      selectedNodes.clear();
+      pathNodes.clear();
+      wrongNodes.clear();
+
+      // Run the audit: calculate the path and proof for this leaf in the tampered tree
+      // and display it in the verification machine.
+      pathNodes.add(`L0_I${auditedLeafIndex}`);
+      
+      let idx = auditedLeafIndex;
+      for (let L = 0; L < tree.levels.length - 1; L++) {
+        const siblingIdx = idx ^ 1;
+        if (siblingIdx < tree.levels[L].length) {
+          selectedNodes.add(`L${L}_I${siblingIdx}`);
+        }
+        const parentIdx = Math.floor(idx / 2);
+        pathNodes.add(`L${L + 1}_I${parentIdx}`);
+        idx = parentIdx;
+      }
+
+      updateVisualization();
+      renderAuditBag();
+      renderAuditDetails();
+    }
+
+    // Render the Proof Bag for standard levels
+    function renderProofBag() {
+      proofBag.innerHTML = '';
+      
+      // Target Leaf
+      const valBytes = tree.leaves[targetLeafIndex];
+      const valStr = new TextDecoder().decode(valBytes);
+      const targetHashHex = bytesToHex(Hasher.hashLeaf(valBytes)).substring(0, 10);
+
+      const liTarget = document.createElement('li');
+      liTarget.className = 'proof-item target';
+      liTarget.innerHTML = `
+        <span>Target: "${valStr}"</span>
+        <span style="color: var(--accent-gold); font-weight:bold;">${targetHashHex}...</span>
+      `;
+      proofBag.appendChild(liTarget);
+
+      // Selected Siblings
+      selectedNodes.forEach(nodeId => {
+        const parts = nodeId.substring(1).split('_I');
+        const L = parseInt(parts[0]);
+        const I = parseInt(parts[1]);
+        const hash = bytesToHex(tree.levels[L][I]).substring(0, 10);
+
+        const li = document.createElement('li');
+        li.className = 'proof-item correct';
+        li.innerHTML = `
+          <span>Sibling (L${L},I${I})</span>
+          <span style="color: var(--accent-teal);">${hash}...</span>
+        `;
+        proofBag.appendChild(li);
+      });
+
+      if (selectedNodes.size === 0) {
+        const emptyLi = document.createElement('li');
+        emptyLi.style.cssText = "padding: 15px; text-align: center; color: #555; border: 1px dashed #333; border-radius: 4px; font-size: 0.85rem;";
+        emptyLi.textContent = "No siblings collected yet. Click the tree!";
+        proofBag.appendChild(emptyLi);
+      }
+    }
+
+    // Render the Audit Bag for Level 4
+    function renderAuditBag() {
+      proofBag.innerHTML = '';
+      
+      if (auditedLeafIndex === null) {
+        const emptyLi = document.createElement('li');
+        emptyLi.style.cssText = "padding: 15px; text-align: center; color: #666; border: 1px dashed #333; border-radius: 4px; font-size: 0.85rem;";
+        emptyLi.textContent = "Click a leaf record in the tree to begin auditing.";
+        proofBag.appendChild(emptyLi);
+        return;
+      }
+
+      // Show audited leaf status
+      const level = LEVELS[currentLevelIdx];
+      const leafVal = level.tamperedLeaves[auditedLeafIndex];
+      const honestVal = level.leaves[auditedLeafIndex];
+      const isTampered = leafVal !== honestVal;
+
+      const li = document.createElement('li');
+      li.className = `proof-item ${isTampered ? 'target' : 'correct'}`;
+      li.style.flexDirection = 'column';
+      li.style.alignItems = 'flex-start';
+      li.style.gap = '5px';
+      
+      li.innerHTML = `
+        <div style="display:flex; justify-content:space-between; width:100%;">
+          <strong>Auditing Record [${auditedLeafIndex}]</strong>
+          <span style="color: ${isTampered ? 'var(--accent-red)' : 'var(--accent-green)'}; font-weight:bold;">
+            ${isTampered ? '⚠️ TAMPERED' : '✅ MATCHES LEDGER'}
+          </span>
+        </div>
+        <div style="font-size: 0.75rem; color:#aaa;">
+          Ledger expected: <code style="color:var(--accent); font-size: 0.8rem;">"${honestVal}"</code><br>
+          Database contains: <code style="color:${isTampered ? 'var(--accent-red)' : '#fff'}; font-size: 0.8rem;">"${leafVal}"</code>
+        </div>
+      `;
+      proofBag.appendChild(li);
+
+      // Add a "Report Tamper" button if they audited the tampered leaf
+      if (isTampered) {
+        const reportBtn = document.createElement('button');
+        reportBtn.className = "danger";
+        reportBtn.style.marginTop = "10px";
+        reportBtn.textContent = "Report Tampered Record!";
+        reportBtn.addEventListener('click', () => {
+          level4FoundTamper = true;
+          triggerLevelWin(true);
+        });
+        proofBag.appendChild(reportBtn);
+      }
+    }
+
+    // Render Verification Steps for standard levels
+    function renderVerificationSteps() {
+      verificationSteps.innerHTML = '';
+      
+      if (targetLeafIndex === null) return;
+
+      const valBytes = tree.leaves[targetLeafIndex];
+      const valStr = new TextDecoder().decode(valBytes);
+      const leafHash = Hasher.hashLeaf(valBytes);
+
+      // Step 1: Hash target leaf
+      const step1 = document.createElement('div');
+      step1.className = 'step-item step-path';
+      step1.innerHTML = `
+        <div><strong>Step 1: Hash Leaf [${targetLeafIndex}]</strong></div>
+        <div>SHA256(0x00 || "${valStr}")</div>
+        <div class="hash-val">${bytesToHex(leafHash)}</div>
+      `;
+      verificationSteps.appendChild(step1);
+
+      // Reconstruct hash dynamically using selected nodes
+      let currentHash = leafHash;
+      let idx = targetLeafIndex;
+      let stepNum = 2;
+
+      // We only show steps for siblings that have been *clicked/collected* so far
+      for (let L = 0; L < tree.levels.length - 1; L++) {
+        const siblingIdx = idx ^ 1;
+        const siblingId = `L${L}_I${siblingIdx}`;
+
+        if (siblingIdx < tree.levels[L].length) {
+          // If sibling exists
+          if (selectedNodes.has(siblingId)) {
+            const siblingHash = tree.levels[L][siblingIdx];
+            const isLeftSibling = siblingIdx < idx;
+            
+            let expr = '';
+            if (isLeftSibling) {
+              expr = `SHA256(0x01 || sibling(L${L},I${siblingIdx}) || current)`;
+              currentHash = Hasher.hashChildren(siblingHash, currentHash);
+            } else {
+              expr = `SHA256(0x01 || current || sibling(L${L},I${siblingIdx}))`;
+              currentHash = Hasher.hashChildren(currentHash, siblingHash);
+            }
+
+            const step = document.createElement('div');
+            step.className = 'step-item step-path';
+            step.innerHTML = `
+              <div><strong>Step ${stepNum}: Merge with Sibling</strong></div>
+              <div>${expr}</div>
+              <div style="font-size: 0.7rem; margin-top: 4px; color: var(--accent-teal);">Sibling: ${bytesToHex(siblingHash).substring(0, 16)}...</div>
+              <div class="hash-val">Result: ${bytesToHex(currentHash)}</div>
+            `;
+            verificationSteps.appendChild(step);
+            stepNum++;
+          } else {
+            // Sibling not yet selected
+            const pendingStep = document.createElement('div');
+            pendingStep.className = 'step-item';
+            pendingStep.style.opacity = 0.5;
+            pendingStep.style.borderStyle = 'dashed';
+            pendingStep.innerHTML = `
+              <div><strong>Step ${stepNum}: Sibling L${L},I${siblingIdx} Missing</strong></div>
+              <div style="color: #666;">Awaiting sibling hash...</div>
+            `;
+            verificationSteps.appendChild(pendingStep);
+            break; // Stop rendering further steps until this one is solved
+          }
+        } else {
+          // Sibling is ephemeral (propagates up)
+          const ephemStep = document.createElement('div');
+          ephemStep.className = 'step-item';
+          ephemStep.style.opacity = 0.7;
+          ephemStep.innerHTML = `
+            <div><strong>Step ${stepNum}: Ephemeral Node</strong></div>
+            <div style="font-size:0.8rem; color:#888;">No sibling exists at L${L},I${siblingIdx}. Hash propagates up.</div>
+            <div class="hash-val">Result: ${bytesToHex(currentHash)}</div>
+          `;
+          verificationSteps.appendChild(ephemStep);
+          stepNum++;
+        }
+        idx = Math.floor(idx / 2);
+      }
+
+      // Final step: Root Check (only if proof complete)
+      if (currentClickStep === expectedClicks.length && expectedClicks.length > 0) {
+        const finalMatched = bytesToHex(currentHash) === expectedRootHex;
+        const finalStep = document.createElement('div');
+        finalStep.className = `step-item ${finalMatched ? 'step-success' : 'step-fail'}`;
+        finalStep.innerHTML = `
+          <div><strong>Final Step: Compare Root</strong></div>
+          <div style="font-size:0.8rem;">Calculated vs Public Root:</div>
+          <div class="hash-val" style="color: #fff;">Calc:  ${bytesToHex(currentHash)}</div>
+          <div class="hash-val" style="color: #fff;">Public: ${expectedRootHex}</div>
+          <div style="margin-top: 8px; font-weight: bold;">
+            ${finalMatched ? '✅ Root matches! Leaf is verified present.' : '❌ Mismatch! Proof invalid.'}
+          </div>
+        `;
+        verificationSteps.appendChild(finalStep);
+      }
+    }
+
+    // Render Audit Details for Level 4
+    function renderAuditDetails() {
+      verificationSteps.innerHTML = '';
+      
+      if (auditedLeafIndex === null) {
+        verificationSteps.innerHTML = `
+          <div style="color: #666; text-align: center; padding: 40px 20px;">
+            Select a record to run an audit. The auditor will verify the record's path from the merchant's server against the honest Public Root.
+          </div>
+        `;
+        return;
+      }
+
+      const level = LEVELS[currentLevelIdx];
+      const leafVal = level.tamperedLeaves[auditedLeafIndex]; // What's in the database
+      const honestVal = level.leaves[auditedLeafIndex];       // What *should* be there according to honest ledger
+      
+      const leafHash = Hasher.hashLeaf(new TextEncoder().encode(leafVal));
+      const honestLeafHash = Hasher.hashLeaf(new TextEncoder().encode(honestVal));
+      
+      const leafHashMatched = bytesToHex(leafHash) === bytesToHex(honestLeafHash);
+
+      // Step 1: Hash the leaf from the database
+      const step1 = document.createElement('div');
+      step1.className = `step-item ${leafHashMatched ? 'step-success' : 'step-fail'}`;
+      step1.innerHTML = `
+        <div><strong>Step 1: Hash Leaf [${auditedLeafIndex}]</strong></div>
+        <div>SHA256(0x00 || "${leafVal}")</div>
+        <div class="hash-val">Database Hash: ${bytesToHex(leafHash)}</div>
+        <div class="hash-val" style="color: #888;">Ledger Expected: ${bytesToHex(honestLeafHash)}</div>
+        <div style="margin-top: 6px; font-weight: bold;">
+          ${leafHashMatched ? '✅ Leaf hash matches!' : '❌ Leaf hash MISMATCH! The record was changed!'}
+        </div>
+      `;
+      verificationSteps.appendChild(step1);
+
+      // Run path verification up the tree
+      let currentHash = leafHash;
+      let idx = auditedLeafIndex;
+      let stepNum = 2;
+
+      for (let L = 0; L < tree.levels.length - 1; L++) {
+        const siblingIdx = idx ^ 1;
+        if (siblingIdx < tree.levels[L].length) {
+          const siblingHash = tree.levels[L][siblingIdx];
+          const isLeftSibling = siblingIdx < idx;
+          
+          if (isLeftSibling) {
+            currentHash = Hasher.hashChildren(siblingHash, currentHash);
+          } else {
+            currentHash = Hasher.hashChildren(currentHash, siblingHash);
+          }
+
+          // In Level 4, we want to see if the *calculated path* matches the honest path
+          // Let's get the honest node hash at this coordinate to see where it diverges
+          const honestNodeHash = honestTree.getHash(L + 1, Math.floor(idx / 2));
+          const stepMatched = bytesToHex(currentHash) === bytesToHex(honestNodeHash);
+
+          const step = document.createElement('div');
+          step.className = `step-item ${stepMatched ? 'step-success' : 'step-fail'}`;
+          step.innerHTML = `
+            <div><strong>Step ${stepNum}: Merge with Sibling L${L},I${siblingIdx}</strong></div>
+            <div class="hash-val">Calc Parent: ${bytesToHex(currentHash)}</div>
+            <div class="hash-val" style="color: #888;">Ledger Expected: ${bytesToHex(honestNodeHash)}</div>
+            <div style="margin-top: 6px; font-weight: bold;">
+              ${stepMatched ? '✅ Node hash matches expected.' : '❌ Node hash MISMATCH! Inherits tampered value.'}
+            </div>
+          `;
+          verificationSteps.appendChild(step);
+          stepNum++;
+        }
+        idx = Math.floor(idx / 2);
+      }
+
+      // Final Step: Root Match
+      const rootMatched = bytesToHex(currentHash) === expectedRootHex;
+      const finalStep = document.createElement('div');
+      finalStep.className = `step-item ${rootMatched ? 'step-success' : 'step-fail'}`;
+      finalStep.innerHTML = `
+        <div><strong>Final Step: Compare Root Hash</strong></div>
+        <div class="hash-val" style="color: #fff;">Calc:  ${bytesToHex(currentHash)}</div>
+        <div class="hash-val" style="color: #fff;">Public: ${expectedRootHex}</div>
+        <div style="margin-top: 8px; font-weight: bold;">
+          ${rootMatched ? '✅ Verified! Record is valid.' : '❌ FAILED! This record is invalid.'}
+        </div>
+      `;
+      verificationSteps.appendChild(finalStep);
+
+      // Guide player on how to win
+      if (leafVal !== honestVal) {
+        instructionBox.innerHTML = `⚠️ **Tamper Found!** Record [${auditedLeafIndex}]'s hash fails immediately in **Step 1** because the database contains <code>"${leafVal}"</code> instead of <code>"${honestVal}"</code>! <br><br>Click the **"Report Tampered Record!"** button in the sidebar to secure the ledger!`;
+      } else {
+        instructionBox.innerHTML = `ℹ️ Record [${auditedLeafIndex}] matches the expected ledger value. However, the audit path still fails at **Step ${stepNum - 1}** because it merges with a tampered subtree on the left. Keep auditing other leaves to find the one whose **Step 1 (Leaf Hash)** fails!`;
+      }
+    }
+
+    // Trigger Level Win
+    function triggerLevelWin(isTamperLevel) {
+      gameOver = true;
+      progressBar.style.width = `${((currentLevelIdx + 1) / LEVELS.length) * 100}%`;
+
+      if (isTamperLevel) {
+        overlayTitle.textContent = "Case Closed, Detective!";
+        overlayText.innerHTML = `Excellent work! You audited the database and found that record **[1]** was changed from **"banana"** to **"blueberry"**.<br><br>By noticing that Step 1 of the audit failed immediately for record [1], while records [2] and [3] only failed at later steps, you successfully pinpointed the source of the tamper!`;
+      } else {
+        overlayTitle.textContent = "Level Complete!";
+        overlayText.textContent = `Excellent job! You successfully built the inclusion proof and verified it against the public Root Hash.`;
+      }
+
+      if (currentLevelIdx === LEVELS.length - 1) {
+        nextLevelBtn.textContent = "Back to Main Menu";
+        overlayTitle.textContent = "🎉 Merkle Quest Master!";
+        overlayText.innerHTML += "<br><br>Congratulations! You have completed all levels and mastered Merkle Tree inclusion proofs and auditing!";
+      } else {
+        nextLevelBtn.textContent = "Next Level";
+      }
+
+      setTimeout(() => {
+        gameOverOverlay.classList.add('show');
+      }, 800);
+    }
+
+    // Next Level Button Handler
+    function handleNextLevel() {
+      if (currentLevelIdx === LEVELS.length - 1) {
+        window.location.href = "play.html";
+      } else {
+        loadLevel(currentLevelIdx + 1);
+      }
+    }
+
+    // Node Hover Handler for Tooltip
+    function handleNodeHover(node, coord) {
+      if (!node || !coord) {
+        tooltip.style.display = 'none';
+        return;
+      }
+
+      const rect = merkleSvg.getBoundingClientRect();
+      tooltip.innerHTML = `
+        <div style="font-weight: bold; color: var(--accent); margin-bottom: 4px;">Node L${node.level}, I${node.index}</div>
+        <div style="color: #e0e0e0;">Hash:</div>
+        <div style="color: var(--accent-green); word-break: break-all;">${node.hash}</div>
+        ${node.isEphemeral ? '<div style="color: #ff9f1c; margin-top: 4px;">(Ephemeral Node)</div>' : ''}
+        ${node.value ? `<div style="color: #ffffff; margin-top: 4px;">Value: "${node.value}"</div>` : ''}
+      `;
+      tooltip.style.left = `${coord.x + 30}px`;
+      tooltip.style.top = `${coord.y - 40}px`;
+      tooltip.style.display = 'block';
+    }
+  </script>
+</body>
+</html>
