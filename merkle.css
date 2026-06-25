@@ -116,3 +116,29 @@
   font-weight: bold;
   text-anchor: middle;
 }
+
+/* Game highlights */
+.node-highlight-safe .merkle-node-circle {
+  fill: #4ec9b0 !important;
+  stroke: #1d7b69 !important;
+  stroke-width: 3;
+}
+
+.node-highlight-tampered .merkle-node-circle {
+  fill: #e71d36 !important;
+  stroke: #b31427 !important;
+  stroke-width: 3;
+}
+
+.node-highlight-safe .merkle-node-coord,
+.node-highlight-tampered .merkle-node-coord {
+  fill: #000000;
+  font-weight: bold;
+}
+
+.node-highlight-safe .merkle-node-hash,
+.node-highlight-tampered .merkle-node-hash {
+  fill: #333333;
+  font-weight: bold;
+}
+
