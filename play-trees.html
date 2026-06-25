@@ -409,7 +409,7 @@
             <strong>Scan:</strong> Click nodes to check branch integrity.
             <br>🔴 <strong>Red</strong>: Culprit leaf is down this sub-branch.
             <br>🟢 <strong>Green</strong>: Sub-branch matches expectations.
-            <br><strong>Goal:</strong> Scan optimally in $\log_2 N$ steps, click the culprit leaf, and declare it.
+            <br><strong>Goal:</strong> Scan optimally in log2(N) steps (3 scans for a tree of size 8), click the culprit leaf, and declare it.
           </p>
         </div>
 
@@ -829,7 +829,7 @@
       let feedback = '';
       if (isCorrect) {
         if (l2State.scansUsed <= 3) {
-          feedback = "Excellent! You performed an optimal binary search in $\\log_2 N$ steps! 🧠";
+          feedback = "Excellent! You performed an optimal binary search in log2(N) steps (3 scans)! 🧠";
         } else {
           feedback = "Correct! However, you can isolate it with fewer scans by dividing the tree in halves each time.";
         }
