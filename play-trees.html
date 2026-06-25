@@ -265,6 +265,11 @@
       z-index: 10;
       box-shadow: 0 4px 12px rgba(0,0,0,0.5);
     }
+
+    .node-highlight-selected .merkle-node-circle {
+      stroke: var(--accent) !important;
+      stroke-width: 4px !important;
+    }
   </style>
 </head>
 <body>
@@ -688,11 +693,11 @@
 
       if (isCorrect) {
         l1State.score++;
-        l1State.scannedNodes[node.id] = 'correct';
+        l1State.scannedNodes[node.id] = 'safe';
         l1Status.innerHTML = `🟢 <strong>Correct!</strong> That is indeed the target.`;
       } else {
-        l1State.scannedNodes[node.id] = 'incorrect';
-        l1State.scannedNodes[target] = 'correct'; // highlight target in green
+        l1State.scannedNodes[node.id] = 'tampered';
+        l1State.scannedNodes[target] = 'safe'; // highlight target in green
         l1Status.innerHTML = `🔴 <strong>Incorrect!</strong> Correct node highlighted in green.`;
       }
 
@@ -744,7 +749,7 @@
         active: true,
         tamperedLeafIndex: tamperedIdx,
         scannedNodes: {
-          "L3_I0": "incorrect" // Root is always tampered/red
+          "L3_I0": "tampered" // Root is always tampered/red
         },
         scansUsed: 0,
         scanLimit: 4,
@@ -784,7 +789,7 @@
       }
 
       const isTampered = checkL2IsTampered(node);
-      l2State.scannedNodes[node.id] = isTampered ? 'incorrect' : 'correct';
+      l2State.scannedNodes[node.id] = isTampered ? 'tampered' : 'safe';
       l2State.scansUsed++;
 
       l2ScansCount.textContent = `${l2State.scansUsed} / 4`;
@@ -850,7 +855,7 @@
       // Highlight the entire correct path in red
       let idx = l2State.tamperedLeafIndex;
       for (let L = 0; L < tree.levels.length; L++) {
-        l2State.scannedNodes[`L${L}_I${idx}`] = 'incorrect';
+        l2State.scannedNodes[`L${L}_I${idx}`] = 'tampered';
         idx = Math.floor(idx / 2);
       }
       updateL2Visual();
@@ -948,7 +953,7 @@
       const matches = computedHash === storedHash;
 
       // Update scanned state
-      l3State.scannedNodes[node.id] = matches ? 'correct' : 'incorrect';
+      l3State.scannedNodes[node.id] = matches ? 'safe' : 'tampered';
 
       // Update Console values
       l3ConsoleData.innerHTML = `
@@ -1042,13 +1047,13 @@
       // Draw all paths in red/green to reveal
       l3State.scannedNodes = {};
       const expectedL1Parent = `L1_I${Math.floor(l3State.tamperedLeafIndex / 2)}`;
-      l3State.scannedNodes[expectedL1Parent] = 'incorrect';
+      l3State.scannedNodes[expectedL1Parent] = 'tampered';
       // Mark others checked
       for (let L = 1; L <= 3; L++) {
         for (let i = 0; i < (8 >> L); i++) {
           const id = `L${L}_I${i}`;
           if (id !== expectedL1Parent) {
-            l3State.scannedNodes[id] = 'correct';
+            l3State.scannedNodes[id] = 'safe';
           }
         }
       }
@@ -1090,8 +1095,8 @@
           } else {
             const state = l3State.scannedNodes[node.id];
             if (state && state !== 'selected') {
-              extra = `<div style="color: ${state === 'correct' ? 'var(--accent-green)' : 'var(--accent-red)'}; margin-top: 4px; font-weight: bold;">
-                        Status: ${state === 'correct' ? '✅ Integrity Match' : '❌ Integrity Mismatch'}
+              extra = `<div style="color: ${state === 'safe' ? 'var(--accent-green)' : 'var(--accent-red)'}; margin-top: 4px; font-weight: bold;">
+                        Status: ${state === 'safe' ? '✅ Integrity Match' : '❌ Integrity Mismatch'}
                        </div>`;
             } else {
               extra = `<div style="color: #aaa; margin-top: 4px; font-style: italic;">Unverified parent link</div>`;
