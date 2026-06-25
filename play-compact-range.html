@@ -1,0 +1,1218 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Compact Ranges Game - Treecks or Treets</title>
+  <link rel="stylesheet" href="merkle.css">
+  <style>
+    :root {
+      --bg-dark: #121212;
+      --panel-bg: #1e1e1e;
+      --border-color: #333333;
+      --text-main: #e0e0e0;
+      --accent: #4fc1ff;
+      --accent-green: #4ec9b0;
+      --accent-orange: #ff9f1c;
+      --accent-teal: #2ec4b6;
+      --accent-red: #e71d36;
+      --accent-purple: #b180d7;
+      --accent-gold: #ffd700;
+    }
+
+    body {
+      background-color: var(--bg-dark);
+      color: var(--text-main);
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+      margin: 0;
+      padding: 0;
+      display: flex;
+      flex-direction: column;
+      height: 100vh;
+      overflow: hidden;
+    }
+
+    header {
+      background-color: var(--panel-bg);
+      border-bottom: 1px solid var(--border-color);
+      padding: 10px 20px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      flex-shrink: 0;
+    }
+
+    h1 {
+      margin: 0;
+      font-size: 1.4rem;
+      color: var(--accent);
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+
+    .subtitle {
+      font-size: 0.85rem;
+      color: #888;
+      margin-left: 10px;
+    }
+
+    .main-container {
+      display: flex;
+      flex: 1;
+      overflow: hidden;
+    }
+
+    .sidebar {
+      width: 350px;
+      background-color: var(--panel-bg);
+      border-right: 1px solid var(--border-color);
+      display: flex;
+      flex-direction: column;
+      flex-shrink: 0;
+      overflow-y: auto;
+      padding: 20px;
+      gap: 20px;
+    }
+
+    .visualizer-pane {
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      background-color: var(--bg-dark);
+      position: relative;
+      overflow: hidden;
+    }
+
+    .svg-container {
+      flex: 1;
+      overflow: auto;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 20px;
+    }
+
+    svg {
+      max-width: 100%;
+      min-width: 500px;
+    }
+
+    .details-pane {
+      width: 360px;
+      background-color: var(--panel-bg);
+      border-left: 1px solid var(--border-color);
+      display: flex;
+      flex-direction: column;
+      flex-shrink: 0;
+      overflow-y: auto;
+      padding: 20px;
+      gap: 20px;
+    }
+
+    .panel-section {
+      background-color: #252526;
+      border: 1px solid var(--border-color);
+      border-radius: 6px;
+      padding: 15px;
+    }
+
+    .panel-section h3 {
+      margin-top: 0;
+      margin-bottom: 12px;
+      font-size: 1rem;
+      border-bottom: 1px solid var(--border-color);
+      padding-bottom: 6px;
+      color: var(--accent);
+    }
+
+    .level-btn {
+      width: 100%;
+      text-align: left;
+      background-color: #252526;
+      border: 1px solid var(--border-color);
+      color: var(--text-main);
+      padding: 10px 12px;
+      border-radius: 4px;
+      cursor: pointer;
+      font-size: 0.9rem;
+      transition: all 0.2s;
+    }
+
+    .level-btn:hover {
+      background-color: #333333;
+      border-color: var(--accent);
+    }
+
+    .level-btn.active {
+      background-color: var(--accent) !important;
+      color: #000 !important;
+      font-weight: bold;
+      border-color: var(--accent) !important;
+    }
+
+    .instruction-box {
+      background-color: #2b3a4a;
+      border: 1px solid #3c5675;
+      padding: 12px 15px;
+      border-radius: 6px;
+      font-size: 0.9rem;
+      line-height: 1.4;
+      color: #e0e0e0;
+      margin-bottom: 15px;
+    }
+
+    .instruction-box strong {
+      color: var(--accent-gold);
+    }
+
+    .node-item-list {
+      list-style: none;
+      padding: 0;
+      margin: 0;
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+    }
+
+    .node-item {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 8px 12px;
+      background-color: #1e1e1e;
+      border: 1px solid var(--border-color);
+      border-radius: 4px;
+      font-family: monospace;
+      font-size: 0.8rem;
+    }
+
+    .node-item.selected-correct {
+      border-left: 3px solid var(--accent-green);
+    }
+
+    .node-item.selected-wrong {
+      border-left: 3px solid var(--accent-red);
+    }
+
+    .node-item.range-left {
+      border-left: 3px solid var(--accent-teal);
+    }
+
+    .node-item.range-right {
+      border-left: 3px solid var(--accent-purple);
+    }
+
+    .node-item.merged {
+      border-left: 3px solid var(--accent-gold);
+      background-color: #2a2515;
+    }
+
+    button.action-btn {
+      background-color: var(--accent-orange);
+      color: #fff;
+      border: none;
+      padding: 10px 16px;
+      border-radius: 4px;
+      font-weight: bold;
+      cursor: pointer;
+      font-size: 0.95rem;
+      transition: background-color 0.2s;
+      width: 100%;
+    }
+
+    button.action-btn:hover {
+      background-color: #e58d10;
+    }
+
+    button.secondary-btn {
+      background-color: #3c3c3c;
+      color: var(--text-main);
+      border: none;
+      padding: 10px 16px;
+      border-radius: 4px;
+      font-weight: bold;
+      cursor: pointer;
+      font-size: 0.95rem;
+      transition: background-color 0.2s;
+      width: 100%;
+      margin-top: 10px;
+    }
+
+    button.secondary-btn:hover {
+      background-color: #4c4c4c;
+    }
+
+    .banner {
+      background-color: #2b3a4a;
+      border: 1px solid #3c5675;
+      padding: 12px 15px;
+      border-radius: 6px;
+      font-size: 0.85rem;
+      margin-bottom: 15px;
+      line-height: 1.4;
+    }
+
+    .banner.alert-banner {
+      background-color: #3c1e22;
+      border-color: #722f37;
+    }
+
+    .banner.success-banner {
+      background-color: #1d332a;
+      border-color: #285430;
+    }
+
+    .legend {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 12px;
+      font-size: 0.8rem;
+    }
+
+    .legend-item {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+    }
+
+    .legend-color {
+      width: 14px;
+      height: 14px;
+      border-radius: 50%;
+      border: 1px solid #888;
+    }
+
+    .legend-color.default { fill: #2c2c2c; background: #2c2c2c; }
+    .legend-color.leaf-target { border-color: var(--accent-orange); background: #ff9f1c; }
+    .legend-color.selected { border-color: var(--accent-green); background: var(--accent-green); }
+    .legend-color.selected-wrong { border-color: var(--accent-red); background: var(--accent-red); }
+    .legend-color.range-left { border-color: var(--accent-teal); background: var(--accent-teal); }
+    .legend-color.range-right { border-color: var(--accent-purple); background: var(--accent-purple); }
+    .legend-color.merged { border-color: var(--accent-gold); background: var(--accent-gold); }
+
+    #tooltip {
+      position: absolute;
+      background: rgba(30, 30, 30, 0.95);
+      border: 1px solid var(--border-color);
+      padding: 10px;
+      border-radius: 4px;
+      font-family: monospace;
+      font-size: 0.75rem;
+      pointer-events: none;
+      display: none;
+      z-index: 10;
+      box-shadow: 0 4px 12px rgba(0,0,0,0.5);
+    }
+
+    /* Custom classes for node highlight states */
+    .node-highlight-selected-correct .merkle-node-circle {
+      fill: var(--accent-green) !important;
+      stroke: #2b9375 !important;
+      stroke-width: 3px;
+    }
+    .node-highlight-selected-correct .merkle-node-coord,
+    .node-highlight-selected-correct .merkle-node-hash {
+      fill: #000000 !important;
+      font-weight: bold;
+    }
+
+    .node-highlight-selected-wrong .merkle-node-circle {
+      fill: var(--accent-red) !important;
+      stroke: #b31427 !important;
+      stroke-width: 3px;
+    }
+    .node-highlight-selected-wrong .merkle-node-coord,
+    .node-highlight-selected-wrong .merkle-node-hash {
+      fill: #ffffff !important;
+      font-weight: bold;
+    }
+
+    .node-highlight-range-left .merkle-node-circle {
+      fill: var(--accent-teal) !important;
+      stroke: #1ca395 !important;
+      stroke-width: 3px;
+    }
+    .node-highlight-range-left .merkle-node-coord,
+    .node-highlight-range-left .merkle-node-hash {
+      fill: #000000 !important;
+      font-weight: bold;
+    }
+
+    .node-highlight-range-right .merkle-node-circle {
+      fill: var(--accent-purple) !important;
+      stroke: #8d56b3 !important;
+      stroke-width: 3px;
+    }
+    .node-highlight-range-right .merkle-node-coord,
+    .node-highlight-range-right .merkle-node-hash {
+      fill: #000000 !important;
+      font-weight: bold;
+    }
+
+    .node-highlight-merged .merkle-node-circle {
+      fill: var(--accent-gold) !important;
+      stroke: #cca300 !important;
+      stroke-width: 3px;
+    }
+    .node-highlight-merged .merkle-node-coord,
+    .node-highlight-merged .merkle-node-hash {
+      fill: #000000 !important;
+      font-weight: bold;
+    }
+
+    .node-highlight-target-leaf .merkle-node-circle {
+      stroke: var(--accent-orange) !important;
+      stroke-width: 4px !important;
+    }
+
+    .progress-bar-container {
+      width: 100%;
+      height: 6px;
+      background-color: #333;
+      border-radius: 3px;
+      overflow: hidden;
+      flex-shrink: 0;
+    }
+
+    .progress-bar {
+      height: 100%;
+      background-color: var(--accent);
+      width: 0%;
+      transition: width 0.3s ease;
+    }
+
+    .game-over-overlay {
+      position: absolute;
+      top: 0;
+      left: 0;
+      right: 0;
+      bottom: 0;
+      background-color: rgba(18, 18, 18, 0.85);
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      align-items: center;
+      z-index: 20;
+      opacity: 0;
+      pointer-events: none;
+      transition: opacity 0.5s ease;
+      text-align: center;
+      padding: 20px;
+    }
+
+    .game-over-overlay.show {
+      opacity: 1;
+      pointer-events: auto;
+    }
+
+    .game-over-card {
+      background-color: var(--panel-bg);
+      border: 1px solid var(--border-color);
+      border-radius: 8px;
+      padding: 30px 40px;
+      max-width: 450px;
+      box-shadow: 0 10px 30px rgba(0,0,0,0.6);
+    }
+
+    .game-over-card h2 {
+      color: var(--accent-green);
+      margin-top: 0;
+    }
+
+    .task-indicator {
+      display: inline-block;
+      width: 10px;
+      height: 10px;
+      border-radius: 50%;
+      background-color: #333;
+      margin-right: 6px;
+    }
+    .task-indicator.active {
+      background-color: var(--accent);
+    }
+    .task-indicator.done {
+      background-color: var(--accent-green);
+    }
+  </style>
+</head>
+<body>
+  <header>
+    <h1>
+      📦 Compact Ranges Game
+      <span class="subtitle">State Representation & Merging</span>
+    </h1>
+    <div>
+      <a href="play.html" style="color: var(--accent); font-size: 0.9rem; text-decoration: none;">← Back to Games Menu</a>
+    </div>
+  </header>
+
+  <div class="progress-bar-container">
+    <div class="progress-bar" id="progress-bar"></div>
+  </div>
+
+  <div class="main-container">
+    <!-- Left Sidebar: Level Selector & Status -->
+    <div class="sidebar">
+      <div class="panel-section">
+        <h3>Select Game Level</h3>
+        <div style="display: flex; flex-direction: column; gap: 8px;">
+          <button id="level-1-btn" class="level-btn active">Level 1: Decompose Range</button>
+          <button id="level-2-btn" class="level-btn">Level 2: Merge Adjacent Ranges</button>
+        </div>
+      </div>
+
+      <div class="panel-section">
+        <h3 id="task-title">Current Task</h3>
+        <div style="display: flex; align-items: center; margin-bottom: 12px;" id="task-indicators-container">
+          <!-- Populated dynamically -->
+        </div>
+        <div class="instruction-box" id="instruction-box">
+          Loading instructions...
+        </div>
+        <button id="action-btn" class="action-btn">Start Challenge</button>
+        <button id="skip-task-btn" class="secondary-btn" style="display: none;">Skip Task</button>
+      </div>
+
+      <div class="panel-section">
+        <h3>Legend</h3>
+        <div id="l1-legend" class="legend">
+          <div class="legend-item"><div class="legend-color default"></div><span>Default Node</span></div>
+          <div class="legend-item"><div class="legend-color leaf-target"></div><span>Target Leaf Range</span></div>
+          <div class="legend-item"><div class="legend-color selected"></div><span>Correct Compact Root</span></div>
+          <div class="legend-item"><div class="legend-color selected-wrong"></div><span>Invalid Node Selection</span></div>
+        </div>
+        <div id="l2-legend" class="legend" style="display: none;">
+          <div class="legend-item"><div class="legend-color range-left"></div><span>Left Range [L, M)</span></div>
+          <div class="legend-item"><div class="legend-color range-right"></div><span>Right Range [M, R)</span></div>
+          <div class="legend-item"><div class="legend-color merged"></div><span>Merged Node</span></div>
+          <div class="legend-item"><div class="legend-color selected"></div><span>Selected for Merge</span></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Center: Visualizer -->
+    <div class="visualizer-pane">
+      <div class="svg-container">
+        <svg id="merkle-svg" viewBox="0 0 800 500" width="100%" height="100%"></svg>
+      </div>
+      <div id="tooltip"></div>
+
+      <!-- Game Over / Complete Overlay -->
+      <div class="game-over-overlay" id="game-over-overlay">
+        <div class="game-over-card">
+          <h2 id="overlay-title">Level Completed!</h2>
+          <p id="overlay-desc">You successfully decomposed all leaf ranges into their minimal perfect roots.</p>
+          <button id="overlay-next-btn" class="action-btn">Next Level</button>
+          <button id="overlay-restart-btn" class="secondary-btn" style="display: none;">Play Again</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- Right Sidebar: Active Node Ranges & Explanations -->
+    <div class="details-pane">
+      <div class="panel-section">
+        <h3>How to Play</h3>
+        <div id="how-to-play-text" style="font-size: 0.85rem; line-height: 1.4; color: #bbb;">
+          Loading guide...
+        </div>
+      </div>
+
+      <div class="panel-section">
+        <h3 id="list-title">Nodes in Compact Range</h3>
+        <p style="font-size: 0.8rem; color: #888; margin-top: 0; margin-bottom: 10px;" id="list-desc">
+          Nodes currently in the compact set:
+        </p>
+        <ul class="node-item-list" id="node-list">
+          <!-- Populated dynamically -->
+        </ul>
+      </div>
+    </div>
+  </div>
+
+  <script type="module">
+    import { MerkleTree } from './merkle.js';
+    import { MerkleVisualizer } from './merkle-visualizer.js';
+
+    // Game Levels Definition
+    const GAME_LEVELS = {
+      1: {
+        title: "Level 1: Decompose Range",
+        guide: `
+          <p>A <strong>compact range</strong> decomposes any arbitrary leaf range $[L, R)$ into the <strong>minimal set of perfect nodes</strong> that cover it.</p>
+          <p><strong>Rules:</strong></p>
+          <br>• Hover over nodes to see their covered leaf ranges.
+          <br>• Click nodes to select them for the compact range representation.
+          <br>• Select only the minimal set of perfect nodes that exactly cover the highlighted leaf range $[L, R)$ without overlaps or extra leaves.
+        `,
+        tasks: [
+          {
+            treeSize: 8,
+            targetRange: [4, 8],
+            desc: "Decompose range $[4, 8)$ in a tree of size 8. This is a perfect power-of-two block!",
+            expectedNodes: ["L2_I1"]
+          },
+          {
+            treeSize: 8,
+            targetRange: [2, 7],
+            desc: "Decompose range $[2, 7)$ in a tree of size 8. You will need multiple nodes at different levels.",
+            expectedNodes: ["L1_I1", "L1_I2", "L0_I6"]
+          },
+          {
+            treeSize: 16,
+            targetRange: [3, 13],
+            desc: "Decompose range $[3, 13)$ in a tree of size 16. Look for the minimal perfect subtrees covering this range.",
+            expectedNodes: ["L0_I3", "L2_I1", "L2_I2", "L0_I12"]
+          }
+        ]
+      },
+      2: {
+        title: "Level 2: Merge Adjacent Ranges",
+        guide: `
+          <p>Two adjacent compact ranges $[L, M)$ and $[M, R)$ can be efficiently merged into a single compact range $[L, R)$.</p>
+          <p><strong>Rules:</strong></p>
+          <br>• Select two sibling nodes of the <strong>same level</strong> (e.g. <code>L0,I2</code> and <code>L0,I3</code>) from the active set to merge them into their parent.
+          <br>• Repeat this merge step until no more sibling pairs are left in the set.
+          <br>• This leaves the minimal compact range for $[L, R)$.
+        `,
+        tasks: [
+          {
+            treeSize: 8,
+            leftRange: [2, 3],
+            rightRange: [3, 4],
+            desc: "Merge adjacent ranges $[2, 3)$ and $[3, 4)$. Click both leaves to merge them into their parent.",
+            initialNodes: {
+              "L0_I2": "range-left",
+              "L0_I3": "range-right"
+            },
+            expectedNodes: ["L1_I1"]
+          },
+          {
+            treeSize: 8,
+            leftRange: [0, 3],
+            rightRange: [3, 4],
+            desc: "Merge adjacent ranges $[0, 3)$ (teal) and $[3, 4)$ (purple). Find and merge siblings sequentially.",
+            initialNodes: {
+              "L1_I0": "range-left",
+              "L0_I2": "range-left",
+              "L0_I3": "range-right"
+            },
+            expectedNodes: ["L2_I0"]
+          },
+          {
+            treeSize: 16,
+            leftRange: [2, 9],
+            rightRange: [9, 16],
+            desc: "Merge adjacent ranges $[2, 9)$ (teal) and $[9, 16)$ (purple). Follow the merge path to the root!",
+            initialNodes: {
+              "L1_I1": "range-left",
+              "L2_I1": "range-left",
+              "L0_I8": "range-left",
+              "L0_I9": "range-right",
+              "L1_I5": "range-right",
+              "L2_I3": "range-right"
+            },
+            expectedNodes: ["L1_I1", "L2_I1", "L3_I1"]
+          }
+        ]
+      }
+    };
+
+    // State Variables
+    let currentLevel = 1;
+    let currentTaskIdx = 0;
+    let selectedNodes = new Set();
+    let wrongNodes = new Set();
+    let level2ActiveNodes = {}; // Maps node ID to its role: 'range-left', 'range-right', 'merged'
+    let level2Selected = new Set(); // Currently selected nodes for merging (max 2)
+    let tree = null;
+    let visualizer = null;
+    let activeChallenge = false;
+    let taskCompleted = false;
+
+    // DOM Elements
+    const merkleSvg = document.getElementById('merkle-svg');
+    const tooltip = document.getElementById('tooltip');
+    const instructionBox = document.getElementById('instruction-box');
+    const actionBtn = document.getElementById('action-btn');
+    const skipTaskBtn = document.getElementById('skip-task-btn');
+    const howToPlayText = document.getElementById('how-to-play-text');
+    const nodeList = document.getElementById('node-list');
+    const listTitle = document.getElementById('list-title');
+    const listDesc = document.getElementById('list-desc');
+    const taskTitle = document.getElementById('task-title');
+    const indicatorsContainer = document.getElementById('task-indicators-container');
+    const progressBar = document.getElementById('progress-bar');
+    const level1Btn = document.getElementById('level-1-btn');
+    const level2Btn = document.getElementById('level-2-btn');
+    const overOverlay = document.getElementById('game-over-overlay');
+    const overlayTitle = document.getElementById('overlay-title');
+    const overlayDesc = document.getElementById('overlay-desc');
+    const overlayNextBtn = document.getElementById('overlay-next-btn');
+    const overlayRestartBtn = document.getElementById('overlay-restart-btn');
+
+    // Initialize Page
+    window.addEventListener('DOMContentLoaded', () => {
+      visualizer = new MerkleVisualizer(merkleSvg, {
+        onNodeClick: handleNodeClick,
+        onNodeHover: handleNodeHover
+      });
+
+      level1Btn.addEventListener('click', () => switchLevel(1));
+      level2Btn.addEventListener('click', () => switchLevel(2));
+      actionBtn.addEventListener('click', handleActionBtnClick);
+      skipTaskBtn.addEventListener('click', skipTask);
+      overlayNextBtn.addEventListener('click', handleOverlayNext);
+      overlayRestartBtn.addEventListener('click', () => {
+        hideOverlay();
+        startLevel(currentLevel);
+      });
+
+      startLevel(1);
+    });
+
+    function switchLevel(levelNum) {
+      if (levelNum === currentLevel) return;
+      hideOverlay();
+      startLevel(levelNum);
+    }
+
+    function startLevel(levelNum) {
+      currentLevel = levelNum;
+      currentTaskIdx = 0;
+      activeChallenge = false;
+      taskCompleted = false;
+
+      // Update active button classes
+      if (levelNum === 1) {
+        level1Btn.classList.add('active');
+        level2Btn.classList.remove('active');
+        document.getElementById('l1-legend').style.display = 'flex';
+        document.getElementById('l2-legend').style.display = 'none';
+      } else {
+        level1Btn.classList.remove('active');
+        level2Btn.classList.add('active');
+        document.getElementById('l1-legend').style.display = 'none';
+        document.getElementById('l2-legend').style.display = 'flex';
+      }
+
+      // Load guide
+      howToPlayText.innerHTML = GAME_LEVELS[levelNum].guide;
+
+      // Update instructions
+      loadTask(currentTaskIdx);
+    }
+
+    function loadTask(taskIdx) {
+      currentTaskIdx = taskIdx;
+      selectedNodes.clear();
+      wrongNodes.clear();
+      level2Selected.clear();
+      level2ActiveNodes = {};
+      taskCompleted = false;
+      activeChallenge = false;
+
+      const level = GAME_LEVELS[currentLevel];
+      const task = level.tasks[taskIdx];
+
+      taskTitle.textContent = `${level.title} - Task ${taskIdx + 1}/${level.tasks.length}`;
+      
+      // Update indicators
+      updateIndicators();
+      updateProgressBar();
+
+      // Build Merkle tree for this task
+      const leaves = Array.from({ length: task.treeSize }, (_, i) => `Leaf ${i}`);
+      tree = new MerkleTree(leaves);
+
+      if (currentLevel === 1) {
+        instructionBox.innerHTML = `<strong>Challenge:</strong> ${task.desc}<br><br>Click the nodes in the tree to select them.`;
+        listTitle.textContent = "Selected Nodes";
+        listDesc.textContent = "Your selected roots for range [" + task.targetRange[0] + ", " + task.targetRange[1] + "):";
+      } else {
+        instructionBox.innerHTML = `<strong>Challenge:</strong> ${task.desc}<br><br>Find siblings at the same level and merge them!`;
+        listTitle.textContent = "Active Nodes Set";
+        listDesc.textContent = "Current roots representing the merged range:";
+        // Copy initial nodes
+        level2ActiveNodes = { ...task.initialNodes };
+      }
+
+      actionBtn.style.display = 'block';
+      actionBtn.textContent = "Start Challenge";
+      actionBtn.className = "action-btn";
+      skipTaskBtn.style.display = 'inline-block';
+      
+      renderTree();
+      renderNodeList();
+    }
+
+    function updateIndicators() {
+      indicatorsContainer.innerHTML = '';
+      const level = GAME_LEVELS[currentLevel];
+      level.tasks.forEach((_, idx) => {
+        const dot = document.createElement('div');
+        dot.className = 'task-indicator';
+        if (idx === currentTaskIdx) {
+          dot.className += ' active';
+        } else if (idx < currentTaskIdx) {
+          dot.className += ' done';
+        }
+        indicatorsContainer.appendChild(dot);
+      });
+    }
+
+    function updateProgressBar() {
+      const level = GAME_LEVELS[currentLevel];
+      const total = level.tasks.length;
+      const progress = ((currentTaskIdx) / total) * 100;
+      progressBar.style.width = `${progress}%`;
+    }
+
+    function handleActionBtnClick() {
+      if (!activeChallenge) {
+        // Start game
+        activeChallenge = true;
+        actionBtn.textContent = "Check Solution";
+        actionBtn.className = "action-btn success";
+        if (currentLevel === 2) {
+          actionBtn.style.display = 'none'; // Merges auto-check or are direct
+        }
+        renderTree();
+      } else {
+        // Check Level 1 Solution
+        checkL1Solution();
+      }
+    }
+
+    function skipTask() {
+      const level = GAME_LEVELS[currentLevel];
+      if (currentTaskIdx + 1 < level.tasks.length) {
+        loadTask(currentTaskIdx + 1);
+      } else {
+        triggerLevelComplete();
+      }
+    }
+
+    // Node Clicks
+    function handleNodeClick(node) {
+      if (!activeChallenge && currentLevel === 1) {
+        instructionBox.innerHTML = "⚠️ Click the <strong>Start Challenge</strong> button first to begin the task!";
+        return;
+      }
+      if (taskCompleted) return;
+
+      if (currentLevel === 1) {
+        handleL1NodeClick(node);
+      } else {
+        handleL2NodeClick(node);
+      }
+    }
+
+    function handleL1NodeClick(node) {
+      const task = GAME_LEVELS[currentLevel].tasks[currentTaskIdx];
+      
+      // Toggle node selection
+      if (selectedNodes.has(node.id)) {
+        selectedNodes.delete(node.id);
+        wrongNodes.delete(node.id);
+      } else {
+        // Basic check: does this node cover leaves strictly inside the range?
+        const [nodeL, nodeR] = getNodeRange(node.level, node.index);
+        const [targetL, targetR] = task.targetRange;
+        
+        if (nodeL >= targetL && nodeR <= targetR) {
+          selectedNodes.add(node.id);
+          wrongNodes.delete(node.id);
+        } else {
+          // If it overlaps or is outside, it's incorrect
+          wrongNodes.add(node.id);
+          let reason = "";
+          if (nodeR <= targetL || nodeL >= targetR) {
+            reason = `covers range $[${nodeL}, ${nodeR})$, which is completely outside our target range $[${targetL}, ${targetR})$.`;
+          } else {
+            reason = `covers range $[${nodeL}, ${nodeR})$, which overflows beyond our target range $[${targetL}, ${targetR})$.`;
+          }
+          instructionBox.innerHTML = `❌ <strong>Incorrect Node:</strong> <code>L${node.level},I${node.index}</code> ${reason}`;
+        }
+      }
+
+      renderTree();
+      renderNodeList();
+      checkL1SolutionAuto();
+    }
+
+    function checkL1SolutionAuto() {
+      const task = GAME_LEVELS[currentLevel].tasks[currentTaskIdx];
+      // Check if the selected nodes exactly cover the target range
+      // and if there are no wrong nodes selected.
+      if (wrongNodes.size > 0) return;
+
+      const selectedList = Array.from(selectedNodes);
+      if (selectedList.length === 0) return;
+
+      // Sort selected nodes by their starting leaf index
+      const nodeRanges = selectedList.map(id => {
+        const parts = id.substring(1).split('_I');
+        return {
+          id: id,
+          range: getNodeRange(parseInt(parts[0]), parseInt(parts[1]))
+        };
+      });
+      nodeRanges.sort((a, b) => a.range[0] - b.range[0]);
+
+      // Check partition continuity and limits
+      const [targetL, targetR] = task.targetRange;
+      let currentStart = targetL;
+      let valid = true;
+
+      for (const nr of nodeRanges) {
+        if (nr.range[0] !== currentStart) {
+          valid = false;
+          break;
+        }
+        currentStart = nr.range[1];
+      }
+
+      if (valid && currentStart === targetR) {
+        // Verification passed!
+        // Is it the minimal set of nodes?
+        // E.g. did they select L0_I2 and L0_I3 instead of L1_I1?
+        const minimalSize = task.expectedNodes.length;
+        if (selectedList.length === minimalSize) {
+          taskCompleted = true;
+          instructionBox.innerHTML = "🎉 <strong>Correct!</strong> You found the exact minimal set of perfect nodes covering $[L, R)$. Click <strong>Next Task</strong> to continue.";
+          actionBtn.textContent = "Next Task";
+          actionBtn.style.display = 'block';
+          actionBtn.className = "action-btn success";
+          skipTaskBtn.style.display = 'none';
+        } else {
+          instructionBox.innerHTML = "💡 <strong>Almost there!</strong> The nodes cover the range, but they are not the <em>minimal</em> set. Look for higher level parent nodes you can use to replace siblings.";
+        }
+      }
+    }
+
+    function checkL1Solution() {
+      if (taskCompleted) {
+        // Load next task or finish level
+        const level = GAME_LEVELS[currentLevel];
+        if (currentTaskIdx + 1 < level.tasks.length) {
+          loadTask(currentTaskIdx + 1);
+        } else {
+          triggerLevelComplete();
+        }
+      } else {
+        // Manual validation if clicked check solution
+        instructionBox.innerHTML = "🔍 Keep selecting nodes until they exactly cover the highlighted leaf range.";
+      }
+    }
+
+    function handleL2NodeClick(node) {
+      // Must click on a node in the active level 2 set
+      if (!(node.id in level2ActiveNodes)) {
+        instructionBox.innerHTML = "ℹ️ Please select a node that is currently in the active compact range set (colored teal or purple).";
+        return;
+      }
+
+      // Toggle selection for merging
+      if (level2Selected.has(node.id)) {
+        level2Selected.delete(node.id);
+      } else {
+        if (level2Selected.size >= 2) {
+          // Replace oldest
+          const first = level2Selected.values().next().value;
+          level2Selected.delete(first);
+        }
+        level2Selected.add(node.id);
+      }
+
+      // Check if we selected two nodes
+      if (level2Selected.size === 2) {
+        const arr = Array.from(level2Selected);
+        const nodeA = parseNodeId(arr[0]);
+        const nodeB = parseNodeId(arr[1]);
+
+        // Sibling check
+        if (nodeA.level === nodeB.level && (nodeA.index ^ 1) === nodeB.index) {
+          // Perform Merge!
+          const parentL = nodeA.level + 1;
+          const parentI = Math.floor(nodeA.index / 2);
+          const parentId = `L${parentL}_I${parentI}`;
+
+          // Delete children from active set
+          delete level2ActiveNodes[arr[0]];
+          delete level2ActiveNodes[arr[1]];
+
+          // Add parent as merged node
+          level2ActiveNodes[parentId] = "merged";
+          
+          level2Selected.clear();
+          instructionBox.innerHTML = `⚡ <strong>Merged!</strong> Nodes <code>L${nodeA.level},I${nodeA.index}</code> and <code>L${nodeB.level},I${nodeB.index}</code> merged into parent <code>${parentId}</code>.`;
+          
+          checkL2SolutionAuto();
+        } else {
+          // Invalid merge selection
+          instructionBox.innerHTML = `❌ <strong>Cannot Merge:</strong> Selected nodes are not siblings at the same level.`;
+          level2Selected.delete(arr[1]); // Remove the second one, keep the first
+        }
+      }
+
+      renderTree();
+      renderNodeList();
+    }
+
+    function checkL2SolutionAuto() {
+      const task = GAME_LEVELS[currentLevel].tasks[currentTaskIdx];
+      const activeIds = Object.keys(level2ActiveNodes);
+      
+      // Sibling scan: check if there are any remaining siblings of the same level in the active set
+      let siblingsLeft = false;
+      for (let i = 0; i < activeIds.length; i++) {
+        const nodeA = parseNodeId(activeIds[i]);
+        for (let j = i + 1; j < activeIds.length; j++) {
+          const nodeB = parseNodeId(activeIds[j]);
+          if (nodeA.level === nodeB.level && (nodeA.index ^ 1) === nodeB.index) {
+            siblingsLeft = true;
+            break;
+          }
+        }
+        if (siblingsLeft) break;
+      }
+
+      // If no siblings left, the merge process is complete!
+      if (!siblingsLeft) {
+        // Let's verify if the resulting nodes match the expected final set
+        const expected = new Set(task.expectedNodes);
+        let match = true;
+        if (activeIds.length !== expected.size) {
+          match = false;
+        } else {
+          for (const id of activeIds) {
+            if (!expected.has(id)) {
+              match = false;
+              break;
+            }
+          }
+        }
+
+        if (match) {
+          taskCompleted = true;
+          instructionBox.innerHTML = "🎉 <strong>Merge Complete!</strong> You merged all siblings. This forms the minimal compact range for the full combined interval! Click <strong>Next Task</strong> to continue.";
+          actionBtn.style.display = 'block';
+          actionBtn.textContent = "Next Task";
+          actionBtn.className = "action-btn success";
+          skipTaskBtn.style.display = 'none';
+        } else {
+          instructionBox.innerHTML = "⚠️ <strong>Unexpected State:</strong> All siblings are merged, but the resulting nodes do not match the expected compact range representation. Did you merge unrelated nodes?";
+        }
+      }
+    }
+
+    function handleOverlayNext() {
+      hideOverlay();
+      if (currentLevel === 1) {
+        startLevel(2);
+      } else {
+        // Finished all levels!
+        showGameCompleteOverlay();
+      }
+    }
+
+    function triggerLevelComplete() {
+      overlayTitle.textContent = `Completed Level ${currentLevel}!`;
+      if (currentLevel === 1) {
+        overlayDesc.textContent = "Fantastic job! You mastered decomposing leaf intervals into their minimal perfect root nodes.";
+        overlayNextBtn.textContent = "Proceed to Level 2";
+        overlayNextBtn.style.display = 'block';
+        overlayRestartBtn.style.display = 'inline-block';
+      } else {
+        overlayDesc.textContent = "Outstanding! You successfully merged adjacent compact ranges by combining sibling trees.";
+        overlayNextBtn.textContent = "Finish & Return";
+        overlayNextBtn.style.display = 'block';
+        overlayRestartBtn.style.display = 'inline-block';
+      }
+      overOverlay.classList.add('show');
+    }
+
+    function showGameCompleteOverlay() {
+      overlayTitle.textContent = "🏆 Compact Ranges Mastered!";
+      overlayDesc.textContent = "You completed all lessons and challenges for Merkle tree Compact Ranges. You now understand how to represent arbitrary intervals and merge commitments efficiently!";
+      overlayNextBtn.textContent = "Exit to Games Menu";
+      overlayNextBtn.onclick = () => window.location.href = 'play.html';
+      overlayRestartBtn.style.display = 'inline-block';
+      overOverlay.classList.add('show');
+    }
+
+    function hideOverlay() {
+      overOverlay.classList.remove('show');
+    }
+
+    // Node Helper Utilities
+    function parseNodeId(id) {
+      const parts = id.substring(1).split('_I');
+      return {
+        level: parseInt(parts[0]),
+        index: parseInt(parts[1])
+      };
+    }
+
+    function getNodeRange(level, index) {
+      const leafCount = 1 << level;
+      const start = index * leafCount;
+      const end = start + leafCount;
+      return [start, end];
+    }
+
+    // Hover tooltip
+    function handleNodeHover(node, coord) {
+      if (!node) {
+        tooltip.style.display = 'none';
+        return;
+      }
+
+      const [start, end] = getNodeRange(node.level, node.index);
+      
+      tooltip.style.display = 'block';
+      tooltip.style.left = `${coord.x + 15}px`;
+      tooltip.style.top = `${coord.y - 15}px`;
+      
+      let typeText = node.isLeaf ? "Leaf" : "Internal Node";
+      if (node.isEphemeral) typeText += " (Ephemeral)";
+
+      tooltip.innerHTML = `
+        <strong>Node:</strong> L${node.level}, I${node.index}<br>
+        <strong>Type:</strong> ${typeText}<br>
+        <strong>Covers Leaves:</strong> [${start}, ${end})<br>
+        <strong>Hash:</strong> ${node.hash.substring(0, 16)}...
+      `;
+    }
+
+    // Rendering Engine
+    function renderTree() {
+      const scannedNodes = {};
+      const task = GAME_LEVELS[currentLevel].tasks[currentTaskIdx];
+
+      if (currentLevel === 1) {
+        const [targetL, targetR] = task.targetRange;
+        // Highlight leaves in the target range
+        for (let i = targetL; i < targetR; i++) {
+          scannedNodes[`L0_I${i}`] = 'target-leaf';
+        }
+
+        // Highlight selected correct nodes
+        selectedNodes.forEach(id => {
+          scannedNodes[id] = 'selected-correct';
+        });
+
+        // Highlight wrong selections
+        wrongNodes.forEach(id => {
+          scannedNodes[id] = 'selected-wrong';
+        });
+
+      } else {
+        // Highlight active nodes in Level 2
+        for (const [id, role] of Object.entries(level2ActiveNodes)) {
+          scannedNodes[id] = role; // 'range-left', 'range-right', 'merged'
+        }
+
+        // Highlight nodes currently selected for merging (takes precedence)
+        level2Selected.forEach(id => {
+          scannedNodes[id] = 'selected-correct';
+        });
+      }
+
+      visualizer.render(tree, {
+        type: 'game',
+        scannedNodes: scannedNodes
+      });
+    }
+
+    function renderNodeList() {
+      nodeList.innerHTML = '';
+      const task = GAME_LEVELS[currentLevel].tasks[currentTaskIdx];
+
+      if (currentLevel === 1) {
+        if (selectedNodes.size === 0 && wrongNodes.size === 0) {
+          const li = document.createElement('li');
+          li.style.cssText = "padding: 15px; text-align: center; color: #555; border: 1px dashed #333; border-radius: 4px; font-size: 0.85rem;";
+          li.textContent = "Select nodes in the tree to begin.";
+          nodeList.appendChild(li);
+          return;
+        }
+
+        selectedNodes.forEach(id => {
+          const parts = parseNodeId(id);
+          const [start, end] = getNodeRange(parts.level, parts.index);
+          const hash = tree.getHash(parts.level, parts.index);
+          const hashHex = hash ? Array.from(hash).map(b => b.toString(16).padStart(2, '0')).join('').substring(0, 8) : '???';
+
+          const li = document.createElement('li');
+          li.className = 'node-item selected-correct';
+          li.innerHTML = `
+            <span>L${parts.level},I${parts.index} (covers [${start}, ${end}))</span>
+            <span style="color: var(--accent-green);">${hashHex}...</span>
+          `;
+          nodeList.appendChild(li);
+        });
+
+        wrongNodes.forEach(id => {
+          const parts = parseNodeId(id);
+          const [start, end] = getNodeRange(parts.level, parts.index);
+
+          const li = document.createElement('li');
+          li.className = 'node-item selected-wrong';
+          li.innerHTML = `
+            <span>L${parts.level},I${parts.index} (covers [${start}, ${end}))</span>
+            <span style="color: var(--accent-red); font-weight: bold;">INVALID</span>
+          `;
+          nodeList.appendChild(li);
+        });
+
+      } else {
+        // Level 2 Node list
+        const activeIds = Object.keys(level2ActiveNodes);
+        if (activeIds.length === 0) return;
+
+        activeIds.forEach(id => {
+          const parts = parseNodeId(id);
+          const [start, end] = getNodeRange(parts.level, parts.index);
+          const role = level2ActiveNodes[id];
+          const isSelected = level2Selected.has(id);
+
+          const hash = tree.getHash(parts.level, parts.index);
+          const hashHex = hash ? Array.from(hash).map(b => b.toString(16).padStart(2, '0')).join('').substring(0, 8) : '???';
+
+          const li = document.createElement('li');
+          li.className = `node-item ${isSelected ? 'selected-correct' : role}`;
+          
+          let roleLabel = "";
+          let labelColor = "";
+          if (role === 'range-left') {
+            roleLabel = "Left Range";
+            labelColor = "var(--accent-teal)";
+          } else if (role === 'range-right') {
+            roleLabel = "Right Range";
+            labelColor = "var(--accent-purple)";
+          } else {
+            roleLabel = "Merged";
+            labelColor = "var(--accent-gold)";
+          }
+
+          if (isSelected) {
+            roleLabel = "To Merge";
+            labelColor = "var(--accent-green)";
+          }
+
+          li.innerHTML = `
+            <div>
+              <span>L${parts.level},I${parts.index} (covers [${start}, ${end}))</span><br>
+              <small style="color: ${labelColor}; font-weight: bold;">${roleLabel}</small>
+            </div>
+            <span style="font-family: monospace;">${hashHex}...</span>
+          `;
+          nodeList.appendChild(li);
+        });
+      }
+    }
+  </script>
+</body>
+</html>
