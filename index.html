@@ -3,8 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Verifiable Merkle Tree Visualizer</title>
-  <link rel="stylesheet" href="merkle.css">
+  <title>Welcome - Treecks or Treets</title>
   <style>
     :root {
       --bg-dark: #121212;
@@ -12,10 +11,7 @@
       --border-color: #333333;
       --text-main: #e0e0e0;
       --accent: #4fc1ff;
-      --accent-green: #4ec9b0;
-      --accent-orange: #ff9f1c;
-      --accent-teal: #2ec4b6;
-      --accent-red: #e71d36;
+      --accent-hover: #3fa8dd;
     }
 
     body {
@@ -25,776 +21,82 @@
       margin: 0;
       padding: 0;
       display: flex;
-      flex-direction: column;
-      height: 100vh;
-      overflow: hidden;
+      justify-content: center;
+      align-items: center;
+      min-height: 100vh;
     }
 
-    header {
+    .welcome-container {
       background-color: var(--panel-bg);
-      border-bottom: 1px solid var(--border-color);
-      padding: 10px 20px;
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-      flex-shrink: 0;
+      border: 1px solid var(--border-color);
+      border-radius: 8px;
+      padding: 40px 50px;
+      text-align: center;
+      box-shadow: 0 8px 24px rgba(0, 0, 0, 0.5);
+      max-width: 500px;
+      width: 90%;
     }
 
     h1 {
-      margin: 0;
-      font-size: 1.4rem;
       color: var(--accent);
-      display: flex;
-      align-items: center;
-      gap: 10px;
-    }
-
-    .subtitle {
-      font-size: 0.85rem;
-      color: #888;
-      margin-left: 10px;
-    }
-
-    .main-container {
-      display: flex;
-      flex: 1;
-      overflow: hidden;
-    }
-
-    .sidebar {
-      width: 320px;
-      background-color: var(--panel-bg);
-      border-right: 1px solid var(--border-color);
-      display: flex;
-      flex-direction: column;
-      flex-shrink: 0;
-      overflow-y: auto;
-      padding: 20px;
-      gap: 20px;
-    }
-
-    .visualizer-pane {
-      flex: 1;
-      display: flex;
-      flex-direction: column;
-      background-color: var(--bg-dark);
-      position: relative;
-      overflow: hidden;
-    }
-
-    .svg-container {
-      flex: 1;
-      overflow: auto;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      padding: 20px;
-    }
-
-    svg {
-      max-width: 100%;
-      min-width: 600px;
-    }
-
-    .details-pane {
-      width: 380px;
-      background-color: var(--panel-bg);
-      border-left: 1px solid var(--border-color);
-      display: flex;
-      flex-direction: column;
-      flex-shrink: 0;
-      overflow-y: auto;
-      padding: 20px;
-      gap: 20px;
-    }
-
-    .panel-section {
-      background-color: #252526;
-      border: 1px solid var(--border-color);
-      border-radius: 6px;
-      padding: 15px;
-    }
-
-    .panel-section h3 {
+      font-size: 1.8rem;
       margin-top: 0;
-      margin-bottom: 12px;
-      font-size: 1rem;
-      border-bottom: 1px solid var(--border-color);
-      padding-bottom: 6px;
-      color: var(--accent);
+      margin-bottom: 30px;
     }
 
-    .input-group {
+    .menu {
       display: flex;
-      gap: 8px;
-      margin-bottom: 10px;
-    }
-
-    input[type="text"], select, input[type="number"] {
-      background-color: #1e1e1e;
-      border: 1px solid var(--border-color);
-      color: var(--text-main);
-      padding: 8px 12px;
-      border-radius: 4px;
-      font-family: inherit;
-      font-size: 0.9rem;
-      flex: 1;
-    }
-
-    input[type="number"] {
-      width: 60px;
-      flex: none;
-    }
-
-    button {
-      background-color: var(--accent);
-      color: #000;
-      border: none;
-      padding: 8px 16px;
-      border-radius: 4px;
-      font-weight: bold;
-      cursor: pointer;
-      font-size: 0.9rem;
-      transition: background-color 0.2s;
-    }
-
-    button:hover {
-      background-color: #3fa8dd;
-    }
-
-    button.secondary {
-      background-color: #3c3c3c;
-      color: var(--text-main);
-    }
-
-    button.secondary:hover {
-      background-color: #4c4c4c;
-    }
-
-    .leaf-list {
+      flex-direction: column;
+      gap: 15px;
       list-style: none;
       padding: 0;
       margin: 0;
-      max-height: 200px;
-      overflow-y: auto;
+    }
+
+    .menu-link {
+      display: block;
+      background-color: #252526;
       border: 1px solid var(--border-color);
-      border-radius: 4px;
-    }
-
-    .leaf-item {
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-      padding: 8px 12px;
-      border-bottom: 1px solid var(--border-color);
-      font-family: monospace;
-      font-size: 0.85rem;
-      cursor: pointer;
-    }
-
-    .leaf-item:last-child {
-      border-bottom: none;
-    }
-
-    .leaf-item:hover {
-      background-color: #2d2d2d;
-    }
-
-    .leaf-item.selected {
-      background-color: #2b3a4a;
-      border-left: 3px solid var(--accent);
-    }
-
-    .legend {
-      display: flex;
-      flex-wrap: wrap;
-      gap: 12px;
-      font-size: 0.8rem;
-    }
-
-    .legend-item {
-      display: flex;
-      align-items: center;
-      gap: 6px;
-    }
-
-    .legend-color {
-      width: 14px;
-      height: 14px;
-      border-radius: 50%;
-      border: 1px solid #888;
-    }
-
-    .legend-color.default { fill: #2c2c2c; background: #2c2c2c; }
-    .legend-color.leaf { border-color: #3a86c8; background: #2c2c2c; }
-    .legend-color.ephemeral { border-style: dashed; background: #1e1e1e; }
-    .legend-color.path { background: var(--accent-orange); border-color: #d07e10; }
-    .legend-color.proof { background: var(--accent-teal); border-color: #1ca395; }
-    .legend-color.old-root { background: var(--accent-red); border-color: #b31427; }
-
-    /* Detail Step Elements */
-    .step-list {
-      font-family: monospace;
-      font-size: 0.85rem;
-      display: flex;
-      flex-direction: column;
-      gap: 8px;
-    }
-
-    .step-item {
-      padding: 10px;
-      border-radius: 4px;
-      background: #1e1e1e;
-      border-left: 3px solid #888;
-    }
-
-    .step-item.step-path {
-      border-left-color: var(--accent-orange);
-    }
-
-    .step-item.step-proof {
-      border-left-color: var(--accent-teal);
-    }
-
-    .step-item.step-success {
-      border-left-color: var(--accent-green);
-      background: #1d332a;
-    }
-
-    .step-item.step-fail {
-      border-left-color: var(--accent-red);
-      background: #3c1e22;
-    }
-
-    .hash-val {
-      word-break: break-all;
-      color: #aaa;
-      font-size: 0.75rem;
-      margin-top: 4px;
-    }
-
-    .tab-container {
-      display: flex;
-      border-bottom: 1px solid var(--border-color);
-      margin-bottom: 10px;
-    }
-
-    .tab {
-      flex: 1;
-      text-align: center;
-      padding: 8px;
-      cursor: pointer;
-      font-size: 0.9rem;
-      border-bottom: 2px solid transparent;
-      color: #888;
-    }
-
-    .tab.active {
-      color: var(--accent);
-      border-bottom-color: var(--accent);
-      font-weight: bold;
-    }
-
-    #tooltip {
-      position: absolute;
-      background: rgba(30, 30, 30, 0.95);
-      border: 1px solid var(--border-color);
-      padding: 10px;
-      border-radius: 4px;
-      font-family: monospace;
-      font-size: 0.75rem;
-      pointer-events: none;
-      display: none;
-      z-index: 10;
-      box-shadow: 0 4px 12px rgba(0,0,0,0.5);
-    }
-
-    .banner {
-      background-color: #2b3a4a;
-      border: 1px solid #3c5675;
-      padding: 10px 15px;
+      color: var(--text-main);
+      text-decoration: none;
+      padding: 14px 20px;
       border-radius: 6px;
-      font-size: 0.85rem;
-      margin-bottom: 15px;
-      display: flex;
-      align-items: center;
-      justify-content: space-between;
+      font-size: 1.1rem;
+      font-weight: 500;
+      transition: all 0.2s ease;
+    }
+
+    .menu-link:hover {
+      background-color: #2d2d2d;
+      border-color: var(--accent);
+      color: var(--accent);
+      transform: translateY(-2px);
+    }
+
+    .menu-link.highlight {
+      background-color: var(--accent);
+      color: #000;
+      font-weight: bold;
+      border-color: var(--accent);
+    }
+
+    .menu-link.highlight:hover {
+      background-color: var(--accent-hover);
+      border-color: var(--accent-hover);
+      color: #000;
     }
   </style>
 </head>
 <body>
-  <header>
-    <h1>
-      Verifiable Merkle Tree Visualizer
-      <span class="subtitle">RFC 6962 Standard</span>
-    </h1>
-    <div>
-      <a href="test.html" style="color: var(--accent); font-size: 0.9rem; text-decoration: none;" target="_blank">Run Unit Tests ↗</a>
-    </div>
-  </header>
-
-  <div class="main-container">
-    <!-- Sidebar: Controls -->
-    <div class="sidebar">
-      <div class="panel-section">
-        <h3>Add Records</h3>
-        <div class="input-group">
-          <input type="text" id="record-input" placeholder="Record data (e.g. apple)">
-          <button id="add-record-btn">Add</button>
-        </div>
-        <div class="input-group">
-          <button id="add-bulk-btn" class="secondary" style="flex: 1;">Add Sample Set</button>
-          <button id="clear-btn" class="secondary">Clear</button>
-        </div>
-      </div>
-
-      <div class="panel-section">
-        <h3>Records List</h3>
-        <p style="font-size: 0.8rem; color: #888; margin-top: 0;">Click on a leaf record to generate and visualize its <strong>Inclusion Proof</strong>.</p>
-        <ul class="leaf-list" id="leaf-list">
-          <li style="padding: 12px; text-align: center; color: #666;">No records yet</li>
-        </ul>
-      </div>
-
-      <div class="panel-section">
-        <h3>Legend</h3>
-        <div class="legend">
-          <div class="legend-item"><div class="legend-color default"></div><span>Internal Node</span></div>
-          <div class="legend-item"><div class="legend-color leaf"></div><span>Leaf Node</span></div>
-          <div class="legend-item"><div class="legend-color ephemeral"></div><span>Ephemeral Node</span></div>
-          <div class="legend-item"><div class="legend-color path"></div><span>Calculated Path</span></div>
-          <div class="legend-item"><div class="legend-color proof"></div><span>Proof Sibling</span></div>
-          <div class="legend-item"><div class="legend-color old-root"></div><span>Old Root(s)</span></div>
-        </div>
-      </div>
-    </div>
-
-    <!-- Middle: Visualization -->
-    <div class="visualizer-pane">
-      <div class="svg-container">
-        <svg id="merkle-svg" viewBox="0 0 800 500" width="100%" height="100%"></svg>
-      </div>
-      
-      <!-- Tooltip -->
-      <div id="tooltip"></div>
-    </div>
-
-    <!-- Right sidebar: Cryptographic math breakdown & verification -->
-    <div class="details-pane">
-      <div class="tab-container">
-        <div class="tab active" id="tab-inclusion">Inclusion Proof</div>
-        <div class="tab" id="tab-consistency">Consistency Proof</div>
-      </div>
-
-      <!-- Tab Content: Inclusion -->
-      <div id="inclusion-pane">
-        <div class="banner" id="inclusion-banner">
-          Select a leaf record from the list to begin verification.
-        </div>
-        
-        <div class="panel-section" id="inclusion-steps-section" style="display: none;">
-          <h3>Verification Steps</h3>
-          <div class="step-list" id="inclusion-steps-list"></div>
-        </div>
-      </div>
-
-      <!-- Tab Content: Consistency -->
-      <div id="consistency-pane" style="display: none;">
-        <div class="panel-section">
-          <h3>Sizes Comparison</h3>
-          <p style="font-size: 0.8rem; color: #888; margin-top: 0;">
-            Verify that a tree of size <strong>M</strong> is a complete subset of a tree of size <strong>N</strong> (M &le; N).
-          </p>
-          <div class="input-group">
-            <div style="flex: 1;">
-              <label style="font-size: 0.75rem; color: #888; display: block; margin-bottom: 4px;">Old Size (M)</label>
-              <select id="size1-select"></select>
-            </div>
-            <div style="flex: 1;">
-              <label style="font-size: 0.75rem; color: #888; display: block; margin-bottom: 4px;">New Size (N)</label>
-              <select id="size2-select"></select>
-            </div>
-          </div>
-          <button id="verify-consistency-btn" style="width: 100%; margin-top: 5px;">Verify Consistency</button>
-        </div>
-
-        <div class="panel-section" id="consistency-steps-section" style="display: none;">
-          <h3>Verification Steps</h3>
-          <div class="step-list" id="consistency-steps-list"></div>
-        </div>
-      </div>
-    </div>
+  <div class="welcome-container">
+    <h1>Hello, welcome to Treecks or Treets</h1>
+    <nav>
+      <ul class="menu">
+        <li><a href="#" class="menu-link" onclick="return false;">1. Learn</a></li>
+        <li><a href="#" class="menu-link" onclick="return false;">2. Play</a></li>
+        <li><a href="tree-generator.html" class="menu-link highlight">3. Tree Generator</a></li>
+      </ul>
+    </nav>
   </div>
-
-  <script type="module">
-    import { MerkleTree, verifyInclusion, verifyConsistency, bytesToHex, hexToBytes, Hasher } from './merkle.js';
-    import { MerkleVisualizer } from './merkle-visualizer.js';
-
-    // Global State
-    let tree = new MerkleTree();
-    let visualizer;
-    let currentTab = 'inclusion'; // 'inclusion' or 'consistency'
-    let selectedLeafIndex = null;
-    
-    // Historical root hashes by size (for consistency checks)
-    const historyRoots = {};
-
-    // Dom Elements
-    const recordInput = document.getElementById('record-input');
-    const addRecordBtn = document.getElementById('add-record-btn');
-    const addBulkBtn = document.getElementById('add-bulk-btn');
-    const clearBtn = document.getElementById('clear-btn');
-    const leafList = document.getElementById('leaf-list');
-    const merkleSvg = document.getElementById('merkle-svg');
-    const tooltip = document.getElementById('tooltip');
-
-    const tabInclusion = document.getElementById('tab-inclusion');
-    const tabConsistency = document.getElementById('tab-consistency');
-    const inclusionPane = document.getElementById('inclusion-pane');
-    const consistencyPane = document.getElementById('consistency-pane');
-
-    const size1Select = document.getElementById('size1-select');
-    const size2Select = document.getElementById('size2-select');
-    const verifyConsistencyBtn = document.getElementById('verify-consistency-btn');
-    
-    const inclusionBanner = document.getElementById('inclusion-banner');
-    const inclusionStepsSection = document.getElementById('inclusion-steps-section');
-    const inclusionStepsList = document.getElementById('inclusion-steps-list');
-
-    const consistencyStepsSection = document.getElementById('consistency-steps-section');
-    const consistencyStepsList = document.getElementById('consistency-steps-list');
-
-    // Initialize
-    window.addEventListener('DOMContentLoaded', () => {
-      visualizer = new MerkleVisualizer(merkleSvg, {
-        onLeafClick: handleLeafClick,
-        onNodeHover: handleNodeHover
-      });
-
-      // Default sample records
-      loadBulkSample();
-    });
-
-    // Event Listeners
-    addRecordBtn.addEventListener('click', addRecord);
-    recordInput.addEventListener('keypress', (e) => { if (e.key === 'Enter') addRecord(); });
-    addBulkBtn.addEventListener('click', loadBulkSample);
-    clearBtn.addEventListener('click', clearTree);
-    
-    tabInclusion.addEventListener('click', () => switchTab('inclusion'));
-    tabConsistency.addEventListener('click', () => switchTab('consistency'));
-
-    verifyConsistencyBtn.addEventListener('click', runConsistencyVerification);
-
-    function switchTab(tab) {
-      currentTab = tab;
-      tabInclusion.classList.toggle('active', tab === 'inclusion');
-      tabConsistency.classList.toggle('active', tab === 'consistency');
-      inclusionPane.style.display = tab === 'inclusion' ? 'block' : 'none';
-      consistencyPane.style.display = tab === 'consistency' ? 'block' : 'none';
-      
-      // Update rendering to remove highlights or switch highlights
-      updateVisualization();
-    }
-
-    function addRecord() {
-      const val = recordInput.value.trim();
-      if (!val) return;
-      
-      tree.addLeaf(val);
-      recordInput.value = '';
-      
-      // Record historical root for this size
-      const currentSize = tree.leaves.length;
-      historyRoots[currentSize] = tree.getRootHashHex();
-
-      updateAll();
-    }
-
-    function loadBulkSample() {
-      const samples = ["apple", "banana", "cherry", "date", "elderberry"];
-      tree = new MerkleTree();
-      
-      // Rebuild history roots
-      for(let i=0; i<samples.length; i++) {
-        tree.addLeaf(samples[i]);
-        historyRoots[i+1] = tree.getRootHashHex();
-      }
-
-      selectedLeafIndex = null;
-      updateAll();
-    }
-
-    function clearTree() {
-      tree = new MerkleTree();
-      // Clear history roots except empty
-      for (const k in historyRoots) delete historyRoots[k];
-      selectedLeafIndex = null;
-      updateAll();
-    }
-
-    function updateAll() {
-      updateRecordList();
-      updateSizeDropdowns();
-      updateVisualization();
-      updateDetails();
-    }
-
-    function updateRecordList() {
-      leafList.innerHTML = '';
-      const size = tree.leaves.length;
-      if (size === 0) {
-        leafList.innerHTML = `<li style="padding: 12px; text-align: center; color: #666;">No records yet</li>`;
-        return;
-      }
-
-      for (let i = 0; i < size; i++) {
-        const li = document.createElement('li');
-        li.className = `leaf-item ${selectedLeafIndex === i ? 'selected' : ''}`;
-        const val = new TextDecoder().decode(tree.leaves[i]);
-        li.innerHTML = `
-          <span>[${i}] "${val}"</span>
-          <span style="color: #888;">${bytesToHex(Hasher.hashLeaf(tree.leaves[i])).substring(0, 8)}...</span>
-        `;
-        li.addEventListener('click', () => handleLeafClick(i));
-        leafList.appendChild(li);
-      }
-    }
-
-    function updateSizeDropdowns() {
-      const size = tree.leaves.length;
-      size1Select.innerHTML = '';
-      size2Select.innerHTML = '';
-
-      if (size === 0) return;
-
-      for (let i = 1; i <= size; i++) {
-        // Only include historical sizes we have recorded roots for
-        if (historyRoots[i]) {
-          const opt1 = document.createElement('option');
-          opt1.value = i;
-          opt1.textContent = `Size ${i}`;
-          size1Select.appendChild(opt1);
-
-          const opt2 = document.createElement('option');
-          opt2.value = i;
-          opt2.textContent = `Size ${i}`;
-          size2Select.appendChild(opt2);
-        }
-      }
-
-      // Default select size1 to 3, size2 to current size if available
-      if (size >= 3) {
-        size1Select.value = 3;
-      }
-      size2Select.value = size;
-    }
-
-    function updateVisualization() {
-      if (currentTab === 'inclusion' && selectedLeafIndex !== null) {
-        visualizer.render(tree, {
-          type: 'inclusion',
-          leafIndex: selectedLeafIndex
-        });
-      } else if (currentTab === 'consistency' && size1Select.value && size2Select.value) {
-        visualizer.render(tree, {
-          type: 'consistency',
-          size1: parseInt(size1Select.value),
-          size2: parseInt(size2Select.value)
-        });
-      } else {
-        visualizer.render(tree, null);
-      }
-    }
-
-    function updateDetails() {
-      if (currentTab === 'inclusion') {
-        renderInclusionDetails();
-      } else {
-        renderConsistencyDetails();
-      }
-    }
-
-    function handleLeafClick(index) {
-      selectedLeafIndex = index;
-      
-      // Force switch to inclusion tab when clicking a leaf
-      if (currentTab !== 'inclusion') {
-        switchTab('inclusion');
-      } else {
-        updateRecordList();
-        updateVisualization();
-        updateDetails();
-      }
-    }
-
-    function handleNodeHover(node, coord) {
-      if (!node || !coord) {
-        tooltip.style.display = 'none';
-        return;
-      }
-
-      // Find SVG absolute page location to offset tooltip correctly
-      const rect = merkleSvg.getBoundingClientRect();
-      const clientX = coord.x + rect.left + window.scrollX;
-      const clientY = coord.y + rect.top + window.scrollY;
-
-      tooltip.innerHTML = `
-        <div style="font-weight: bold; color: var(--accent); margin-bottom: 4px;">Node L${node.level}, I${node.index}</div>
-        <div style="color: #e0e0e0;">Hash:</div>
-        <div style="color: var(--accent-green); word-break: break-all;">${node.hash}</div>
-        ${node.isEphemeral ? '<div style="color: #ff9f1c; margin-top: 4px;">(Ephemeral Node)</div>' : ''}
-        ${node.value ? `<div style="color: #ffffff; margin-top: 4px;">Value: "${node.value}"</div>` : ''}
-      `;
-      tooltip.style.left = `${coord.x + 30}px`;
-      tooltip.style.top = `${coord.y - 40}px`;
-      tooltip.style.display = 'block';
-    }
-
-    // --- Detail Rendering Helpers ---
-
-    function renderInclusionDetails() {
-      inclusionStepsList.innerHTML = '';
-      if (selectedLeafIndex === null || tree.leaves.length === 0) {
-        inclusionBanner.style.display = 'block';
-        inclusionBanner.textContent = "Select a leaf record from the list to begin verification.";
-        inclusionStepsSection.style.display = 'none';
-        return;
-      }
-
-      inclusionBanner.style.display = 'none';
-      inclusionStepsSection.style.display = 'block';
-
-      const size = tree.leaves.length;
-      const valBytes = tree.leaves[selectedLeafIndex];
-      const valStr = new TextDecoder().decode(valBytes);
-      const leafHash = Hasher.hashLeaf(valBytes);
-
-      // Create inclusion proof elements
-      const proof = tree.getInclusionProof(selectedLeafIndex);
-      const root = tree.getRootHash();
-
-      // Step 1: Hash the leaf
-      const item1 = document.createElement('div');
-      item1.className = 'step-item step-path';
-      item1.innerHTML = `
-        <div><strong>Step 1: Hash Leaf record ${selectedLeafIndex}</strong></div>
-        <div>SHA256(0x00 || "${valStr}")</div>
-        <div class="hash-val">${bytesToHex(leafHash)}</div>
-      `;
-      inclusionStepsList.appendChild(item1);
-
-      // Compute step calculations dynamically
-      let currentHash = leafHash;
-      let idx = selectedLeafIndex;
-      let proofIndex = 0;
-
-      for (let L = 0; L < tree.levels.length - 1; L++) {
-        const siblingIdx = idx ^ 1;
-        const item = document.createElement('div');
-        
-        if (siblingIdx < tree.levels[L].length) {
-          const siblingHash = tree.levels[L][siblingIdx];
-          const isLeftSibling = siblingIdx < idx;
-          
-          let expr = '';
-          if (isLeftSibling) {
-            expr = `SHA256(0x01 || sibling(L${L},I${siblingIdx}) || current)`;
-            currentHash = Hasher.hashChildren(siblingHash, currentHash);
-          } else {
-            expr = `SHA256(0x01 || current || sibling(L${L},I${siblingIdx}))`;
-            currentHash = Hasher.hashChildren(currentHash, siblingHash);
-          }
-
-          item.className = 'step-item step-path';
-          item.innerHTML = `
-            <div><strong>Step ${L + 2}: Merge with Sibling</strong></div>
-            <div>${expr}</div>
-            <div style="font-size: 0.75rem; margin-top: 4px; color: var(--accent-teal);">Sibling Hash: ${bytesToHex(siblingHash).substring(0, 16)}...</div>
-            <div class="hash-val">Result: ${bytesToHex(currentHash)}</div>
-          `;
-          proofIndex++;
-        } else {
-          // Sibling is ephemeral (missing)
-          item.className = 'step-item';
-          item.style.opacity = 0.7;
-          item.innerHTML = `
-            <div><strong>Step ${L + 2}: Sibling is Ephemeral</strong></div>
-            <div>No sibling exists at coordinate (L${L}, I${siblingIdx}).</div>
-            <div>Hash propagates up unchanged.</div>
-            <div class="hash-val">Result: ${bytesToHex(currentHash)}</div>
-          `;
-        }
-        inclusionStepsList.appendChild(item);
-        idx = Math.floor(idx / 2);
-      }
-
-      // Step final: Check root match
-      const matched = verifyInclusion(selectedLeafIndex, size, valBytes, proof, root);
-      const finalItem = document.createElement('div');
-      finalItem.className = `step-item ${matched ? 'step-success' : 'step-fail'}`;
-      finalItem.innerHTML = `
-        <div><strong>Final Verification: Compare Root</strong></div>
-        <div>Calculated Root vs Stored Root:</div>
-        <div class="hash-val" style="color: #fff;">Calc:  ${bytesToHex(currentHash)}</div>
-        <div class="hash-val" style="color: #fff;">Store: ${bytesToHex(root)}</div>
-        <div style="margin-top: 8px; font-weight: bold;">
-          ${matched ? '✅ Proof Valid! Record is verified present.' : '❌ Proof Invalid! Root mismatch.'}
-        </div>
-      `;
-      inclusionStepsList.appendChild(finalItem);
-    }
-
-    function renderConsistencyDetails() {
-      consistencyStepsList.innerHTML = '';
-      consistencyStepsSection.style.display = 'none';
-    }
-
-    function runConsistencyVerification() {
-      const size1 = parseInt(size1Select.value);
-      const size2 = parseInt(size2Select.value);
-
-      if (!size1 || !size2) return;
-
-      consistencyStepsSection.style.display = 'block';
-      consistencyStepsList.innerHTML = '';
-
-      const root1Hex = historyRoots[size1];
-      const root2Hex = historyRoots[size2];
-      const root1 = hexToBytes(root1Hex);
-      const root2 = hexToBytes(root2Hex);
-
-      const proof = tree.getConsistencyProof(size1, size2);
-      
-      // Update visualization to highlight nodes
-      updateVisualization();
-
-      // Show step-by-step logic
-      const intro = document.createElement('div');
-      intro.className = 'step-item';
-      intro.innerHTML = `
-        <div><strong>Consistency Verification Parameters</strong></div>
-        <div>Old Tree size M = ${size1} (Root: ${root1Hex.substring(0, 12)}...)</div>
-        <div>New Tree size N = ${size2} (Root: ${root2Hex.substring(0, 12)}...)</div>
-        <div>Proof hashes: ${proof.length} values provided.</div>
-      `;
-      consistencyStepsList.appendChild(intro);
-
-      // Verify
-      const isConsistent = verifyConsistency(size1, size2, proof, root1, root2);
-
-      const result = document.createElement('div');
-      result.className = `step-item ${isConsistent ? 'step-success' : 'step-fail'}`;
-      result.innerHTML = `
-        <div><strong>Result</strong></div>
-        <div style="font-weight: bold; margin-top: 4px;">
-          ${isConsistent 
-            ? '✅ Trees are consistent! Verified that the old version is a complete prefix of the new version and no historical records were altered.' 
-            : '❌ Consistency proof verification failed!'}
-        </div>
-      `;
-      consistencyStepsList.appendChild(result);
-    }
-  </script>
 </body>
 </html>
