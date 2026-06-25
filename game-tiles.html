@@ -1,0 +1,811 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Tiles Game - C2SP Tiled Transparency Logs</title>
+  <style>
+    :root {
+      --bg-dark: #121212;
+      --panel-bg: #1e1e1e;
+      --border-color: #333333;
+      --text-main: #e0e0e0;
+      --accent: #4fc1ff;
+      --accent-green: #4ec9b0;
+      --accent-orange: #ff9f1c;
+      --accent-purple: #b180d7;
+      --accent-red: #e71d36;
+    }
+
+    body {
+      background-color: var(--bg-dark);
+      color: var(--text-main);
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+      margin: 0;
+      padding: 0;
+      display: flex;
+      flex-direction: column;
+      height: 100vh;
+      overflow: hidden;
+    }
+
+    header {
+      background-color: var(--panel-bg);
+      border-bottom: 1px solid var(--border-color);
+      padding: 12px 25px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      flex-shrink: 0;
+    }
+
+    h1 {
+      margin: 0;
+      font-size: 1.4rem;
+      color: var(--accent);
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+
+    .header-links a {
+      color: var(--text-main);
+      text-decoration: none;
+      font-size: 0.95rem;
+      margin-left: 20px;
+    }
+
+    .header-links a:hover {
+      color: var(--accent);
+    }
+
+    .main-container {
+      display: flex;
+      flex: 1;
+      overflow: hidden;
+    }
+
+    .sidebar {
+      width: 380px;
+      background-color: var(--panel-bg);
+      border-right: 1px solid var(--border-color);
+      display: flex;
+      flex-direction: column;
+      padding: 20px;
+      gap: 16px;
+      overflow-y: auto;
+      flex-shrink: 0;
+    }
+
+    .panel-section {
+      background-color: #252526;
+      border: 1px solid var(--border-color);
+      border-radius: 6px;
+      padding: 14px;
+    }
+
+    .panel-section h3 {
+      margin-top: 0;
+      margin-bottom: 10px;
+      font-size: 1rem;
+      color: var(--accent);
+      border-bottom: 1px solid var(--border-color);
+      padding-bottom: 6px;
+    }
+
+    .level-btn {
+      background-color: #1e1e1e;
+      border: 1px solid var(--border-color);
+      color: var(--text-main);
+      padding: 9px 12px;
+      border-radius: 4px;
+      cursor: pointer;
+      font-size: 0.88rem;
+      width: 100%;
+      text-align: left;
+      margin-bottom: 6px;
+      transition: all 0.2s;
+    }
+
+    .level-btn:hover {
+      border-color: var(--accent);
+    }
+
+    .level-btn.active {
+      background-color: #2b3a4a;
+      border-color: var(--accent);
+      color: #fff;
+      font-weight: bold;
+    }
+
+    .instruction-text {
+      font-size: 0.85rem;
+      color: #ccc;
+      line-height: 1.5;
+      margin: 0;
+    }
+
+    .tile-list {
+      list-style: none;
+      padding: 0;
+      margin: 0;
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+    }
+
+    .tile-item {
+      background-color: #1e1e1e;
+      border: 1px solid var(--border-color);
+      border-left: 4px solid #555;
+      padding: 10px;
+      border-radius: 4px;
+      font-size: 0.85rem;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+
+    .tile-item.completed {
+      background-color: #1d332a;
+      border-color: var(--accent-green);
+      border-left-color: var(--accent-green);
+      color: #fff;
+    }
+
+    .tile-path {
+      font-family: monospace;
+      font-weight: bold;
+      font-size: 0.95rem;
+    }
+
+    .action-btn {
+      background-color: #3c3c3c;
+      color: #fff;
+      border: none;
+      padding: 10px;
+      border-radius: 4px;
+      cursor: pointer;
+      font-weight: bold;
+      width: 100%;
+      transition: background 0.2s;
+    }
+
+    .action-btn:hover {
+      background-color: #4c4c4c;
+    }
+
+    /* Guess Mode Inputs */
+    .guess-input-group {
+      display: flex;
+      gap: 8px;
+      margin-top: 10px;
+    }
+
+    .guess-input-group input {
+      background-color: #1e1e1e;
+      border: 1px solid var(--border-color);
+      color: #fff;
+      padding: 8px 12px;
+      border-radius: 4px;
+      font-family: monospace;
+      font-size: 0.95rem;
+      flex: 1;
+    }
+
+    .submit-btn {
+      background-color: var(--accent);
+      color: #000;
+      border: none;
+      padding: 8px 14px;
+      border-radius: 4px;
+      font-weight: bold;
+      cursor: pointer;
+    }
+
+    .submit-btn:hover {
+      background-color: #3fa8dd;
+    }
+
+    .feedback-msg {
+      margin-top: 10px;
+      font-size: 0.88rem;
+      font-weight: bold;
+      min-height: 20px;
+    }
+
+    .canvas-container {
+      flex: 1;
+      background-color: var(--bg-dark);
+      position: relative;
+      overflow: hidden;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      user-select: none;
+    }
+
+    svg {
+      width: 100%;
+      height: 100%;
+      cursor: crosshair;
+    }
+
+    /* Victory Banner */
+    #victory-banner {
+      display: none;
+      position: absolute;
+      top: 20px;
+      background: linear-gradient(135deg, #1d332a, #2b3a4a);
+      border: 2px solid var(--accent-green);
+      padding: 15px 30px;
+      border-radius: 8px;
+      box-shadow: 0 8px 24px rgba(0,0,0,0.7);
+      text-align: center;
+      z-index: 10;
+      animation: popIn 0.3s ease;
+    }
+
+    @keyframes popIn {
+      from { transform: scale(0.8); opacity: 0; }
+      to { transform: scale(1); opacity: 1; }
+    }
+
+    #victory-banner h2 {
+      margin: 0 0 5px 0;
+      color: var(--accent-green);
+    }
+
+    #victory-banner p {
+      margin: 0 0 12px 0;
+      font-size: 0.9rem;
+      color: #e0e0e0;
+    }
+
+    .next-level-btn {
+      background-color: var(--accent-green);
+      color: #000;
+      border: none;
+      padding: 8px 16px;
+      border-radius: 4px;
+      font-weight: bold;
+      cursor: pointer;
+    }
+
+    .next-level-btn:hover {
+      background-color: #3cb89f;
+    }
+
+    /* SVG Styling */
+    .tree-edge {
+      stroke: #444;
+      stroke-width: 3;
+      fill: none;
+    }
+
+    .tree-node-circle {
+      fill: #2c2c2c;
+      stroke: #888;
+      stroke-width: 2;
+      transition: fill 0.2s, stroke 0.2s;
+    }
+
+    .tree-node:hover .tree-node-circle {
+      stroke: var(--accent);
+      stroke-width: 3;
+      fill: #3a3a3a;
+    }
+
+    .tree-node-text {
+      fill: #fff;
+      font-family: monospace;
+      font-size: 12px;
+      text-anchor: middle;
+      dominant-baseline: central;
+      pointer-events: none;
+    }
+
+    .selection-rect {
+      fill: rgba(79, 193, 255, 0.15);
+      stroke: var(--accent);
+      stroke-width: 2;
+      stroke-dasharray: 6;
+      pointer-events: none;
+    }
+
+    .drawn-tile-rect {
+      stroke-width: 3;
+      rx: 12;
+      pointer-events: none;
+    }
+
+    .drawn-tile-label {
+      font-family: monospace;
+      font-size: 14px;
+      font-weight: bold;
+      pointer-events: none;
+    }
+  </style>
+</head>
+<body>
+  <header>
+    <h1>🧱 Tiles Game: C2SP Specification (tlog-tiles)</h1>
+    <div class="header-links">
+      <a href="play.html">← Back to Play Mode</a>
+      <a href="tree-generator.html">Tree Generator ↗</a>
+    </div>
+  </header>
+
+  <div class="main-container">
+    <!-- Sidebar -->
+    <div class="sidebar">
+      <!-- Mode Toggle -->
+      <div class="panel-section">
+        <h3>Select Game Mode</h3>
+        <div style="display:flex; gap:8px;">
+          <button class="level-btn active" id="mode-draw-btn" onclick="switchMode('draw')" style="margin:0; text-align:center; flex:1;">✏️ Draw Tiles</button>
+          <button class="level-btn" id="mode-guess-btn" onclick="switchMode('guess')" style="margin:0; text-align:center; flex:1;">🏷️ Guess Path</button>
+        </div>
+      </div>
+
+      <!-- Level Selector -->
+      <div class="panel-section">
+        <h3>Select Log Scenario</h3>
+        <button class="level-btn active" onclick="loadLevel(1)" id="btn-lvl-1">Level 1: Complete Log N=4 (H=2)</button>
+        <button class="level-btn" onclick="loadLevel(2)" id="btn-lvl-2">Level 2: Standard Log N=8 (H=2)</button>
+        <button class="level-btn" onclick="loadLevel(3)" id="btn-lvl-3">Level 3: Partial Tile N=6 (H=2)</button>
+      </div>
+
+      <!-- Draw Mode Panel -->
+      <div id="panel-draw-mode">
+        <div class="panel-section">
+          <h3>Required Tiles</h3>
+          <p class="instruction-text" style="margin-bottom: 12px;">👉 <strong>Drag a box</strong> around a tile's exact nodes to draw it!</p>
+          <ul class="tile-list" id="target-tiles-list"></ul>
+        </div>
+      </div>
+
+      <!-- Guess Mode Panel -->
+      <div id="panel-guess-mode" style="display:none;">
+        <div class="panel-section">
+          <h3>Name the Highlighted Tile</h3>
+          <p class="instruction-text">
+            Type the exact C2SP path for the highlighted mystery tile shown on the canvas (e.g. <code>/tile/0/000</code> or <code>/tile/1/000.p/2</code>):
+          </p>
+          <div class="guess-input-group">
+            <input type="text" id="path-input" placeholder="/tile/<L>/<N>[.p/<W>]">
+            <button class="submit-btn" onclick="checkPathAnswer()">Submit</button>
+          </div>
+          <div class="feedback-msg" id="guess-feedback"></div>
+        </div>
+
+        <div class="panel-section">
+          <h3>Guessed Tiles</h3>
+          <ul class="tile-list" id="guessed-tiles-list"></ul>
+        </div>
+      </div>
+
+      <button class="action-btn" onclick="resetCurrentLevel()">Reset Level</button>
+    </div>
+
+    <!-- Main Canvas Area -->
+    <div class="canvas-container" id="canvas-container">
+      <div id="victory-banner">
+        <h2>🎉 Scenario Complete!</h2>
+        <p id="victory-msg">You mastered this C2SP Tiled Log scenario!</p>
+        <button class="next-level-btn" onclick="nextLevel()">Next Scenario ➔</button>
+      </div>
+      <svg id="game-svg" viewBox="0 0 800 500"></svg>
+    </div>
+  </div>
+
+  <script>
+    const svg = document.getElementById('game-svg');
+    const tileListEl = document.getElementById('target-tiles-list');
+    const guessedListEl = document.getElementById('guessed-tiles-list');
+    const victoryBanner = document.getElementById('victory-banner');
+    const pathInput = document.getElementById('path-input');
+    const feedbackEl = document.getElementById('guess-feedback');
+
+    let currentGameMode = 'draw'; // 'draw' or 'guess'
+    let currentLevelIdx = 1;
+    let isDragging = false;
+    let dragStart = { x: 0, y: 0 };
+    let selRectEl = null;
+
+    let treeNodes = [];
+    let treeEdges = [];
+    let targetTiles = [];
+    let drawnTiles = new Set();
+    let guessedTiles = new Set();
+    let activeGuessIdx = 0;
+
+    const levels = {
+      1: {
+        name: "Complete Log N=4",
+        leaves: 4,
+        tileHeight: 2,
+        tiles: [
+          { id: "t0", path: "/tile/0/000", name: "Level 0 Tile 0", root: "L2_I0", nodes: ["L0_I0", "L0_I1", "L0_I2", "L0_I3", "L1_I0", "L1_I1"], color: "#4ec9b0" }
+        ]
+      },
+      2: {
+        name: "Standard Log N=8",
+        leaves: 8,
+        tileHeight: 2,
+        tiles: [
+          { id: "t0", path: "/tile/0/000", name: "Level 0 Tile 0", root: "L2_I0", nodes: ["L0_I0", "L0_I1", "L0_I2", "L0_I3", "L1_I0", "L1_I1"], color: "#4ec9b0" },
+          { id: "t1", path: "/tile/0/001", name: "Level 0 Tile 1", root: "L2_I1", nodes: ["L0_I4", "L0_I5", "L0_I6", "L0_I7", "L1_I2", "L1_I3"], color: "#ff9f1c" },
+          { id: "t2", path: "/tile/1/000.p/2", name: "Level 1 Tile 0 (Partial)", root: "L3_I0", nodes: ["L2_I0", "L2_I1"], color: "#4fc1ff" }
+        ]
+      },
+      3: {
+        name: "Partial Tile N=6",
+        leaves: 6,
+        tileHeight: 2,
+        customTree: true,
+        tiles: [
+          { id: "t0", path: "/tile/0/000", name: "Level 0 Tile 0", root: "L2_I0", nodes: ["L0_I0", "L0_I1", "L0_I2", "L0_I3", "L1_I0", "L1_I1"], color: "#4ec9b0" },
+          { id: "t1", path: "/tile/0/001.p/2", name: "Level 0 Tile 1 (.p/2)", root: "L1_I2", nodes: ["L0_I4", "L0_I5"], color: "#ff9f1c" },
+          { id: "t2", path: "/tile/1/000.p/1", name: "Level 1 Tile 0 (.p/1)", root: "L3_I0", nodes: ["L2_I0"], color: "#4fc1ff" }
+        ]
+      }
+    };
+
+    window.addEventListener('DOMContentLoaded', () => {
+      setupMouseEvents();
+      pathInput.addEventListener('keypress', (e) => { if (e.key === 'Enter') checkPathAnswer(); });
+      loadLevel(1);
+    });
+
+    function switchMode(mode) {
+      currentGameMode = mode;
+      document.getElementById('mode-draw-btn').classList.toggle('active', mode === 'draw');
+      document.getElementById('mode-guess-btn').classList.toggle('active', mode === 'guess');
+      document.getElementById('panel-draw-mode').style.display = mode === 'draw' ? 'block' : 'none';
+      document.getElementById('panel-guess-mode').style.display = mode === 'guess' ? 'block' : 'none';
+      resetCurrentLevel();
+    }
+
+    function loadLevel(lvl) {
+      currentLevelIdx = lvl;
+      drawnTiles.clear();
+      guessedTiles.clear();
+      activeGuessIdx = 0;
+      victoryBanner.style.display = 'none';
+      feedbackEl.textContent = '';
+      pathInput.value = '';
+
+      [1, 2, 3].forEach(num => {
+        const btn = document.getElementById(`btn-lvl-${num}`);
+        if (btn) btn.classList.toggle('active', num === lvl);
+      });
+
+      const data = levels[lvl];
+      targetTiles = data.tiles;
+
+      if (data.customTree && lvl === 3) {
+        buildCustomTreeN6();
+      } else {
+        buildTreeStructure(data.leaves);
+      }
+
+      renderSidebar();
+      renderScene();
+    }
+
+    function resetCurrentLevel() {
+      drawnTiles.clear();
+      guessedTiles.clear();
+      activeGuessIdx = 0;
+      victoryBanner.style.display = 'none';
+      feedbackEl.textContent = '';
+      pathInput.value = '';
+      renderSidebar();
+      renderScene();
+    }
+
+    function nextLevel() {
+      if (currentLevelIdx < 3) {
+        loadLevel(currentLevelIdx + 1);
+      } else {
+        loadLevel(1);
+      }
+    }
+
+    function buildTreeStructure(leafCount) {
+      treeNodes = [];
+      treeEdges = [];
+
+      const height = Math.log2(leafCount);
+      const widthSvg = 800;
+      const heightSvg = 500;
+      const marginY = 80;
+      const levelSpacing = (heightSvg - marginY * 2) / height;
+
+      for (let l = 0; l <= height; l++) {
+        const count = leafCount / Math.pow(2, l);
+        const spacingX = widthSvg / count;
+
+        for (let i = 0; i < count; i++) {
+          const x = spacingX * i + spacingX / 2;
+          const y = heightSvg - marginY - l * levelSpacing;
+          const id = `L${l}_I${i}`;
+          treeNodes.push({ id, level: l, index: i, x, y });
+
+          if (l < height) {
+            const parentIndex = Math.floor(i / 2);
+            const parentId = `L${l+1}_I${parentIndex}`;
+            treeEdges.push({ from: id, to: parentId });
+          }
+        }
+      }
+    }
+
+    function buildCustomTreeN6() {
+      treeNodes = [];
+      treeEdges = [];
+      const widthSvg = 800;
+      const heightSvg = 500;
+      const marginY = 80;
+      const levelSpacing = (heightSvg - marginY * 2) / 3;
+
+      const spacingX0 = widthSvg / 8;
+      for (let i = 0; i < 6; i++) {
+        treeNodes.push({ id: `L0_I${i}`, level: 0, index: i, x: spacingX0 * i + spacingX0, y: heightSvg - marginY });
+      }
+      treeNodes.push({ id: `L1_I0`, level: 1, index: 0, x: spacingX0 * 0.5 + spacingX0, y: heightSvg - marginY - levelSpacing });
+      treeNodes.push({ id: `L1_I1`, level: 1, index: 1, x: spacingX0 * 2.5 + spacingX0, y: heightSvg - marginY - levelSpacing });
+      treeNodes.push({ id: `L1_I2`, level: 1, index: 2, x: spacingX0 * 4.5 + spacingX0, y: heightSvg - marginY - levelSpacing });
+
+      treeNodes.push({ id: `L2_I0`, level: 2, index: 0, x: spacingX0 * 1.5 + spacingX0, y: heightSvg - marginY - 2 * levelSpacing });
+      treeNodes.push({ id: `L3_I0`, level: 3, index: 0, x: spacingX0 * 3 + spacingX0, y: heightSvg - marginY - 3 * levelSpacing });
+
+      treeEdges.push({ from: 'L0_I0', to: 'L1_I0' }, { from: 'L0_I1', to: 'L1_I0' });
+      treeEdges.push({ from: 'L0_I2', to: 'L1_I1' }, { from: 'L0_I3', to: 'L1_I1' });
+      treeEdges.push({ from: 'L0_I4', to: 'L1_I2' }, { from: 'L0_I5', to: 'L1_I2' });
+      treeEdges.push({ from: 'L1_I0', to: 'L2_I0' }, { from: 'L1_I1', to: 'L2_I0' });
+      treeEdges.push({ from: 'L2_I0', to: 'L3_I0' }, { from: 'L1_I2', to: 'L3_I0' });
+    }
+
+    function renderSidebar() {
+      if (currentGameMode === 'draw') {
+        tileListEl.innerHTML = '';
+        targetTiles.forEach(tile => {
+          const isDone = drawnTiles.has(tile.id);
+          const li = document.createElement('li');
+          li.className = `tile-item ${isDone ? 'completed' : ''}`;
+          li.innerHTML = `
+            <span class="tile-path">${isDone ? '✅' : '🔲'} ${tile.path}</span>
+            <span style="display:inline-block; width:12px; height:12px; border-radius:2px; background:${tile.color};"></span>
+          `;
+          tileListEl.appendChild(li);
+        });
+      } else {
+        guessedListEl.innerHTML = '';
+        targetTiles.forEach((tile, idx) => {
+          const isDone = guessedTiles.has(tile.id);
+          const isCurrent = idx === activeGuessIdx;
+          const li = document.createElement('li');
+          li.className = `tile-item ${isDone ? 'completed' : ''}`;
+          li.style.borderColor = isCurrent ? 'var(--accent)' : '';
+          li.innerHTML = `
+            <span class="tile-path">${isDone ? '✅ ' + tile.path : (isCurrent ? '❓ [Type Path Below]' : '🔒 Locked')}</span>
+            <span style="display:inline-block; width:12px; height:12px; border-radius:2px; background:${tile.color};"></span>
+          `;
+          guessedListEl.appendChild(li);
+        });
+      }
+    }
+
+    function renderScene() {
+      svg.innerHTML = '';
+
+      const gTilesBg = document.createElementNS('http://www.w3.org/2000/svg', 'g');
+      const gEdges = document.createElementNS('http://www.w3.org/2000/svg', 'g');
+      const gNodes = document.createElementNS('http://www.w3.org/2000/svg', 'g');
+      const gTilesFg = document.createElementNS('http://www.w3.org/2000/svg', 'g');
+
+      svg.appendChild(gTilesBg);
+      svg.appendChild(gEdges);
+      svg.appendChild(gNodes);
+      svg.appendChild(gTilesFg);
+
+      treeEdges.forEach(edge => {
+        const n1 = treeNodes.find(n => n.id === edge.from);
+        const n2 = treeNodes.find(n => n.id === edge.to);
+        if (n1 && n2) {
+          const line = document.createElementNS('http://www.w3.org/2000/svg', 'line');
+          line.setAttribute('x1', n1.x);
+          line.setAttribute('y1', n1.y);
+          line.setAttribute('x2', n2.x);
+          line.setAttribute('y2', n2.y);
+          line.setAttribute('class', 'tree-edge');
+          gEdges.appendChild(line);
+        }
+      });
+
+      if (currentGameMode === 'draw') {
+        targetTiles.forEach(tile => {
+          if (drawnTiles.has(tile.id)) {
+            drawTileBox(gTilesBg, gTilesFg, tile, tile.path);
+          }
+        });
+      } else {
+        // Guess mode: draw guessed tiles with full label, and active mystery tile with mystery label
+        targetTiles.forEach((tile, idx) => {
+          if (guessedTiles.has(tile.id)) {
+            drawTileBox(gTilesBg, gTilesFg, tile, tile.path);
+          } else if (idx === activeGuessIdx) {
+            drawTileBox(gTilesBg, gTilesFg, tile, "❓ Mystery Path");
+          }
+        });
+      }
+
+      treeNodes.forEach(node => {
+        const g = document.createElementNS('http://www.w3.org/2000/svg', 'g');
+        g.setAttribute('class', 'tree-node');
+        g.setAttribute('transform', `translate(${node.x}, ${node.y})`);
+
+        const circle = document.createElementNS('http://www.w3.org/2000/svg', 'circle');
+        circle.setAttribute('r', 22);
+        circle.setAttribute('class', 'tree-node-circle');
+
+        const text = document.createElementNS('http://www.w3.org/2000/svg', 'text');
+        text.setAttribute('class', 'tree-node-text');
+        text.textContent = `${node.level},${node.index}`;
+
+        g.appendChild(circle);
+        g.appendChild(text);
+        gNodes.appendChild(g);
+      });
+    }
+
+    function drawTileBox(gBg, gFg, tile, labelText) {
+      const nodes = treeNodes.filter(n => tile.nodes.includes(n.id));
+      if (nodes.length === 0) return;
+
+      let minX = Infinity, minY = Infinity, maxX = -Infinity, maxY = -Infinity;
+      nodes.forEach(n => {
+        minX = Math.min(minX, n.x - 35);
+        minY = Math.min(minY, n.y - 55);
+        maxX = Math.max(maxX, n.x + 35);
+        maxY = Math.max(maxY, n.y + 35);
+      });
+
+      const rectBg = document.createElementNS('http://www.w3.org/2000/svg', 'rect');
+      rectBg.setAttribute('x', minX);
+      rectBg.setAttribute('y', minY);
+      rectBg.setAttribute('width', maxX - minX);
+      rectBg.setAttribute('height', maxY - minY);
+      rectBg.setAttribute('class', 'drawn-tile-rect');
+      rectBg.style.fill = tile.color + '22';
+      rectBg.style.stroke = 'none';
+      gBg.appendChild(rectBg);
+
+      const rectFg = document.createElementNS('http://www.w3.org/2000/svg', 'rect');
+      rectFg.setAttribute('x', minX);
+      rectFg.setAttribute('y', minY);
+      rectFg.setAttribute('width', maxX - minX);
+      rectFg.setAttribute('height', maxY - minY);
+      rectFg.setAttribute('class', 'drawn-tile-rect');
+      rectFg.style.stroke = tile.color;
+      rectFg.style.fill = 'none';
+      gFg.appendChild(rectFg);
+
+      const label = document.createElementNS('http://www.w3.org/2000/svg', 'text');
+      label.setAttribute('x', minX + 12);
+      label.setAttribute('y', minY + 22);
+      label.setAttribute('class', 'drawn-tile-label');
+      label.style.fill = tile.color;
+      label.textContent = labelText;
+      gFg.appendChild(label);
+    }
+
+    function checkPathAnswer() {
+      if (currentGameMode !== 'guess' || activeGuessIdx >= targetTiles.length) return;
+      const userVal = pathInput.value.trim();
+      const currentTile = targetTiles[activeGuessIdx];
+
+      if (userVal === currentTile.path) {
+        guessedTiles.add(currentTile.id);
+        feedbackEl.style.color = "var(--accent-green)";
+        feedbackEl.textContent = `🎉 Correct! That tile is ${currentTile.path}.`;
+        pathInput.value = '';
+        activeGuessIdx++;
+        renderSidebar();
+        renderScene();
+        if (guessedTiles.size === targetTiles.length) {
+          victoryBanner.style.display = 'block';
+        }
+      } else {
+        feedbackEl.style.color = "var(--accent-red)";
+        feedbackEl.textContent = `❌ Incorrect path. Try again!`;
+      }
+    }
+
+    function setupMouseEvents() {
+      svg.addEventListener('mousedown', (e) => {
+        if (currentGameMode !== 'draw') return; // only drag in draw mode
+
+        isDragging = true;
+        const pt = getSvgCoord(e);
+        dragStart = pt;
+
+        selRectEl = document.createElementNS('http://www.w3.org/2000/svg', 'rect');
+        selRectEl.setAttribute('class', 'selection-rect');
+        selRectEl.setAttribute('x', pt.x);
+        selRectEl.setAttribute('y', pt.y);
+        selRectEl.setAttribute('width', 0);
+        selRectEl.setAttribute('height', 0);
+        svg.appendChild(selRectEl);
+      });
+
+      svg.addEventListener('mousemove', (e) => {
+        if (!isDragging || !selRectEl) return;
+        const pt = getSvgCoord(e);
+        const x = Math.min(dragStart.x, pt.x);
+        const y = Math.min(dragStart.y, pt.y);
+        const w = Math.abs(pt.x - dragStart.x);
+        const h = Math.abs(pt.y - dragStart.y);
+
+        selRectEl.setAttribute('x', x);
+        selRectEl.setAttribute('y', y);
+        selRectEl.setAttribute('width', w);
+        selRectEl.setAttribute('height', h);
+      });
+
+      window.addEventListener('mouseup', (e) => {
+        if (!isDragging) return;
+        isDragging = false;
+
+        if (selRectEl) {
+          const rx = parseFloat(selRectEl.getAttribute('x'));
+          const ry = parseFloat(selRectEl.getAttribute('y'));
+          const rw = parseFloat(selRectEl.getAttribute('width'));
+          const rh = parseFloat(selRectEl.getAttribute('height'));
+          selRectEl.remove();
+          selRectEl = null;
+
+          if (rw > 20 && rh > 20) {
+            checkSelectionBox(rx, ry, rx + rw, ry + rh);
+          }
+        }
+      });
+    }
+
+    function getSvgCoord(e) {
+      const pt = svg.createSVGPoint();
+      pt.x = e.clientX;
+      pt.y = e.clientY;
+      const svgPt = pt.matrixTransform(svg.getScreenCTM().inverse());
+      return { x: svgPt.x, y: svgPt.y };
+    }
+
+    function checkSelectionBox(x1, y1, x2, y2) {
+      const enclosedNodes = treeNodes.filter(n => n.x >= x1 && n.x <= x2 && n.y >= y1 && n.y <= y2).map(n => n.id);
+
+      targetTiles.forEach(tile => {
+        if (!drawnTiles.has(tile.id)) {
+          const match = enclosedNodes.length === tile.nodes.length && tile.nodes.every(id => enclosedNodes.includes(id));
+          if (match) {
+            drawnTiles.add(tile.id);
+          }
+        }
+      });
+
+      renderSidebar();
+      renderScene();
+      checkVictory();
+    }
+
+    function checkVictory() {
+      if (currentGameMode === 'draw' && drawnTiles.size === targetTiles.length) {
+        victoryBanner.style.display = 'block';
+      } else if (currentGameMode === 'guess' && guessedTiles.size === targetTiles.length) {
+        victoryBanner.style.display = 'block';
+      }
+    }
+  </script>
+</body>
+</html>
