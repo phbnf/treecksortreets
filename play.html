@@ -103,6 +103,12 @@
       border-color: var(--accent);
     }
 
+    .game-card.disabled {
+      opacity: 0.4;
+      filter: grayscale(85%);
+      pointer-events: none;
+    }
+
     .game-card h2 {
       margin-top: 0;
       font-size: 1.2rem;
@@ -202,7 +208,7 @@
         <a href="play-consistency-advanced.html" class="play-btn" style="display: block; text-decoration: none;">Play Game</a>
       </div>
 
-      <div class="game-card">
+      <div class="game-card disabled">
         <div>
           <h2>🌿 Subtree Inclusion Proofs</h2>
           <p>Prove that an entire intermediate subtree is correctly nested inside a larger Merkle tree by providing the authentication path from the subtree root upward.</p>
@@ -210,7 +216,7 @@
         <button class="play-btn" onclick="return false;">Play Game</button>
       </div>
 
-      <div class="game-card">
+      <div class="game-card disabled">
         <div>
           <h2>🔄 Subtree Consistency Proofs</h2>
           <p>Verify consistency between subtrees across different log versions, demonstrating that historical subtree boundaries remain intact after new appends.</p>
@@ -222,7 +228,7 @@
     <!-- Section 3: Advanced -->
     <h2 class="section-title">⚡ Advanced</h2>
     <div class="game-grid">
-      <div class="game-card">
+      <div class="game-card disabled">
         <div>
           <h2>💻 Bit-level Operations</h2>
           <p>Get down to binary! Practice bitwise XOR (<code>^ 1</code>) for sibling discovery and bit shifts (<code>>> 1</code>) for parent navigation.</p>

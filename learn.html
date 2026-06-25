@@ -103,6 +103,12 @@
       border-color: var(--accent);
     }
 
+    .lesson-card.disabled {
+      opacity: 0.4;
+      filter: grayscale(85%);
+      pointer-events: none;
+    }
+
     .lesson-card h2 {
       margin-top: 0;
       font-size: 1.2rem;
@@ -158,7 +164,7 @@
     <!-- Section 1: Tree Structure -->
     <h2 class="section-title">🌲 Tree Structure</h2>
     <div class="lesson-grid">
-      <div class="lesson-card">
+      <div class="lesson-card disabled">
         <div>
           <h2>🌳 Tree Knowledge</h2>
           <p>Learn the core theory of general tree structures! Understand fundamental data structure concepts like roots, leaves, depths, heights, and binary trees.</p>
@@ -174,7 +180,7 @@
         <button class="learn-btn" onclick="window.location.href='learn-subtrees.html'">Start Lesson</button>
       </div>
 
-      <div class="lesson-card">
+      <div class="lesson-card disabled">
         <div>
           <h2>🧱 Tiles</h2>
           <p>Understand tiled log storage (c2sp.org/tlog-tiles)! Discover how massive transparency logs are chunked into fixed-height subtrees (tiles) for efficient caching.</p>
@@ -186,7 +192,7 @@
     <!-- Section 2: Proofs -->
     <h2 class="section-title">🔐 Cryptographic Proofs</h2>
     <div class="lesson-grid">
-      <div class="lesson-card">
+      <div class="lesson-card disabled">
         <div>
           <h2>🔍 Inclusion Proofs</h2>
           <p>Step-by-step breakdown of inclusion proofs. Learn how sibling hashes are combined up the tree to authenticate a single leaf record.</p>
@@ -194,7 +200,7 @@
         <a href="play-inclusion.html" class="learn-btn" style="display: block; text-decoration: none;">Start Lesson</a>
       </div>
 
-      <div class="lesson-card">
+      <div class="lesson-card disabled">
         <div>
           <h2>🔗 Consistency Proofs</h2>
           <p>Explore append-only verification. Understand the mathematical guarantees that prove an older log version is a tamper-free prefix of a newer log.</p>
@@ -202,7 +208,7 @@
         <a href="play-consistency.html" class="learn-btn" style="display: block; text-decoration: none;">Start Lesson</a>
       </div>
 
-      <div class="lesson-card">
+      <div class="lesson-card disabled">
         <div>
           <h2>🌿 Subtree Inclusion Proofs</h2>
           <p>Learn how to prove that an entire intermediate subtree root is properly embedded within a larger parent Merkle tree.</p>
@@ -210,7 +216,7 @@
         <button class="learn-btn" onclick="return false;">Start Lesson</button>
       </div>
 
-      <div class="lesson-card">
+      <div class="lesson-card disabled">
         <div>
           <h2>🔄 Subtree Consistency Proofs</h2>
           <p>Discover how historical subtree boundaries remain verified across tree growth and different log snapshots over time.</p>
@@ -222,7 +228,7 @@
     <!-- Section 3: Advanced -->
     <h2 class="section-title">⚡ Advanced</h2>
     <div class="lesson-grid">
-      <div class="lesson-card">
+      <div class="lesson-card disabled">
         <div>
           <h2>💻 Bit-level Operations</h2>
           <p>Dive into high-performance tree traversal. Understand how bitwise XOR (<code>^ 1</code>) finds siblings and bit shifts (<code>>> 1</code>) navigate to parents.</p>
@@ -230,7 +236,7 @@
         <button class="learn-btn" onclick="return false;">Start Lesson</button>
       </div>
 
-      <div class="lesson-card">
+      <div class="lesson-card disabled">
         <div>
           <h2>📦 Compact Ranges</h2>
           <p>Study storage optimization techniques. Learn the algorithm for decomposing arbitrary leaf intervals $[A, B)$ into minimal sets of subtree roots.</p>
