@@ -1,0 +1,1334 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Merkle Speed Run (Advanced) - Treecks or Treets</title>
+  <link rel="stylesheet" href="merkle.css">
+  <style>
+    :root {
+      --bg-dark: #0f0f11;
+      --panel-bg: #18181c;
+      --border-color: #2b2b35;
+      --text-main: #e2e2e9;
+      --accent: #ff9f1c; /* Neon Orange */
+      --accent-blue: #00b4d8; /* Neon Blue */
+      --accent-green: #2ec4b6; /* Neon Mint */
+      --accent-red: #e71d36; /* Neon Red */
+      --accent-gold: #ffb703; /* Neon Gold */
+    }
+
+    body {
+      background-color: var(--bg-dark);
+      color: var(--text-main);
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+      margin: 0;
+      padding: 0;
+      display: flex;
+      flex-direction: column;
+      height: 100vh;
+      overflow: hidden;
+    }
+
+    header {
+      background-color: var(--panel-bg);
+      border-bottom: 1px solid var(--border-color);
+      padding: 12px 25px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      flex-shrink: 0;
+    }
+
+    h1 {
+      margin: 0;
+      font-size: 1.3rem;
+      color: var(--accent);
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+
+    .subtitle {
+      font-size: 0.8rem;
+      color: #888;
+      font-weight: normal;
+    }
+
+    /* Arcade Stats Header Component */
+    .dashboard-stats {
+      display: flex;
+      align-items: center;
+      gap: 25px;
+    }
+
+    .stat-box {
+      background-color: #202026;
+      border: 1px solid var(--border-color);
+      padding: 6px 14px;
+      border-radius: 6px;
+      font-family: 'Courier New', Courier, monospace;
+      font-size: 0.95rem;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      min-width: 80px;
+    }
+
+    .stat-label {
+      font-size: 0.65rem;
+      color: #888;
+      text-transform: uppercase;
+      margin-bottom: 2px;
+      letter-spacing: 0.5px;
+    }
+
+    .stat-value {
+      font-weight: bold;
+      color: #fff;
+    }
+
+    .stat-value.highlight {
+      color: var(--accent-gold);
+    }
+
+    .stat-value.danger {
+      color: var(--accent-red);
+    }
+
+    .lives-container {
+      display: flex;
+      gap: 4px;
+      font-size: 1.1rem;
+    }
+
+    .heart {
+      color: var(--accent-red);
+      text-shadow: 0 0 5px rgba(231, 29, 54, 0.5);
+      transition: all 0.3s ease;
+    }
+
+    .heart.lost {
+      color: #444;
+      text-shadow: none;
+      transform: scale(0.8);
+    }
+
+    /* Layout */
+    .main-container {
+      display: flex;
+      flex: 1;
+      overflow: hidden;
+      position: relative;
+    }
+
+    .sidebar {
+      width: 320px;
+      background-color: var(--panel-bg);
+      border-right: 1px solid var(--border-color);
+      display: flex;
+      flex-direction: column;
+      flex-shrink: 0;
+      overflow-y: auto;
+      padding: 20px;
+      gap: 15px;
+    }
+
+    .visualizer-pane {
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      background-color: var(--bg-dark);
+      position: relative;
+      overflow: hidden;
+    }
+
+    .svg-container {
+      flex: 1;
+      overflow: auto;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 20px;
+    }
+
+    svg {
+      max-width: 100%;
+      min-width: 600px;
+    }
+
+    .details-pane {
+      width: 340px;
+      background-color: var(--panel-bg);
+      border-left: 1px solid var(--border-color);
+      display: flex;
+      flex-direction: column;
+      flex-shrink: 0;
+      overflow-y: auto;
+      padding: 20px;
+      gap: 20px;
+    }
+
+    /* Panels */
+    .panel-section {
+      background-color: #1e1e24;
+      border: 1px solid var(--border-color);
+      border-radius: 8px;
+      padding: 15px;
+    }
+
+    .panel-section h3 {
+      margin-top: 0;
+      margin-bottom: 12px;
+      font-size: 0.95rem;
+      border-bottom: 1px solid var(--border-color);
+      padding-bottom: 6px;
+      color: var(--accent-blue);
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+    }
+
+    /* Target Box Neon Highlight */
+    .target-card {
+      background: linear-gradient(135deg, #251c14 0%, #1a1518 100%);
+      border: 1px solid var(--accent);
+      border-radius: 8px;
+      padding: 16px;
+      text-align: center;
+      box-shadow: 0 0 15px rgba(255, 159, 28, 0.15);
+      margin-bottom: 5px;
+    }
+
+    .target-val {
+      font-size: 1.6rem;
+      font-weight: bold;
+      color: var(--accent-gold);
+      margin: 8px 0;
+      font-family: monospace;
+      text-shadow: 0 0 10px rgba(255, 183, 3, 0.3);
+    }
+
+    .hash-display {
+      font-family: monospace;
+      font-size: 0.8rem;
+      background-color: #111115;
+      padding: 8px;
+      border-radius: 4px;
+      border: 1px solid var(--border-color);
+      word-break: break-all;
+      color: #aaa;
+      margin-top: 5px;
+    }
+
+    /* Proof list styling */
+    .proof-bag {
+      list-style: none;
+      padding: 0;
+      margin: 0;
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+    }
+
+    .proof-item {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 10px 12px;
+      background-color: #151518;
+      border: 1px solid var(--border-color);
+      border-radius: 4px;
+      font-family: monospace;
+      font-size: 0.78rem;
+      transition: border-color 0.2s;
+    }
+
+    .proof-item:hover {
+      border-color: var(--accent-blue);
+    }
+
+    .proof-item.target-node {
+      border-left: 3px solid var(--accent-gold);
+    }
+
+    .proof-item.proof-node {
+      border-left: 3px solid var(--accent-blue);
+    }
+
+    .remove-node-btn {
+      background: none;
+      border: none;
+      color: #666;
+      cursor: pointer;
+      font-size: 0.9rem;
+      padding: 0 4px;
+    }
+
+    .remove-node-btn:hover {
+      color: var(--accent-red);
+    }
+
+    /* Buttons */
+    button.action-btn {
+      background-color: var(--accent-blue);
+      color: #000;
+      border: none;
+      padding: 12px 20px;
+      border-radius: 6px;
+      font-weight: bold;
+      cursor: pointer;
+      font-size: 1rem;
+      transition: all 0.2s;
+      width: 100%;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+      box-shadow: 0 4px 10px rgba(0, 180, 216, 0.2);
+    }
+
+    button.action-btn:hover {
+      background-color: #00d4ff;
+      transform: translateY(-1px);
+      box-shadow: 0 6px 15px rgba(0, 180, 216, 0.3);
+    }
+
+    button.action-btn:disabled {
+      background-color: #3c3c46;
+      color: #666;
+      cursor: not-allowed;
+      transform: none;
+      box-shadow: none;
+    }
+
+    button.secondary-btn {
+      background-color: #282830;
+      color: var(--text-main);
+      border: 1px solid var(--border-color);
+      padding: 10px 16px;
+      border-radius: 6px;
+      font-weight: bold;
+      cursor: pointer;
+      font-size: 0.9rem;
+      transition: all 0.2s;
+      width: 100%;
+    }
+
+    button.secondary-btn:hover {
+      background-color: #33333e;
+      border-color: #444454;
+    }
+
+    /* Sound toggle */
+    .sound-toggle {
+      background: none;
+      border: 1px solid var(--border-color);
+      color: #888;
+      border-radius: 6px;
+      padding: 6px 10px;
+      cursor: pointer;
+      font-size: 0.8rem;
+      display: flex;
+      align-items: center;
+      gap: 6px;
+    }
+
+    .sound-toggle:hover {
+      border-color: var(--accent-blue);
+      color: #fff;
+    }
+
+    /* Time attack progress bar */
+    .timer-bar-container {
+      width: 100%;
+      height: 6px;
+      background-color: #1e1e24;
+      overflow: hidden;
+      flex-shrink: 0;
+    }
+
+    .timer-bar {
+      height: 100%;
+      background: linear-gradient(90deg, var(--accent-green) 0%, var(--accent-gold) 60%, var(--accent-red) 100%);
+      width: 100%;
+      transition: width 0.1s linear, background-color 0.5s ease;
+      box-shadow: 0 0 8px rgba(46, 196, 182, 0.5);
+    }
+
+    /* Game Over / HUD Overlays */
+    .overlay {
+      position: absolute;
+      top: 0;
+      left: 0;
+      right: 0;
+      bottom: 0;
+      background-color: rgba(10, 10, 12, 0.9);
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      align-items: center;
+      z-index: 50;
+      opacity: 0;
+      pointer-events: none;
+      transition: opacity 0.4s ease;
+      text-align: center;
+      padding: 20px;
+    }
+
+    .overlay.show {
+      opacity: 1;
+      pointer-events: auto;
+    }
+
+    .overlay-card {
+      background-color: var(--panel-bg);
+      border: 2px solid var(--border-color);
+      border-radius: 12px;
+      padding: 40px;
+      max-width: 460px;
+      box-shadow: 0 15px 40px rgba(0,0,0,0.8);
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 20px;
+    }
+
+    .overlay-card h2 {
+      margin: 0;
+      font-size: 2.2rem;
+      color: var(--accent-red);
+      text-shadow: 0 0 15px rgba(231, 29, 54, 0.3);
+      text-transform: uppercase;
+      letter-spacing: 1px;
+    }
+
+    .overlay-card.win h2 {
+      color: var(--accent-green);
+      text-shadow: 0 0 15px rgba(46, 196, 182, 0.3);
+    }
+
+    .overlay-stats {
+      width: 100%;
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 15px;
+      margin: 10px 0;
+    }
+
+    .score-label {
+      font-size: 0.8rem;
+      color: #888;
+      margin-bottom: 4px;
+    }
+
+    .score-val {
+      font-size: 1.8rem;
+      font-weight: bold;
+      font-family: 'Courier New', Courier, monospace;
+    }
+
+    /* Verification steps for audit review */
+    .step-list {
+      font-family: monospace;
+      font-size: 0.8rem;
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+    }
+
+    .step-item {
+      padding: 10px;
+      border-radius: 4px;
+      background: #151518;
+      border-left: 3px solid #888;
+    }
+
+    .step-item.step-path { border-left-color: var(--accent); }
+    .step-item.step-proof { border-left-color: var(--accent-blue); }
+    .step-item.step-success { border-left-color: var(--accent-green); background: #112a22; }
+    .step-item.step-fail { border-left-color: var(--accent-red); background: #2c1619; }
+
+    /* Tooltip */
+    #tooltip {
+      position: absolute;
+      background: rgba(20, 20, 25, 0.95);
+      border: 1px solid var(--border-color);
+      padding: 8px 12px;
+      border-radius: 4px;
+      font-family: monospace;
+      font-size: 0.75rem;
+      pointer-events: none;
+      display: none;
+      z-index: 10;
+      box-shadow: 0 4px 12px rgba(0,0,0,0.5);
+    }
+
+    .combo-badge {
+      font-size: 0.75rem;
+      background-color: var(--accent-gold);
+      color: #000;
+      padding: 2px 6px;
+      border-radius: 4px;
+      font-weight: bold;
+      margin-left: 5px;
+      animation: pulse 1s infinite alternate;
+    }
+
+    @keyframes pulse {
+      from { transform: scale(1); box-shadow: 0 0 2px rgba(255, 183, 3, 0.5); }
+      to { transform: scale(1.1); box-shadow: 0 0 8px rgba(255, 183, 3, 0.8); }
+    }
+  </style>
+</head>
+<body>
+  <header>
+    <h1>
+      ⚡ Merkle Speed Run
+      <span class="subtitle">Arcade Inclusion Proofs</span>
+    </h1>
+    
+    <div class="dashboard-stats">
+      <!-- Lives counter -->
+      <div class="stat-box">
+        <span class="stat-label">Shields</span>
+        <div class="lives-container" id="lives-container">
+          <span class="heart" data-idx="0">🛡️</span>
+          <span class="heart" data-idx="1">🛡️</span>
+          <span class="heart" data-idx="2">🛡️</span>
+        </div>
+      </div>
+
+      <!-- Time Left Box -->
+      <div class="stat-box">
+        <span class="stat-label">Time Left</span>
+        <span class="stat-value" id="timer-text">30s</span>
+      </div>
+
+      <!-- Combo Box -->
+      <div class="stat-box" id="combo-box" style="display: none;">
+        <span class="stat-label">Combo</span>
+        <span class="stat-value highlight" id="combo-text">x1</span>
+      </div>
+
+      <!-- Current Score -->
+      <div class="stat-box">
+        <span class="stat-label">Score</span>
+        <span class="stat-value highlight" id="score-text">0000</span>
+      </div>
+
+      <!-- High Score -->
+      <div class="stat-box">
+        <span class="stat-label">High Score</span>
+        <span class="stat-value" id="highscore-text">0000</span>
+      </div>
+
+      <!-- Sound Toggle -->
+      <button class="sound-toggle" id="sound-toggle-btn">
+        <span id="sound-icon">🔊</span> Sound
+      </button>
+    </div>
+  </header>
+
+  <!-- Timer Bar -->
+  <div class="timer-bar-container">
+    <div class="timer-bar" id="timer-bar"></div>
+  </div>
+
+  <div class="main-container">
+    <!-- Left Sidebar: Active Target Info -->
+    <div class="sidebar">
+      <div class="panel-section" style="padding: 0; background: none; border: none;">
+        <div class="target-card">
+          <span class="stat-label" style="color: var(--accent); font-weight: bold; letter-spacing: 1px;">Target Leaf</span>
+          <div class="target-val" id="target-value">---</div>
+          <span style="font-size: 0.75rem; color: #888;">Leaf Index: <strong id="target-index-text" style="color:#fff;">-</strong></span>
+        </div>
+      </div>
+
+      <div class="panel-section">
+        <h3>Public Ledger</h3>
+        <div>
+          <span style="font-size: 0.75rem; color: #888;">Expected Root Hash:</span>
+          <div class="hash-display" id="expected-root-display">0x00000000...</div>
+        </div>
+        <div style="margin-top: 10px; font-size: 0.8rem; color: #888;">
+          Tree size: <strong id="tree-size-text" style="color:#fff;">0 leaves</strong>
+        </div>
+      </div>
+
+      <div style="margin-top: auto; display: flex; flex-direction: column; gap: 10px;">
+        <button id="submit-btn" class="action-btn" disabled>Submit Proof</button>
+        <button id="clear-btn" class="secondary-btn">Clear Selection</button>
+        <a href="play.html" style="text-decoration: none; display: block;"><button class="secondary-btn" style="width:100%">← Exit Game</button></a>
+      </div>
+    </div>
+
+    <!-- Center: Interactive SVG Visualizer -->
+    <div class="visualizer-pane">
+      <!-- Instruction Banner -->
+      <div style="background-color: rgba(24, 24, 28, 0.8); border-bottom: 1px solid var(--border-color); padding: 10px 20px; font-size: 0.82rem; color: #aaa; z-index: 10; display: flex; justify-content: space-between;">
+        <span>🕵️ <strong>Auditor Directive:</strong> Find and click the sibling hashes in order from <strong>bottom-to-top</strong> to build your inclusion proof!</span>
+        <span style="color: var(--accent-blue); font-weight: bold;">No hints. No safety net.</span>
+      </div>
+
+      <div class="svg-container">
+        <svg id="merkle-svg" viewBox="0 0 700 450" width="100%" height="100%"></svg>
+      </div>
+      
+      <!-- Tooltip -->
+      <div id="tooltip"></div>
+
+      <!-- Start Overlay -->
+      <div class="overlay show" id="start-overlay">
+        <div class="overlay-card win" style="border-color: var(--accent-blue);">
+          <h2 style="color: var(--accent-blue); text-shadow: 0 0 15px rgba(0, 180, 216, 0.3);">Merkle Speed Run</h2>
+          <p style="font-size: 0.95rem; line-height: 1.5; color: #bbb; max-width: 400px; margin: 0;">
+            Prove as many transaction inclusion proofs as you can before the timer expires!
+            <br><br>
+            <strong>Rules:</strong>
+            <br>• Click the correct siblings in order from <strong>bottom-to-top</strong>.
+            <br>• Clicking nodes adds them to your Proof Bag.
+            <br>• Submit when ready. Wrong submissions cost a Shield.
+            <br>• Time scales down as your score increases!
+          </p>
+          <button id="start-btn" class="action-btn">Initialize Quiz</button>
+        </div>
+      </div>
+
+      <!-- Game Over Overlay -->
+      <div class="overlay" id="gameover-overlay">
+        <div class="overlay-card">
+          <h2>Shields Depleted!</h2>
+          <p style="font-size: 0.95rem; color: #aaa; margin: 0;">The system has logged your final audit score. Better luck next run!</p>
+          
+          <div class="overlay-stats">
+            <div class="stat-box">
+              <span class="score-label">Final Score</span>
+              <span class="score-val highlight" id="final-score">0000</span>
+            </div>
+            <div class="stat-box">
+              <span class="score-label">High Score</span>
+              <span class="score-val" id="final-highscore">0000</span>
+            </div>
+          </div>
+          
+          <button id="restart-btn" class="action-btn" style="background-color: var(--accent);">Run New Audit</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- Right Sidebar: Collected Proof Bag & Real-time Auditor Console -->
+    <div class="details-pane">
+      <div class="panel-section" style="display: flex; flex-direction: column; min-height: 200px;">
+        <h3>Collected Proof Bag</h3>
+        <p style="font-size: 0.78rem; color: #888; margin-top: 0; margin-bottom: 12px;">
+          Your assembled siblings in order of selection (must be bottom-to-top):
+        </p>
+        <ul class="proof-bag" id="proof-bag-list" style="flex: 1; overflow-y: auto;">
+          <!-- Selected nodes listed here -->
+        </ul>
+      </div>
+
+      <div class="panel-section" style="flex: 1; display: flex; flex-direction: column; overflow: hidden;">
+        <h3>Audit Report Console</h3>
+        <p style="font-size: 0.78rem; color: #888; margin-top: 0; margin-bottom: 12px;" id="console-desc">
+          Submit your proof to run the cryptographic verification pipeline.
+        </p>
+        <div class="step-list" id="console-steps" style="flex: 1; overflow-y: auto;">
+          <div style="color: #555; text-align: center; padding: 30px 10px; font-size: 0.85rem; border: 1px dashed var(--border-color); border-radius: 6px;">
+            Auditor Console Idle.
+            <br><br>
+            Assembling proof siblings and submitting will print the verification trace here.
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <script type="module">
+    import { MerkleTree, verifyInclusion, bytesToHex, hexToBytes, Hasher } from './merkle.js';
+    import { MerkleVisualizer } from './merkle-visualizer.js';
+
+    // Retro Synth Audio Utility (Web Audio API)
+    const AudioSynth = {
+      ctx: null,
+      muted: false,
+
+      init() {
+        if (!this.ctx) {
+          this.ctx = new (window.AudioContext || window.webkitAudioContext)();
+        }
+      },
+
+      playBeep(freq, type, duration, vol = 0.1) {
+        if (this.muted) return;
+        this.init();
+        try {
+          const osc = this.ctx.createOscillator();
+          const gainNode = this.ctx.createGain();
+          
+          osc.type = type;
+          osc.frequency.setValueAtTime(freq, this.ctx.currentTime);
+          
+          gainNode.gain.setValueAtTime(vol, this.ctx.currentTime);
+          gainNode.gain.exponentialRampToValueAtTime(0.0001, this.ctx.currentTime + duration);
+          
+          osc.connect(gainNode);
+          gainNode.connect(this.ctx.destination);
+          
+          osc.start();
+          osc.stop(this.ctx.currentTime + duration);
+        } catch (e) {
+          console.error("Audio beep failed:", e);
+        }
+      },
+
+      playCorrectNode() {
+        // High, pleasant synth chime
+        this.playBeep(659.25, 'sine', 0.15, 0.08); // E5
+        setTimeout(() => this.playBeep(880, 'sine', 0.25, 0.08), 80); // A5
+      },
+
+      playWrongNode() {
+        // Low, raspy saw buzz
+        this.playBeep(180, 'sawtooth', 0.2, 0.15);
+      },
+
+      playCorrectProof() {
+        // Upward celebratory arpeggio
+        const notes = [523.25, 659.25, 783.99, 1046.50]; // C5, E5, G5, C6
+        notes.forEach((freq, idx) => {
+          setTimeout(() => {
+            this.playBeep(freq, 'triangle', 0.3, 0.1);
+          }, idx * 80);
+        });
+      },
+
+      playIncorrectProof() {
+        // Downward industrial buzzer
+        this.playBeep(220, 'sawtooth', 0.25, 0.15);
+        setTimeout(() => this.playBeep(147, 'sawtooth', 0.35, 0.2), 120);
+      },
+
+      playGameOver() {
+        // Slow melancholy downward spiral
+        const notes = [392, 349.23, 311.13, 220]; // G4, F4, Eb4, A3
+        notes.forEach((freq, idx) => {
+          setTimeout(() => {
+            this.playBeep(freq, 'sawtooth', 0.4, 0.15);
+          }, idx * 200);
+        });
+      }
+    };
+
+    // Words Pool for Generating Random Merkle Trees
+    const WORDS = [
+      "alpha", "bravo", "charlie", "delta", "echo", "foxtrot", "golf", "hotel",
+      "india", "juliet", "kilo", "lima", "mike", "november", "oscar", "papa",
+      "quebec", "romeo", "sierra", "tango", "uniform", "victor", "whiskey", "xray",
+      "yankee", "zulu", "apple", "banana", "cherry", "durian", "elder", "fig",
+      "grape", "honey", "kiwi", "lemon", "mango", "nectar", "orange", "peach",
+      "quince", "radish", "spiced", "turnip", "ugli", "velvet", "walnut", "yam"
+    ];
+
+    // Game Parameters & State
+    let score = 0;
+    let highscore = 0;
+    let lives = 3;
+    let combo = 0;
+    
+    let tree = null;
+    let visualizer = null;
+    let targetIndex = null;
+    let targetValue = "";
+    let expectedRootHex = "";
+    
+    let selectedNodesOrder = []; // Ordered array of { id, level, index, hash }
+    let selectedNodesSet = new Set(); // For faster lookup
+    let currentRoundTimer = null;
+    let secondsRemaining = 0;
+    let roundMaxSeconds = 30;
+    
+    let isMuted = false;
+    let roundActive = false;
+
+    // DOM Elements
+    const livesContainer = document.getElementById('lives-container');
+    const timerText = document.getElementById('timer-text');
+    const timerBar = document.getElementById('timer-bar');
+    const scoreText = document.getElementById('score-text');
+    const highscoreText = document.getElementById('highscore-text');
+    const comboText = document.getElementById('combo-text');
+    const comboBox = document.getElementById('combo-box');
+    const targetValueDisplay = document.getElementById('target-value');
+    const targetIndexDisplay = document.getElementById('target-index-text');
+    const treeSizeDisplay = document.getElementById('tree-size-text');
+    const expectedRootDisplay = document.getElementById('expected-root-display');
+    const proofBagList = document.getElementById('proof-bag-list');
+    const consoleSteps = document.getElementById('console-steps');
+    const consoleDesc = document.getElementById('console-desc');
+    const submitBtn = document.getElementById('submit-btn');
+    const clearBtn = document.getElementById('clear-btn');
+    const startOverlay = document.getElementById('start-overlay');
+    const gameoverOverlay = document.getElementById('gameover-overlay');
+    const finalScoreDisplay = document.getElementById('final-score');
+    const finalHighscoreDisplay = document.getElementById('final-highscore');
+    const startBtn = document.getElementById('start-btn');
+    const restartBtn = document.getElementById('restart-btn');
+    const soundToggleBtn = document.getElementById('sound-toggle-btn');
+    const soundIcon = document.getElementById('sound-icon');
+    const merkleSvg = document.getElementById('merkle-svg');
+
+    // Initialize
+    window.addEventListener('DOMContentLoaded', () => {
+      visualizer = new MerkleVisualizer(merkleSvg, {
+        onNodeClick: handleNodeClick,
+        onNodeHover: handleNodeHover
+      });
+
+      // Load High Score
+      const storedHighScore = localStorage.getItem('merkle_speedrun_highscore');
+      if (storedHighScore) {
+        highscore = parseInt(storedHighScore);
+        highscoreText.textContent = String(highscore).padStart(4, '0');
+      }
+
+      // Action Handlers
+      startBtn.addEventListener('click', startGame);
+      restartBtn.addEventListener('click', startGame);
+      clearBtn.addEventListener('click', clearSelection);
+      submitBtn.addEventListener('click', submitProof);
+      soundToggleBtn.addEventListener('click', toggleMute);
+    });
+
+    // Start Game State
+    function startGame() {
+      score = 0;
+      lives = 3;
+      combo = 0;
+      roundActive = true;
+      
+      scoreText.textContent = "0000";
+      comboBox.style.display = "none";
+      
+      // Reset shields icons
+      Array.from(livesContainer.children).forEach(el => el.classList.remove('lost'));
+      
+      startOverlay.classList.remove('show');
+      gameoverOverlay.classList.remove('show');
+
+      AudioSynth.playCorrectProof();
+      startNewRound();
+    }
+
+    // Start Next Round
+    function startNewRound() {
+      if (currentRoundTimer) clearInterval(currentRoundTimer);
+      
+      selectedNodesOrder = [];
+      selectedNodesSet.clear();
+      submitBtn.disabled = true;
+      
+      renderProofBag();
+      renderInitialConsole();
+
+      // Determine tree size dynamically based on score
+      // Starts at size 4, scales up, introduces odd/ephemeral sizes, caps at size 12-16.
+      let treeSize = 4;
+      if (score >= 1 && score < 3) {
+        treeSize = 5; // Introduce odd size!
+      } else if (score >= 3 && score < 5) {
+        treeSize = 6;
+      } else if (score >= 5 && score < 7) {
+        treeSize = 8; // Power of 2 (3 levels)
+      } else if (score >= 7 && score < 10) {
+        treeSize = 9 + Math.floor(Math.random() * 3); // size 9, 10, 11 (complex ephemeral paths!)
+      } else if (score >= 10) {
+        treeSize = 12 + Math.floor(Math.random() * 5); // size 12 to 16
+      }
+
+      // Generate random unique words for leaves
+      const leaves = [];
+      const shuffledWords = [...WORDS].sort(() => 0.5 - Math.random());
+      for (let i = 0; i < treeSize; i++) {
+        leaves.push(shuffledWords[i]);
+      }
+
+      tree = new MerkleTree(leaves);
+      expectedRootHex = tree.getRootHashHex();
+
+      // Pick a random leaf as target
+      targetIndex = Math.floor(Math.random() * treeSize);
+      targetValue = leaves[targetIndex];
+
+      // Update UI displays
+      targetValueDisplay.textContent = `"${targetValue}"`;
+      targetIndexDisplay.textContent = targetIndex;
+      treeSizeDisplay.textContent = `${treeSize} leaves`;
+      expectedRootDisplay.textContent = `0x${expectedRootHex.substring(0, 16)}...`;
+
+      // Set Round Timer based on score
+      // Easy levels give 30s. Higher scores drop the timer down to a frantic 15s.
+      roundMaxSeconds = 30;
+      if (score >= 3 && score < 7) roundMaxSeconds = 25;
+      else if (score >= 7 && score < 10) roundMaxSeconds = 20;
+      else if (score >= 10) roundMaxSeconds = 15;
+
+      secondsRemaining = roundMaxSeconds;
+      timerText.textContent = `${secondsRemaining}s`;
+      timerText.classList.remove('danger');
+      timerBar.style.width = "100%";
+      timerBar.style.backgroundColor = "";
+
+      // Start timer countdown
+      currentRoundTimer = setInterval(tickTimer, 1000);
+
+      updateVisualization();
+    }
+
+    // Timer Countdown Tick
+    function tickTimer() {
+      if (!roundActive) return;
+
+      secondsRemaining--;
+      timerText.textContent = `${secondsRemaining}s`;
+
+      // Update visual bar
+      const pct = (secondsRemaining / roundMaxSeconds) * 100;
+      timerBar.style.width = `${pct}%`;
+
+      // Warning color triggers
+      if (secondsRemaining <= 5) {
+        timerText.classList.add('danger');
+        timerBar.style.boxShadow = "0 0 10px rgba(231, 29, 54, 0.8)";
+        AudioSynth.playBeep(880, 'sine', 0.05, 0.05); // Ticking noise
+      }
+
+      if (secondsRemaining <= 0) {
+        clearInterval(currentRoundTimer);
+        handleRoundTimeout();
+      }
+    }
+
+    // Timer ran out
+    function handleRoundTimeout() {
+      AudioSynth.playWrongNode();
+      deductLife("Time Expired!");
+    }
+
+    // Sibling Node Click Handler
+    function handleNodeClick(node) {
+      if (!roundActive) return;
+
+      // Clicked on a leaf node directly
+      if (node.isLeaf) {
+        // Enforce: They shouldn't include the target leaf itself as a sibling!
+        if (node.index === targetIndex) {
+          AudioSynth.playWrongNode();
+          printConsoleMessage("ℹ️ Target leaf is the starting seed of the proof. You must collect its siblings, not the target itself!");
+          return;
+        }
+      }
+
+      // Cannot select root node
+      if (node.level === tree.levels.length - 1) {
+        AudioSynth.playWrongNode();
+        printConsoleMessage("ℹ️ The Root Node is what we are trying to prove. You cannot include the root in the proof itself!");
+        return;
+      }
+
+      const nodeId = node.id;
+
+      // Toggle Selection
+      if (selectedNodesSet.has(nodeId)) {
+        // Deselect
+        selectedNodesOrder = selectedNodesOrder.filter(n => n.id !== nodeId);
+        selectedNodesSet.delete(nodeId);
+        AudioSynth.playBeep(330, 'sine', 0.08, 0.05); // short low beep for remove
+      } else {
+        // Select
+        const hash = tree.getHash(node.level, node.index);
+        selectedNodesOrder.push({
+          id: nodeId,
+          level: node.level,
+          index: node.index,
+          hash: hash
+        });
+        selectedNodesSet.add(nodeId);
+        AudioSynth.playBeep(440, 'sine', 0.08, 0.08); // short pleasant chirp for add
+      }
+
+      // Enable submit button if they collected at least 1 node
+      submitBtn.disabled = selectedNodesOrder.length === 0;
+
+      renderProofBag();
+      updateVisualization();
+    }
+
+    // Hover tooltip info
+    function handleNodeHover(node, event, isHovering) {
+      const tooltip = document.getElementById('tooltip');
+      if (!isHovering || !roundActive) {
+        tooltip.style.display = 'none';
+        return;
+      }
+
+      const hex = bytesToHex(tree.getHash(node.level, node.index)).substring(0, 16) + "...";
+      tooltip.innerHTML = `
+        <strong>L${node.level}, Index ${node.index}</strong><br>
+        Hash: <code style="color:var(--accent-blue);">${hex}</code><br>
+        ${node.isLeaf ? `Value: "${node.value}"` : node.isEphemeral ? '<span style="color:var(--accent-orange)">Ephemeral Node</span>' : 'Internal Node'}
+      `;
+      
+      tooltip.style.left = `${event.pageX + 15}px`;
+      tooltip.style.top = `${event.pageY + 15}px`;
+      tooltip.style.display = 'block';
+    }
+
+    // Render tree with Highlights
+    function updateVisualization() {
+      const scannedNodes = {};
+      
+      // Always highlight target leaf in Gold
+      scannedNodes[`L0_I${targetIndex}`] = 'target';
+
+      // Highlight selected nodes in Neon Blue (Proof class)
+      selectedNodesSet.forEach(id => {
+        scannedNodes[id] = 'proof';
+      });
+
+      visualizer.render(tree, {
+        type: 'game',
+        scannedNodes: scannedNodes
+      });
+    }
+
+    // Clear Selected Nodes
+    function clearSelection() {
+      selectedNodesOrder = [];
+      selectedNodesSet.clear();
+      submitBtn.disabled = true;
+      renderProofBag();
+      updateVisualization();
+      AudioSynth.playBeep(220, 'sine', 0.1, 0.1);
+    }
+
+    // Render Proof Bag list
+    function renderProofBag() {
+      proofBagList.innerHTML = '';
+
+      // Target Leaf Node shown at bottom of bag
+      const liTarget = document.createElement('li');
+      liTarget.className = 'proof-item target-node';
+      const targetHash = bytesToHex(Hasher.hashLeaf(stringToBytes(targetValue))).substring(0, 12);
+      liTarget.innerHTML = `
+        <span>🌱 Seed: [${targetIndex}] "${targetValue}"</span>
+        <span style="color: var(--accent-gold);">${targetHash}...</span>
+      `;
+      proofBagList.appendChild(liTarget);
+
+      // Selected Siblings
+      selectedNodesOrder.forEach((n, idx) => {
+        const hashHex = bytesToHex(n.hash).substring(0, 12);
+        const li = document.createElement('li');
+        li.className = 'proof-item proof-node';
+        li.innerHTML = `
+          <span>#${idx + 1}: Sibling (L${n.level},I${n.index})</span>
+          <div style="display:flex; align-items:center; gap:8px;">
+            <span style="color: var(--accent-blue);">${hashHex}...</span>
+            <button class="remove-node-btn" data-id="${n.id}">✕</button>
+          </div>
+        `;
+        
+        // Remove individual node event
+        li.querySelector('.remove-node-btn').addEventListener('click', (e) => {
+          e.stopPropagation();
+          const idToRemove = e.target.getAttribute('data-id');
+          selectedNodesOrder = selectedNodesOrder.filter(item => item.id !== idToRemove);
+          selectedNodesSet.delete(idToRemove);
+          submitBtn.disabled = selectedNodesOrder.length === 0;
+          renderProofBag();
+          updateVisualization();
+        });
+
+        proofBagList.appendChild(li);
+      });
+    }
+
+    // Verify and Submit Assembled Proof
+    function submitProof() {
+      if (!roundActive) return;
+      
+      clearInterval(currentRoundTimer);
+      
+      // Assemble proof array of Uint8Arrays
+      const proofHashes = selectedNodesOrder.map(n => n.hash);
+      
+      // Perform verification
+      const expectedRootBytes = hexToBytes(expectedRootHex);
+      const isCorrect = verifyInclusion(
+        targetIndex,
+        tree.leaves.length,
+        targetValue,
+        proofHashes,
+        expectedRootBytes
+      );
+
+      renderConsoleReport(isCorrect, proofHashes);
+
+      if (isCorrect) {
+        handleRoundSuccess();
+      } else {
+        handleRoundFailure();
+      }
+    }
+
+    // Correct Proof submitted!
+    function handleRoundSuccess() {
+      AudioSynth.playCorrectProof();
+      
+      // Score calculation:
+      // Base 100 pts + speed bonus (remaining seconds * 15)
+      const basePoints = 100;
+      const speedBonus = secondsRemaining * 15;
+      const roundScore = basePoints + speedBonus;
+      
+      combo++;
+      score += roundScore * combo;
+      
+      // Update HUD
+      scoreText.textContent = String(score).padStart(4, '0');
+      
+      if (combo > 1) {
+        comboText.textContent = `x${combo}`;
+        comboBox.style.display = "flex";
+      }
+
+      // Show win message and load next round after 2.5 seconds (to let them study the successful console log)
+      printConsoleSuccessMessage(`🎉 <strong>SUCCESS!</strong> Inclusion proof verified. Assembled hash matched the ledger root! +${roundScore * combo} pts.`);
+      
+      roundActive = false;
+      setTimeout(() => {
+        roundActive = true;
+        startNewRound();
+      }, 2500);
+    }
+
+    // Incorrect Proof submitted!
+    function handleRoundFailure() {
+      AudioSynth.playIncorrectProof();
+      combo = 0;
+      comboBox.style.display = "none";
+      
+      deductLife("Verification Failed!");
+    }
+
+    // Deduct a shield life
+    function deductLife(reason) {
+      lives--;
+      
+      // Update UI shield icons
+      const heartIdx = 2 - lives; // shields go left to right
+      const heart = livesContainer.querySelector(`[data-idx="${lives}"]`);
+      if (heart) heart.classList.add('lost');
+
+      printConsoleFailureMessage(`❌ <strong>AUDIT FAILURE:</strong> ${reason} Shield depleted!`);
+
+      // If no shields left, game over!
+      if (lives <= 0) {
+        triggerGameOver();
+      } else {
+        // Pause and load next round after 3.5 seconds so they can study the failing console log
+        roundActive = false;
+        setTimeout(() => {
+          roundActive = true;
+          startNewRound();
+        }, 3500);
+      }
+    }
+
+    // Game Over
+    function triggerGameOver() {
+      roundActive = false;
+      if (currentRoundTimer) clearInterval(currentRoundTimer);
+      AudioSynth.playGameOver();
+
+      // Check High Score
+      if (score > highscore) {
+        highscore = score;
+        localStorage.setItem('merkle_speedrun_highscore', highscore);
+        highscoreText.textContent = String(highscore).padStart(4, '0');
+      }
+
+      // Show GameOver Screen
+      finalScoreDisplay.textContent = String(score).padStart(4, '0');
+      finalHighscoreDisplay.textContent = String(highscore).padStart(4, '0');
+      gameoverOverlay.classList.add('show');
+    }
+
+    // Mute button handler
+    function toggleMute() {
+      AudioSynth.muted = !AudioSynth.muted;
+      if (AudioSynth.muted) {
+        soundIcon.textContent = "🔇";
+        soundToggleBtn.style.borderColor = "var(--accent-red)";
+      } else {
+        soundIcon.textContent = "🔊";
+        soundToggleBtn.style.borderColor = "var(--border-color)";
+        AudioSynth.playBeep(440, 'sine', 0.1, 0.1);
+      }
+    }
+
+    // Helper functions for building byte arrays from strings
+    function stringToBytes(str) {
+      return new TextEncoder().encode(str);
+    }
+
+    // Console rendering utilities
+    function renderInitialConsole() {
+      consoleDesc.textContent = "Console Active. Awaiting cryptographic verification pipeline...";
+      consoleSteps.innerHTML = `
+        <div style="color: #666; text-align: center; padding: 30px 10px; font-size: 0.85rem; border: 1px dashed var(--border-color); border-radius: 6px;">
+          Verifier Idle.
+          <br><br>
+          Select siblings from bottom-to-top and submit to execute verification trace.
+        </div>
+      `;
+    }
+
+    function printConsoleMessage(msg) {
+      consoleSteps.innerHTML = `
+        <div style="color: var(--accent-gold); border: 1px solid var(--accent); border-radius: 4px; padding: 10px; font-size: 0.85rem; background: #251c14;">
+          ${msg}
+        </div>
+      `;
+    }
+
+    // Prepend messages
+    function printConsoleSuccessMessage(msg) {
+      consoleSteps.innerHTML = `
+        <div class="step-item step-success" style="font-size:0.85rem; padding: 12px; margin-bottom:10px;">
+          ${msg}
+        </div>
+      ` + consoleSteps.innerHTML;
+    }
+
+    function printConsoleFailureMessage(msg) {
+      consoleSteps.innerHTML = `
+        <div class="step-item step-fail" style="font-size:0.85rem; padding: 12px; margin-bottom:10px;">
+          ${msg}
+        </div>
+      ` + consoleSteps.innerHTML;
+    }
+
+    function renderConsoleReport(isCorrect, proofHashes) {
+      consoleSteps.innerHTML = '';
+      
+      const leafBytes = stringToBytes(targetValue);
+      const leafHash = Hasher.hashLeaf(leafBytes);
+
+      // Step 1: Hash target leaf
+      const step1 = document.createElement('div');
+      step1.className = 'step-item step-path';
+      step1.innerHTML = `
+        <div><strong>Step 1: Hash Target Leaf</strong></div>
+        <div>SHA256(0x00 || "${targetValue}")</div>
+        <div class="hash-val">${bytesToHex(leafHash)}</div>
+      `;
+      verificationStepsAppend(step1);
+
+      let currentHash = leafHash;
+      let idx = targetIndex;
+      let stepNum = 2;
+
+      // We run the verification calculations and log them step-by-step
+      const numLevels = tree.levels.length - 1;
+      
+      for (let L = 0; L < numLevels; L++) {
+        const siblingIdx = idx ^ 1;
+        const levelNodesCount = tree.levels[L].length;
+        
+        if (siblingIdx < levelNodesCount) {
+          // A sibling exists
+          const submittedSiblingHash = proofHashes[stepNum - 2];
+          
+          if (submittedSiblingHash) {
+            const isLeftSibling = siblingIdx < idx;
+            let expr = '';
+            
+            if (isLeftSibling) {
+              expr = `SHA256(0x01 || sibling || current)`;
+              currentHash = Hasher.hashChildren(submittedSiblingHash, currentHash);
+            } else {
+              expr = `SHA256(0x01 || current || sibling)`;
+              currentHash = Hasher.hashChildren(currentHash, submittedSiblingHash);
+            }
+
+            const step = document.createElement('div');
+            step.className = 'step-item step-path';
+            step.innerHTML = `
+              <div><strong>Step ${stepNum}: Merge Sibling</strong></div>
+              <div>${expr}</div>
+              <div class="hash-val" style="color: var(--accent-blue);">Sibling: ${bytesToHex(submittedSiblingHash).substring(0, 16)}...</div>
+              <div class="hash-val">Result: ${bytesToHex(currentHash)}</div>
+            `;
+            verificationStepsAppend(step);
+            stepNum++;
+          } else {
+            // Sibling was expected but they didn't provide one
+            const failStep = document.createElement('div');
+            failStep.className = 'step-item step-fail';
+            failStep.innerHTML = `
+              <div><strong>Step ${stepNum}: Verification Interrupted</strong></div>
+              <div style="color: var(--accent-red);">Expected sibling at L${L},I${siblingIdx} is missing from proof!</div>
+            `;
+            verificationStepsAppend(failStep);
+            break;
+          }
+        } else {
+          // Sibling is ephemeral (propagates up)
+          const ephemStep = document.createElement('div');
+          ephemStep.className = 'step-item';
+          ephemStep.style.opacity = 0.7;
+          ephemStep.innerHTML = `
+            <div><strong>Step ${stepNum}: Ephemeral Propagate</strong></div>
+            <div style="font-size:0.75rem; color:#888;">No sibling exists at L${L},I${siblingIdx}. Hash propagates up.</div>
+            <div class="hash-val">Result: ${bytesToHex(currentHash)}</div>
+          `;
+          verificationStepsAppend(ephemStep);
+          stepNum++;
+        }
+        idx = Math.floor(idx / 2);
+      }
+
+      // Check if they provided EXTRA hashes that weren't needed
+      if (proofHashes.length > (stepNum - 2) && isCorrect === false) {
+        const extraStep = document.createElement('div');
+        extraStep.className = 'step-item step-fail';
+        extraStep.innerHTML = `
+          <div><strong>Verification Error</strong></div>
+          <div style="color: var(--accent-red);">Proof contains extra unused hashes! (Provided ${proofHashes.length}, needed ${stepNum - 2}).</div>
+        `;
+        verificationStepsAppend(extraStep);
+      }
+
+      // Final Step: Compare Root
+      const matched = bytesToHex(currentHash) === expectedRootHex;
+      const finalStep = document.createElement('div');
+      finalStep.className = `step-item ${matched ? 'step-success' : 'step-fail'}`;
+      finalStep.innerHTML = `
+        <div><strong>Final Step: Compare Root Hash</strong></div>
+        <div class="hash-val" style="color:#fff;">Calc:  ${bytesToHex(currentHash)}</div>
+        <div class="hash-val" style="color:#888;">Expected: ${expectedRootHex}</div>
+        <div style="margin-top: 8px; font-weight: bold;">
+          ${matched ? '✅ Root hashes match! Inclusion verified.' : '❌ Mismatch! Proof invalid.'}
+        </div>
+      `;
+      verificationStepsAppend(finalStep);
+    }
+
+    function verificationStepsAppend(el) {
+      consoleSteps.appendChild(el);
+      consoleSteps.scrollTop = consoleSteps.scrollHeight;
+    }
+  </script>
+</body>
+</html>
