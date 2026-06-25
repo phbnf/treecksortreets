@@ -221,10 +221,6 @@ function getProofNodes(index, level, size) {
 
   let beginIdx = len1;
   let endIdx = len2;
-  if (len1 >= len2) {
-    beginIdx = 0;
-    endIdx = 0;
-  }
 
   const ephem = { level: fork.level, index: fork.index ^ 1 };
 
@@ -366,27 +362,40 @@ export class MerkleTree {
       return [];
     }
 
-    // Find root of biggest perfect subtree ending at size1
-    // Trailing zeros of size1
     const trailingZeros = getTrailingZeros(size1);
     const level = trailingZeros;
     const index = (size1 - 1) >> level;
 
-    // Get nodes of inclusion proof into this node in size2
     const p = getProofNodes(index, level, size2);
-
     const ids = p.IDs;
-    // If size1 is a power of 2, skip the first ID
     const startIdx = (index === 0) ? 1 : 0;
     
-    const proofHashes = [];
-    for (let i = startIdx; i < ids.length; i++) {
-      const id = ids[i];
-      const h = this.getHash(id.level, id.index);
-      if (h) {
-        proofHashes.push(h);
+    // 1. Fetch hashes for all individual nodes in the proof
+    const hashes = ids.map(id => this.getHash(id.level, id.index));
+
+    // 2. Extract and keep the path hashes (middle part)
+    const proofHashes = hashes.slice(startIdx, p.begin).filter(h => h !== null);
+
+    // 3. Merge the right forest hashes (from p.begin to p.end)
+    const rightForest = hashes.slice(p.begin, p.end).filter(h => h !== null);
+    if (rightForest.length > 0) {
+      let mergedRight = rightForest[0];
+      for (let i = 1; i < rightForest.length; i++) {
+        mergedRight = Hasher.hashChildren(rightForest[i], mergedRight);
       }
+      proofHashes.push(mergedRight);
     }
+
+    // 4. Merge the left forest hashes (from p.end to end)
+    const leftForest = hashes.slice(p.end).filter(h => h !== null);
+    if (leftForest.length > 0) {
+      let mergedLeft = leftForest[0];
+      for (let i = 1; i < leftForest.length; i++) {
+        mergedLeft = Hasher.hashChildren(leftForest[i], mergedLeft);
+      }
+      proofHashes.push(mergedLeft);
+    }
+
     return proofHashes;
   }
 
