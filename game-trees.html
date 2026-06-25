@@ -1,0 +1,1124 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Merkle Tree Games - Treecks or Treets</title>
+  <link rel="stylesheet" href="merkle.css">
+  <style>
+    :root {
+      --bg-dark: #121212;
+      --panel-bg: #1e1e1e;
+      --border-color: #333333;
+      --text-main: #e0e0e0;
+      --accent: #4fc1ff;
+      --accent-green: #4ec9b0;
+      --accent-orange: #ff9f1c;
+      --accent-teal: #2ec4b6;
+      --accent-red: #e71d36;
+    }
+
+    body {
+      background-color: var(--bg-dark);
+      color: var(--text-main);
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+      margin: 0;
+      padding: 0;
+      display: flex;
+      flex-direction: column;
+      height: 100vh;
+      overflow: hidden;
+    }
+
+    header {
+      background-color: var(--panel-bg);
+      border-bottom: 1px solid var(--border-color);
+      padding: 10px 20px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      flex-shrink: 0;
+    }
+
+    h1 {
+      margin: 0;
+      font-size: 1.4rem;
+      color: var(--accent);
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+
+    .subtitle {
+      font-size: 0.85rem;
+      color: #888;
+      margin-left: 10px;
+    }
+
+    .main-container {
+      display: flex;
+      flex: 1;
+      overflow: hidden;
+    }
+
+    .sidebar {
+      width: 330px;
+      background-color: var(--panel-bg);
+      border-right: 1px solid var(--border-color);
+      display: flex;
+      flex-direction: column;
+      flex-shrink: 0;
+      overflow-y: auto;
+      padding: 20px;
+      gap: 15px;
+    }
+
+    .visualizer-pane {
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      background-color: var(--bg-dark);
+      position: relative;
+      overflow: hidden;
+    }
+
+    .svg-container {
+      flex: 1;
+      overflow: auto;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 20px;
+    }
+
+    svg {
+      max-width: 100%;
+      min-width: 600px;
+    }
+
+    .details-pane {
+      width: 360px;
+      background-color: var(--panel-bg);
+      border-left: 1px solid var(--border-color);
+      display: flex;
+      flex-direction: column;
+      flex-shrink: 0;
+      overflow-y: auto;
+      padding: 20px;
+      gap: 20px;
+    }
+
+    .panel-section {
+      background-color: #252526;
+      border: 1px solid var(--border-color);
+      border-radius: 6px;
+      padding: 15px;
+    }
+
+    .panel-section h3 {
+      margin-top: 0;
+      margin-bottom: 12px;
+      font-size: 1rem;
+      border-bottom: 1px solid var(--border-color);
+      padding-bottom: 6px;
+      color: var(--accent);
+    }
+
+    .level-btn {
+      width: 100%;
+      text-align: left;
+      background-color: #252526;
+      border: 1px solid var(--border-color);
+      color: var(--text-main);
+      padding: 10px 12px;
+      border-radius: 4px;
+      cursor: pointer;
+      font-size: 0.9rem;
+      transition: all 0.2s;
+    }
+
+    .level-btn:hover {
+      background-color: #333333;
+      border-color: var(--accent);
+    }
+
+    .level-btn.active {
+      background-color: var(--accent) !important;
+      color: #000 !important;
+      font-weight: bold;
+      border-color: var(--accent) !important;
+    }
+
+    button.action-btn {
+      background-color: var(--accent-orange);
+      color: #fff;
+      border: none;
+      padding: 10px 16px;
+      border-radius: 4px;
+      font-weight: bold;
+      cursor: pointer;
+      font-size: 0.95rem;
+      transition: background-color 0.2s;
+      width: 100%;
+    }
+
+    button.action-btn:hover {
+      background-color: #e58d10;
+    }
+
+    button.secondary-btn {
+      background-color: #3c3c3c;
+      color: var(--text-main);
+      border: none;
+      padding: 10px 16px;
+      border-radius: 4px;
+      font-weight: bold;
+      cursor: pointer;
+      font-size: 0.95rem;
+      transition: background-color 0.2s;
+      width: 100%;
+      margin-top: 10px;
+    }
+
+    button.secondary-btn:hover {
+      background-color: #4c4c4c;
+    }
+
+    .banner {
+      background-color: #2b3a4a;
+      border: 1px solid #3c5675;
+      padding: 12px 15px;
+      border-radius: 6px;
+      font-size: 0.85rem;
+      margin-bottom: 15px;
+      line-height: 1.4;
+    }
+
+    .banner.alert-banner {
+      background-color: #3c1e22;
+      border-color: #722f37;
+    }
+
+    .banner.success-banner {
+      background-color: #1d332a;
+      border-color: #285430;
+    }
+
+    .legend {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 12px;
+      font-size: 0.8rem;
+    }
+
+    .legend-item {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+    }
+
+    .legend-color {
+      width: 14px;
+      height: 14px;
+      border-radius: 50%;
+      border: 1px solid #888;
+    }
+
+    .legend-color.default { fill: #2c2c2c; background: #2c2c2c; }
+    .legend-color.leaf { border-color: #3a86c8; background: #2c2c2c; }
+    .legend-color.selected { border-color: var(--accent); background: var(--accent); }
+    .legend-color.correct { background: var(--accent-green); border-color: #2b9375; }
+    .legend-color.incorrect { background: var(--accent-red); border-color: #b31427; }
+
+    .console-row {
+      display: flex;
+      flex-direction: column;
+      gap: 4px;
+      margin-bottom: 12px;
+      font-family: monospace;
+      font-size: 0.85rem;
+    }
+
+    .console-label {
+      color: #888;
+    }
+
+    .console-value {
+      word-break: break-all;
+      color: #fff;
+    }
+
+    .console-value.highlight-val {
+      color: var(--accent);
+    }
+
+    #tooltip {
+      position: absolute;
+      background: rgba(30, 30, 30, 0.95);
+      border: 1px solid var(--border-color);
+      padding: 10px;
+      border-radius: 4px;
+      font-family: monospace;
+      font-size: 0.75rem;
+      pointer-events: none;
+      display: none;
+      z-index: 10;
+      box-shadow: 0 4px 12px rgba(0,0,0,0.5);
+    }
+  </style>
+</head>
+<body>
+  <header>
+    <h1>
+      🌳 Merkle Tree Games
+      <span class="subtitle">Anatomy, Auditing & Verification</span>
+    </h1>
+    <div>
+      <a href="play.html" style="color: var(--accent); font-size: 0.9rem; text-decoration: none;">← Back to Games Menu</a>
+    </div>
+  </header>
+
+  <div class="main-container">
+    <!-- Left Sidebar: Level Selector & Active Level Controls -->
+    <div class="sidebar">
+      <!-- Level Selector -->
+      <div class="panel-section">
+        <h3>Select Game Level</h3>
+        <div style="display: flex; flex-direction: column; gap: 8px;">
+          <button id="level-1-btn" class="level-btn active">Level 1: Tree Anatomy</button>
+          <button id="level-2-btn" class="level-btn">Level 2: Spot the Imposter</button>
+          <button id="level-3-btn" class="level-btn">Level 3: Cryptographic Audit</button>
+        </div>
+      </div>
+
+      <!-- Controls Panel (Dynamic Content) -->
+      <div class="panel-section">
+        <h3 id="controls-panel-title">Game Controls</h3>
+        
+        <!-- Level 1 Controls -->
+        <div id="l1-controls">
+          <div class="banner" id="l1-status-banner">
+            Click <strong>Start Quiz</strong> to test your knowledge of Merkle tree vocabulary and structure!
+          </div>
+          <button id="l1-start-btn" class="action-btn">Start Quiz</button>
+          
+          <div id="l1-stats" style="display: none; margin-top: 15px;">
+            <div style="display: flex; justify-content: space-between; font-size: 0.85rem; border-top: 1px solid var(--border-color); padding-top: 10px;">
+              <span>Question: <strong id="l1-question-count">0 / 5</strong></span>
+              <span>Score: <strong id="l1-score">0 / 5</strong></span>
+            </div>
+          </div>
+        </div>
+
+        <!-- Level 2 Controls -->
+        <div id="l2-controls" style="display: none;">
+          <div class="banner" id="l2-status-banner">
+            A rogue attacker changed a transaction, causing a root mismatch! Click <strong>Start Audit</strong> to narrow down the branch.
+          </div>
+          <button id="l2-start-btn" class="action-btn">Start Audit</button>
+          
+          <div id="l2-stats" style="display: none; margin-top: 15px;">
+            <div style="display: flex; justify-content: space-between; font-size: 0.85rem; margin-bottom: 10px; border-bottom: 1px solid var(--border-color); padding-bottom: 10px;">
+              <span>Scans Used: <strong id="l2-scans-count">0 / 4</strong></span>
+              <span>Remaining: <strong id="l2-scans-left">4</strong></span>
+            </div>
+            <div style="font-size: 0.8rem; color: #888; margin-bottom: 5px;">Selected Guess:</div>
+            <div id="l2-selected-guess" style="font-family: monospace; font-size: 0.95rem; font-weight: bold; margin-bottom: 15px; color: var(--accent-orange);">None Selected</div>
+            <button id="l2-guess-btn" class="action-btn" style="background-color: var(--accent-teal); color: #000;">Declare Imposter</button>
+          </div>
+        </div>
+
+        <!-- Level 3 Controls -->
+        <div id="l3-controls" style="display: none;">
+          <div class="banner" id="l3-status-banner">
+            A leaf was altered, but parent hashes are stale! Find the exact node where children's hashes do not recompute to the parent hash.
+          </div>
+          <button id="l3-start-btn" class="action-btn">Start Verification</button>
+
+          <div id="l3-stats" style="display: none; margin-top: 15px;">
+            <div style="font-size: 0.8rem; color: #888; margin-bottom: 5px;">Selected Parent Node:</div>
+            <div id="l3-selected-parent" style="font-family: monospace; font-size: 0.95rem; font-weight: bold; margin-bottom: 15px; color: var(--accent-orange);">None Selected</div>
+            <button id="l3-declare-btn" class="action-btn" style="background-color: var(--accent-teal); color: #000;">Declare Broken Link</button>
+          </div>
+        </div>
+      </div>
+
+      <!-- Legend Panel (Dynamic) -->
+      <div class="panel-section">
+        <h3>Legend</h3>
+        
+        <div id="l1-legend" class="legend">
+          <div class="legend-item"><div class="legend-color default"></div><span>Default Node</span></div>
+          <div class="legend-item"><div class="legend-color correct"></div><span>Correct Click</span></div>
+          <div class="legend-item"><div class="legend-color incorrect"></div><span>Incorrect Click</span></div>
+        </div>
+
+        <div id="l2-legend" class="legend" style="display: none;">
+          <div class="legend-item"><div class="legend-color default"></div><span>Unscanned Node</span></div>
+          <div class="legend-item"><div class="legend-color leaf"></div><span>Leaf Node</span></div>
+          <div class="legend-item"><div class="legend-color incorrect"></div><span>Tampered Branch (Red)</span></div>
+          <div class="legend-item"><div class="legend-color correct"></div><span>Authentic Branch (Green)</span></div>
+        </div>
+
+        <div id="l3-legend" class="legend" style="display: none;">
+          <div class="legend-item"><div class="legend-color default"></div><span>Unchecked Node</span></div>
+          <div class="legend-item"><div class="legend-color correct"></div><span>Hash Matches Children</span></div>
+          <div class="legend-item"><div class="legend-color incorrect"></div><span>Hash Mismatches Children</span></div>
+          <div class="legend-item"><div class="legend-color selected"></div><span>Selected Parent</span></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Center: Visualizer -->
+    <div class="visualizer-pane">
+      <div class="svg-container">
+        <svg id="merkle-svg" viewBox="0 0 800 500" width="100%" height="100%"></svg>
+      </div>
+      <div id="tooltip"></div>
+    </div>
+
+    <!-- Right Sidebar: Level Details & Auditing Console -->
+    <div class="details-pane">
+      <!-- How to Play Panel (Dynamic Content) -->
+      <div class="panel-section">
+        <h3>How to Play</h3>
+        
+        <div id="l1-details-intro">
+          <p style="font-size: 0.85rem; line-height: 1.4; color: #bbb; margin-top: 0;">
+            Merkle Trees use specific coordinates and nomenclature to trace hierarchy.
+          </p>
+          <p style="font-size: 0.85rem; line-height: 1.4; color: #bbb;">
+            <strong>Nomenclature:</strong>
+            <br>• <strong>Root Node</strong>: The top hash representing the whole tree.
+            <br>• <strong>Leaf Node</strong>: A bottom data record (level 0).
+            <br>• <strong>Sibling</strong>: The matching node paired at the same height level.
+            <br>• <strong>Parent</strong>: The intermediate node computed directly above two children.
+          </p>
+        </div>
+
+        <div id="l2-details-intro" style="display: none;">
+          <p style="font-size: 0.85rem; line-height: 1.4; color: #bbb; margin-top: 0;">
+            The root hash mismatch indicates that one transaction was tampered with.
+          </p>
+          <p style="font-size: 0.85rem; line-height: 1.4; color: #bbb;">
+            <strong>Scan:</strong> Click nodes to check branch integrity.
+            <br>🔴 <strong>Red</strong>: Culprit leaf is down this sub-branch.
+            <br>🟢 <strong>Green</strong>: Sub-branch matches expectations.
+            <br><strong>Goal:</strong> Scan optimally in $\log_2 N$ steps, click the culprit leaf, and declare it.
+          </p>
+        </div>
+
+        <div id="l3-details-intro" style="display: none;">
+          <p style="font-size: 0.85rem; line-height: 1.4; color: #bbb; margin-top: 0;">
+            Instead of a magic scanner, audit the actual SHA-256 hash chains!
+          </p>
+          <p style="font-size: 0.85rem; line-height: 1.4; color: #bbb;">
+            Click a parent node to load its child hashes in the Verification Console below.
+            <br>Verify if:
+            <br><code style="color: var(--accent);">Parent Hash = Hash(Left Child + Right Child)</code>
+            <br>The attacker changed a leaf but didn't update intermediate hashes, meaning parent/child integrity is broken at exactly one node!
+          </p>
+        </div>
+      </div>
+
+      <!-- Verification Console (Only visible/relevant for Level 3) -->
+      <div class="panel-section" id="l3-console-section" style="display: none;">
+        <h3>Verification Console</h3>
+        <div id="l3-console-data">
+          <div style="font-size: 0.85rem; color: #aaa;">Click an internal node to audit hash values.</div>
+        </div>
+      </div>
+
+      <!-- Results section -->
+      <div class="panel-section" id="game-results-section" style="display: none;">
+        <h3>Results</h3>
+        <div id="game-results-content" style="font-size: 0.85rem; line-height: 1.4;"></div>
+        <button id="restart-level-btn" class="secondary-btn">Play Again</button>
+      </div>
+    </div>
+  </div>
+
+  <script type="module">
+    import { MerkleTree, bytesToHex, hexToBytes, Hasher, stringToBytes } from './merkle.js';
+    import { MerkleVisualizer } from './merkle-visualizer.js';
+
+    let tree = null;
+    let visualizer = null;
+    let currentLevel = 1;
+
+    // Game state objects
+    let l1State = {
+      active: false,
+      questions: [],
+      currentIndex: 0,
+      score: 0,
+      scannedNodes: {},
+      selectedNode: null
+    };
+
+    let l2State = {
+      active: false,
+      tamperedLeafIndex: null,
+      scannedNodes: {},
+      scansUsed: 0,
+      scanLimit: 4,
+      guessIndex: null
+    };
+
+    let l3State = {
+      active: false,
+      tamperedLeafIndex: null,
+      storedHashes: {}, // original valid tree hashes
+      currentLeafHashes: [], // leaf hashes containing the tampered one
+      scannedNodes: {}, // verified results: 'safe' (matches children) or 'tampered' (mismatch)
+      selectedNodeId: null
+    };
+
+    // DOM Elements
+    const merkleSvg = document.getElementById('merkle-svg');
+    const tooltip = document.getElementById('tooltip');
+    
+    // Level Buttons
+    const lvl1Btn = document.getElementById('level-1-btn');
+    const lvl2Btn = document.getElementById('level-2-btn');
+    const lvl3Btn = document.getElementById('level-3-btn');
+
+    // Controls Containers
+    const l1Controls = document.getElementById('l1-controls');
+    const l2Controls = document.getElementById('l2-controls');
+    const l3Controls = document.getElementById('l3-controls');
+
+    // Legend Containers
+    const l1Legend = document.getElementById('l1-legend');
+    const l2Legend = document.getElementById('l2-legend');
+    const l3Legend = document.getElementById('l3-legend');
+
+    // How to Play Containers
+    const l1DetailsIntro = document.getElementById('l1-details-intro');
+    const l2DetailsIntro = document.getElementById('l2-details-intro');
+    const l3DetailsIntro = document.getElementById('l3-details-intro');
+
+    // Verification Console
+    const l3ConsoleSection = document.getElementById('l3-console-section');
+    const l3ConsoleData = document.getElementById('l3-console-data');
+
+    // Start Buttons
+    const l1StartBtn = document.getElementById('l1-start-btn');
+    const l2StartBtn = document.getElementById('l2-start-btn');
+    const l3StartBtn = document.getElementById('l3-start-btn');
+
+    // Stats / Info
+    const l1Stats = document.getElementById('l1-stats');
+    const l1QuestionCount = document.getElementById('l1-question-count');
+    const l1ScoreText = document.getElementById('l1-score');
+    const l1Status = document.getElementById('l1-status-banner');
+
+    const l2Stats = document.getElementById('l2-stats');
+    const l2ScansCount = document.getElementById('l2-scans-count');
+    const l2ScansLeft = document.getElementById('l2-scans-left');
+    const l2SelectedGuess = document.getElementById('l2-selected-guess');
+    const l2GuessBtn = document.getElementById('l2-guess-btn');
+    const l2Status = document.getElementById('l2-status-banner');
+
+    const l3Stats = document.getElementById('l3-stats');
+    const l3SelectedParent = document.getElementById('l3-selected-parent');
+    const l3DeclareBtn = document.getElementById('l3-declare-btn');
+    const l3Status = document.getElementById('l3-status-banner');
+
+    // Results panel
+    const resultsSection = document.getElementById('game-results-section');
+    const resultsContent = document.getElementById('game-results-content');
+    const restartBtn = document.getElementById('restart-level-btn');
+
+    window.addEventListener('DOMContentLoaded', () => {
+      visualizer = new MerkleVisualizer(merkleSvg, {
+        onNodeClick: handleNodeClick,
+        onNodeHover: handleNodeHover
+      });
+
+      // Set up click handlers for switching levels
+      lvl1Btn.addEventListener('click', () => switchLevel(1));
+      lvl2Btn.addEventListener('click', () => switchLevel(2));
+      lvl3Btn.addEventListener('click', () => switchLevel(3));
+
+      // Set up start triggers
+      l1StartBtn.addEventListener('click', startL1Game);
+      l2StartBtn.addEventListener('click', startL2Game);
+      l3StartBtn.addEventListener('click', startL3Game);
+
+      // Guess & declare events
+      l2GuessBtn.addEventListener('click', submitL2Guess);
+      l3DeclareBtn.addEventListener('click', submitL3Declaration);
+
+      restartBtn.addEventListener('click', () => {
+        if (currentLevel === 1) startL1Game();
+        else if (currentLevel === 2) startL2Game();
+        else if (currentLevel === 3) startL3Game();
+      });
+
+      // Initialize level 1 tree visual
+      switchLevel(1);
+    });
+
+    // Swapping visual contexts
+    function switchLevel(level) {
+      currentLevel = level;
+      
+      // Update sidebar buttons
+      [lvl1Btn, lvl2Btn, lvl3Btn].forEach((btn, idx) => {
+        if (idx + 1 === level) btn.classList.add('active');
+        else btn.classList.remove('active');
+      });
+
+      // Hide all controls/legends/intros
+      [l1Controls, l2Controls, l3Controls].forEach(el => el.style.display = 'none');
+      [l1Legend, l2Legend, l3Legend].forEach(el => el.style.display = 'none');
+      [l1DetailsIntro, l2DetailsIntro, l3DetailsIntro].forEach(el => el.style.display = 'none');
+      l3ConsoleSection.style.display = 'none';
+      resultsSection.style.display = 'none';
+
+      // Show the selected one
+      if (level === 1) {
+        l1Controls.style.display = 'block';
+        l1Legend.style.display = 'flex';
+        l1DetailsIntro.style.display = 'block';
+        resetL1State();
+      } else if (level === 2) {
+        l2Controls.style.display = 'block';
+        l2Legend.style.display = 'flex';
+        l2DetailsIntro.style.display = 'block';
+        resetL2State();
+      } else if (level === 3) {
+        l3Controls.style.display = 'block';
+        l3Legend.style.display = 'flex';
+        l3DetailsIntro.style.display = 'block';
+        l3ConsoleSection.style.display = 'block';
+        resetL3State();
+      }
+    }
+
+    // Resetting state variables
+    function resetL1State() {
+      l1State.active = false;
+      l1Stats.style.display = 'none';
+      l1Status.innerHTML = `Click <strong>Start Quiz</strong> to test your knowledge of Merkle tree vocabulary and structure!`;
+      l1StartBtn.style.display = 'block';
+      const leaves = ["Tx0", "Tx1", "Tx2", "Tx3", "Tx4", "Tx5", "Tx6", "Tx7"];
+      tree = new MerkleTree(leaves);
+      visualizer.render(tree);
+    }
+
+    function resetL2State() {
+      l2State.active = false;
+      l2Stats.style.display = 'none';
+      l2Status.innerHTML = `A rogue attacker changed a transaction, causing a root mismatch! Click <strong>Start Audit</strong> to narrow down the branch.`;
+      l2StartBtn.style.display = 'block';
+      const leaves = ["Tx0", "Tx1", "Tx2", "Tx3", "Tx4", "Tx5", "Tx6", "Tx7"];
+      tree = new MerkleTree(leaves);
+      visualizer.render(tree);
+    }
+
+    function resetL3State() {
+      l3State.active = false;
+      l3Stats.style.display = 'none';
+      l3Status.innerHTML = `A leaf was altered, but parent hashes are stale! Find the exact node where children's hashes do not recompute to the parent hash.`;
+      l3StartBtn.style.display = 'block';
+      l3ConsoleData.innerHTML = `<div style="font-size: 0.85rem; color: #aaa;">Click an internal node to audit hash values.</div>`;
+      const leaves = ["Tx0", "Tx1", "Tx2", "Tx3", "Tx4", "Tx5", "Tx6", "Tx7"];
+      tree = new MerkleTree(leaves);
+      visualizer.render(tree);
+    }
+
+    // ============================================
+    // LEVEL 1: TREE ANATOMY QUIZ GAME
+    // ============================================
+    function startL1Game() {
+      const leaves = ["Tx0", "Tx1", "Tx2", "Tx3", "Tx4", "Tx5", "Tx6", "Tx7"];
+      tree = new MerkleTree(leaves);
+      resultsSection.style.display = 'none';
+
+      // Generate 5 random questions
+      const pool = [
+        { text: "Click the ROOT node of the Merkle Tree.", targetId: "L3_I0" },
+        { text: "Click LEAF node index 0.", targetId: "L0_I0" },
+        { text: "Click LEAF node index 3.", targetId: "L0_I3" },
+        { text: "Click LEAF node index 5.", targetId: "L0_I5" },
+        { text: "Click LEAF node index 7.", targetId: "L0_I7" },
+        { text: "Click the SIBLING of leaf node L0_I2.", targetId: "L0_I3" },
+        { text: "Click the SIBLING of leaf node L0_I5.", targetId: "L0_I4" },
+        { text: "Click the SIBLING of internal node L1_I0.", targetId: "L1_I1" },
+        { text: "Click the PARENT of leaf node L0_I4.", targetId: "L1_I2" },
+        { text: "Click the PARENT of leaf node L0_I1.", targetId: "L1_I0" },
+        { text: "Click the PARENT of internal node L1_I3.", targetId: "L2_I1" },
+        { text: "Click the PARENT of internal node L1_I1.", targetId: "L2_I0" }
+      ];
+
+      l1State = {
+        active: true,
+        questions: pool.sort(() => 0.5 - Math.random()).slice(0, 5),
+        currentIndex: 0,
+        score: 0,
+        scannedNodes: {},
+        selectedNode: null
+      };
+
+      l1StartBtn.style.display = 'none';
+      l1Stats.style.display = 'block';
+      updateL1Question();
+    }
+
+    function updateL1Question() {
+      if (l1State.currentIndex >= 5) {
+        finishL1Game();
+        return;
+      }
+      l1QuestionCount.textContent = `${l1State.currentIndex + 1} / 5`;
+      l1ScoreText.textContent = `${l1State.score} / ${l1State.currentIndex}`;
+      l1Status.innerHTML = `❓ <strong>Question ${l1State.currentIndex + 1}:</strong> ${l1State.questions[l1State.currentIndex].text}`;
+      visualizer.render(tree, {
+        type: 'game',
+        scannedNodes: l1State.scannedNodes
+      });
+    }
+
+    function handleL1NodeClick(node) {
+      if (!l1State.active) return;
+      const target = l1State.questions[l1State.currentIndex].targetId;
+      const isCorrect = node.id === target;
+
+      if (isCorrect) {
+        l1State.score++;
+        l1State.scannedNodes[node.id] = 'correct';
+        l1Status.innerHTML = `🟢 <strong>Correct!</strong> That is indeed the target.`;
+      } else {
+        l1State.scannedNodes[node.id] = 'incorrect';
+        l1State.scannedNodes[target] = 'correct'; // highlight target in green
+        l1Status.innerHTML = `🔴 <strong>Incorrect!</strong> Correct node highlighted in green.`;
+      }
+
+      // Render temporarily
+      visualizer.render(tree, {
+        type: 'game',
+        scannedNodes: l1State.scannedNodes
+      });
+
+      // Disable clicking for a brief period
+      l1State.active = false;
+      setTimeout(() => {
+        // Clear highlights for the next round
+        l1State.scannedNodes = {};
+        l1State.currentIndex++;
+        l1State.active = true;
+        updateL1Question();
+      }, 1800);
+    }
+
+    function finishL1Game() {
+      l1State.active = false;
+      l1Stats.style.display = 'none';
+      l1Status.innerHTML = `✨ <strong>Quiz Complete!</strong> Check your score in the details pane.`;
+      
+      resultsSection.style.display = 'block';
+      resultsContent.innerHTML = `
+        <div style="font-size: 1.1rem; font-weight: bold; margin-bottom: 8px;">Score: ${l1State.score} / 5</div>
+        <div style="color: #bbb;">
+          ${l1State.score === 5 
+            ? "Excellent! You have a strong grasp of binary tree hierarchy and structure. 🧠" 
+            : "Good attempt! Play again to improve your score and learn tree coordinates."}
+        </div>
+      `;
+      visualizer.render(tree);
+    }
+
+    // ============================================
+    // LEVEL 2: SPOT THE IMPOSTER (AUDIT GAME)
+    // ============================================
+    function startL2Game() {
+      const leaves = ["Tx0", "Tx1", "Tx2", "Tx3", "Tx4", "Tx5", "Tx6", "Tx7"];
+      tree = new MerkleTree(leaves);
+      resultsSection.style.display = 'none';
+
+      const tamperedIdx = Math.floor(Math.random() * 8);
+
+      l2State = {
+        active: true,
+        tamperedLeafIndex: tamperedIdx,
+        scannedNodes: {
+          "L3_I0": "incorrect" // Root is always tampered/red
+        },
+        scansUsed: 0,
+        scanLimit: 4,
+        guessIndex: null
+      };
+
+      l2StartBtn.style.display = 'none';
+      l2Stats.style.display = 'block';
+      l2ScansCount.textContent = `0 / 4`;
+      l2ScansLeft.textContent = `4`;
+      l2SelectedGuess.textContent = `None Selected`;
+      l2Status.innerHTML = `⚠️ <strong>Root Mismatch!</strong> Click nodes to audit the tree and isolate the tampered transaction path.`;
+      updateL2Visual();
+    }
+
+    function checkL2IsTampered(node) {
+      const begin = node.index << node.level;
+      const end = (node.index + 1) << node.level;
+      return begin <= l2State.tamperedLeafIndex && l2State.tamperedLeafIndex < end;
+    }
+
+    function handleL2NodeClick(node) {
+      if (!l2State.active) return;
+
+      // Click leaves to select guess
+      if (node.level === 0) {
+        l2State.guessIndex = node.index;
+        l2SelectedGuess.textContent = `Leaf ${node.index} ("${node.value}")`;
+      }
+
+      // Check if node is already audited
+      if (l2State.scannedNodes[node.id]) return;
+
+      if (l2State.scansUsed >= l2State.scanLimit) {
+        l2Status.innerHTML = `❌ <strong>No scans remaining!</strong> Make your choice and click "Declare Imposter".`;
+        return;
+      }
+
+      const isTampered = checkL2IsTampered(node);
+      l2State.scannedNodes[node.id] = isTampered ? 'incorrect' : 'correct';
+      l2State.scansUsed++;
+
+      l2ScansCount.textContent = `${l2State.scansUsed} / 4`;
+      l2ScansLeft.textContent = `${4 - l2State.scansUsed}`;
+
+      if (isTampered) {
+        l2Status.innerHTML = `🔴 <strong>Node ${node.id} is Tampered!</strong> The culprit record lies down this branch.`;
+      } else {
+        l2Status.innerHTML = `🟢 <strong>Node ${node.id} is Clean.</strong> All leaf nodes under this branch are valid.`;
+      }
+
+      updateL2Visual();
+    }
+
+    // Refresh display
+    function updateL2Visual() {
+      visualizer.render(tree, {
+        type: 'game',
+        scannedNodes: l2State.scannedNodes
+      });
+    }
+
+    function submitL2Guess() {
+      if (!l2State.active) return;
+      if (l2State.guessIndex === null) {
+        alert("Click on a leaf node first to select your guess!");
+        return;
+      }
+
+      const isCorrect = l2State.guessIndex === l2State.tamperedLeafIndex;
+      l2State.active = false;
+      l2Stats.style.display = 'none';
+      l2Status.innerHTML = `✨ <strong>Audit Declared!</strong> Check the results pane on the right.`;
+
+      resultsSection.style.display = 'block';
+      
+      let feedback = '';
+      if (isCorrect) {
+        if (l2State.scansUsed <= 3) {
+          feedback = "Excellent! You performed an optimal binary search in $\\log_2 N$ steps! 🧠";
+        } else {
+          feedback = "Correct! However, you can isolate it with fewer scans by dividing the tree in halves each time.";
+        }
+      } else {
+        feedback = "The correct modified leaf was <strong>Leaf " + l2State.tamperedLeafIndex + "</strong>.";
+      }
+
+      resultsContent.innerHTML = `
+        <div style="font-size: 1.1rem; font-weight: bold; margin-bottom: 8px;">
+          ${isCorrect ? '🎉 Success!' : '❌ Incorrect Target!'}
+        </div>
+        <div style="color: #bbb; line-height: 1.4;">
+          ${isCorrect 
+            ? `You successfully found the tampered transaction at <strong>Leaf ${l2State.tamperedLeafIndex}</strong>!` 
+            : `You guessed Leaf ${l2State.guessIndex}, but the actual tampered transaction was at <strong>Leaf ${l2State.tamperedLeafIndex}</strong>.`}
+        </div>
+        <div style="font-size: 0.8rem; margin-top: 10px; color: #888;">
+          Scans Used: ${l2State.scansUsed} / 4<br>
+          ${feedback}
+        </div>
+      `;
+
+      // Highlight the entire correct path in red
+      let idx = l2State.tamperedLeafIndex;
+      for (let L = 0; L < tree.levels.length; L++) {
+        l2State.scannedNodes[`L${L}_I${idx}`] = 'incorrect';
+        idx = Math.floor(idx / 2);
+      }
+      updateL2Visual();
+    }
+
+
+    // ============================================
+    // LEVEL 3: CRYPTOGRAPHIC HASH AUDIT
+    // ============================================
+    function startL3Game() {
+      const leaves = ["Tx0", "Tx1", "Tx2", "Tx3", "Tx4", "Tx5", "Tx6", "Tx7"];
+      resultsSection.style.display = 'none';
+      
+      // Calculate original untampered tree structure
+      const originalTree = new MerkleTree(leaves);
+      const storedHashes = {};
+      originalTree.getVisualizationData().nodes.forEach(n => {
+        storedHashes[n.id] = n.hash;
+      });
+
+      // Tamper with a random leaf
+      const tamperedIdx = Math.floor(Math.random() * 8);
+      const currentLeafHashes = [];
+      for (let i = 0; i < 8; i++) {
+        const val = (i === tamperedIdx) ? (leaves[i] + " (Altered)") : leaves[i];
+        const bytes = stringToBytes(val);
+        const hashBytes = Hasher.hashLeaf(bytes);
+        currentLeafHashes[i] = bytesToHex(hashBytes);
+      }
+
+      l3State = {
+        active: true,
+        tamperedLeafIndex: tamperedIdx,
+        storedHashes: storedHashes,
+        currentLeafHashes: currentLeafHashes,
+        scannedNodes: {},
+        selectedNodeId: null
+      };
+
+      // Set tree visually to match untampered structure but display values
+      const tamperedTextLeaves = [...leaves];
+      tamperedTextLeaves[tamperedIdx] = leaves[tamperedIdx] + "*";
+      tree = new MerkleTree(tamperedTextLeaves);
+
+      l3StartBtn.style.display = 'none';
+      l3Stats.style.display = 'block';
+      l3SelectedParent.textContent = `None Selected`;
+      l3Status.innerHTML = `🔍 <strong>Audit active:</strong> Click on parent nodes to audit their child hash relationships.`;
+      
+      l3ConsoleData.innerHTML = `<div style="font-size: 0.85rem; color: #aaa;">Click a parent node (L1, L2, or L3) to evaluate parent hash consistency.</div>`;
+      updateL3Visual();
+    }
+
+    function handleL3NodeClick(node) {
+      if (!l3State.active) return;
+
+      l3State.selectedNodeId = node.id;
+      l3SelectedParent.textContent = node.id;
+
+      // Draw highlighting (selected node has separate class)
+      updateL3Visual();
+
+      if (node.level === 0) {
+        l3ConsoleData.innerHTML = `
+          <div style="color: var(--accent-orange); font-weight: bold; margin-bottom: 8px;">Leaf Node (L0)</div>
+          <div class="console-row">
+            <span class="console-label">Value:</span>
+            <span class="console-value">"${node.value}"</span>
+          </div>
+          <div class="console-row">
+            <span class="console-label">Hash:</span>
+            <span class="console-value">${l3State.currentLeafHashes[node.index]}</span>
+          </div>
+          <div style="font-size: 0.8rem; color: #888; margin-top: 8px;">
+            ℹ️ Leaves don't have children to hash. Audit a parent node (L1, L2, or L3) to inspect link integrity.
+          </div>
+        `;
+        return;
+      }
+
+      // Parent node calculation audit
+      const level = node.level;
+      const index = node.index;
+      const leftId = `L${level-1}_I${index * 2}`;
+      const rightId = `L${level-1}_I${index * 2 + 1}`;
+
+      // Fetch hashes of children (if level-1 is 0, fetch current leaf hashes, otherwise stored hashes)
+      const leftHash = (level === 1) ? l3State.currentLeafHashes[index * 2] : l3State.storedHashes[leftId];
+      const rightHash = (level === 1) ? l3State.currentLeafHashes[index * 2 + 1] : l3State.storedHashes[rightId];
+
+      // Recompute parent hash
+      const computedBytes = Hasher.hashChildren(hexToBytes(leftHash), hexToBytes(rightHash));
+      const computedHash = bytesToHex(computedBytes);
+      const storedHash = l3State.storedHashes[node.id];
+      const matches = computedHash === storedHash;
+
+      // Update scanned state
+      l3State.scannedNodes[node.id] = matches ? 'correct' : 'incorrect';
+
+      // Update Console values
+      l3ConsoleData.innerHTML = `
+        <div style="color: var(--accent); font-weight: bold; margin-bottom: 8px;">Node ${node.id} Integrity Audit</div>
+        
+        <div class="console-row">
+          <span class="console-label">Left Child [${leftId}]:</span>
+          <span class="console-value">${leftHash.substring(0, 16)}...</span>
+        </div>
+        <div class="console-row">
+          <span class="console-label">Right Child [${rightId}]:</span>
+          <span class="console-value">${rightHash.substring(0, 16)}...</span>
+        </div>
+        <hr style="border: 0; border-top: 1px solid var(--border-color); margin: 8px 0;">
+        <div class="console-row">
+          <span class="console-label">Stored Parent Hash:</span>
+          <span class="console-value">${storedHash.substring(0, 32)}...</span>
+        </div>
+        <div class="console-row">
+          <span class="console-label">Computed Parent Hash:</span>
+          <span class="console-value">${computedHash.substring(0, 32)}...</span>
+        </div>
+        <div class="console-row" style="margin-top: 10px;">
+          <span class="console-label">Status:</span>
+          <strong class="console-value" style="color: ${matches ? 'var(--accent-green)' : 'var(--accent-red)'}">
+            ${matches ? '✅ MATCH' : '❌ MISMATCH'}
+          </strong>
+        </div>
+      `;
+
+      if (matches) {
+        l3Status.innerHTML = `🟢 <strong>Audit Check:</strong> Parent node ${node.id} correctly matches the hash of its children.`;
+      } else {
+        l3Status.innerHTML = `🔴 <strong>Mismatch Found!</strong> Node ${node.id} hash does not match children hashes.`;
+      }
+
+      updateL3Visual();
+    }
+
+    function updateL3Visual() {
+      // Custom mapping: we need to highlight scanned nodes (green/red) AND also show current selection (light blue)
+      const mapped = { ...l3State.scannedNodes };
+      if (l3State.selectedNodeId) {
+        mapped[l3State.selectedNodeId] = 'selected';
+      }
+      visualizer.render(tree, {
+        type: 'game',
+        scannedNodes: mapped
+      });
+    }
+
+    function submitL3Declaration() {
+      if (!l3State.active) return;
+      if (!l3State.selectedNodeId) {
+        alert("Select a parent node from the tree first!");
+        return;
+      }
+
+      // Check level > 0
+      const selectedNodeGroup = document.getElementById(`group_${l3State.selectedNodeId}`);
+      if (l3State.selectedNodeId.startsWith("L0")) {
+        alert("You must declare a parent node where the child-parent hash integrity link is broken.");
+        return;
+      }
+
+      const expectedMismatchNode = `L1_I${Math.floor(l3State.tamperedLeafIndex / 2)}`;
+      const isCorrect = l3State.selectedNodeId === expectedMismatchNode;
+
+      l3State.active = false;
+      l3Stats.style.display = 'none';
+      l3Status.innerHTML = `✨ <strong>Audit complete!</strong> Read results details in the sidebar.`;
+
+      resultsSection.style.display = 'block';
+      
+      let description = "";
+      if (isCorrect) {
+        description = `Correctly diagnosed! The cryptographic link breaks at parent node <strong>${expectedMismatchNode}</strong>. The stored hash represents old data, but recalculating it from the modified children reveals a mismatch. This is exactly how verification alerts are triggered in live Merkle Trees!`;
+      } else {
+        description = `Incorrect! You declared <strong>${l3State.selectedNodeId}</strong>. However, the first break in the hash chain occurs at node <strong>${expectedMismatchNode}</strong>, which is the immediate parent of the tampered leaf (Leaf ${l3State.tamperedLeafIndex}).`;
+      }
+
+      resultsContent.innerHTML = `
+        <div style="font-size: 1.1rem; font-weight: bold; margin-bottom: 8px;">
+          ${isCorrect ? '🎉 Correct Verification!' : '❌ Incorrect Parent!'}
+        </div>
+        <div style="color: #bbb; line-height: 1.4;">
+          ${description}
+        </div>
+      `;
+
+      // Draw all paths in red/green to reveal
+      l3State.scannedNodes = {};
+      const expectedL1Parent = `L1_I${Math.floor(l3State.tamperedLeafIndex / 2)}`;
+      l3State.scannedNodes[expectedL1Parent] = 'incorrect';
+      // Mark others checked
+      for (let L = 1; L <= 3; L++) {
+        for (let i = 0; i < (8 >> L); i++) {
+          const id = `L${L}_I${i}`;
+          if (id !== expectedL1Parent) {
+            l3State.scannedNodes[id] = 'correct';
+          }
+        }
+      }
+      l3State.selectedNodeId = null;
+      updateL3Visual();
+    }
+
+    // ============================================
+    // SHARED CLICK & HOVER routing
+    // ============================================
+    function handleNodeClick(node) {
+      if (currentLevel === 1) {
+        handleL1NodeClick(node);
+      } else if (currentLevel === 2) {
+        handleL2NodeClick(node);
+      } else if (currentLevel === 3) {
+        handleL3NodeClick(node);
+      }
+    }
+
+    function handleNodeHover(node, coord) {
+      if (!node || !coord) {
+        tooltip.style.display = 'none';
+        return;
+      }
+
+      const rect = merkleSvg.getBoundingClientRect();
+      
+      if (currentLevel === 3) {
+        // Customize hover details for Level 3
+        const isLeaf = node.level === 0;
+        const storedText = l3State.active ? (l3State.storedHashes[node.id] || '') : node.hash;
+        
+        let extra = '';
+        if (l3State.active) {
+          if (isLeaf) {
+            extra = `<div style="color: var(--accent-orange); margin-top: 4px;">Current Leaf Hash:</div>
+                     <div style="color: #fff; word-break: break-all;">${l3State.currentLeafHashes[node.index].substring(0, 32)}...</div>`;
+          } else {
+            const state = l3State.scannedNodes[node.id];
+            if (state && state !== 'selected') {
+              extra = `<div style="color: ${state === 'correct' ? 'var(--accent-green)' : 'var(--accent-red)'}; margin-top: 4px; font-weight: bold;">
+                        Status: ${state === 'correct' ? '✅ Integrity Match' : '❌ Integrity Mismatch'}
+                       </div>`;
+            } else {
+              extra = `<div style="color: #aaa; margin-top: 4px; font-style: italic;">Unverified parent link</div>`;
+            }
+          }
+        }
+
+        tooltip.innerHTML = `
+          <div style="font-weight: bold; color: var(--accent); margin-bottom: 4px;">Node ${node.id}</div>
+          <div style="color: #e0e0e0;">Stored Hash:</div>
+          <div style="color: var(--accent-green); word-break: break-all;">${storedText.substring(0, 32)}...</div>
+          ${extra}
+        `;
+      } else {
+        // Standard levels 1 & 2
+        tooltip.innerHTML = `
+          <div style="font-weight: bold; color: var(--accent); margin-bottom: 4px;">Node ${node.id}</div>
+          <div style="color: #e0e0e0;">Hash:</div>
+          <div style="color: var(--accent-green); word-break: break-all;">${node.hash.substring(0, 32)}...</div>
+          ${node.value ? `<div style="color: #ffffff; margin-top: 4px;">Value: "${node.value}"</div>` : ''}
+        `;
+      }
+
+      tooltip.style.left = `${coord.x + 30}px`;
+      tooltip.style.top = `${coord.y - 40}px`;
+      tooltip.style.display = 'block';
+    }
+  </script>
+</body>
+</html>
