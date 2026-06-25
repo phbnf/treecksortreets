@@ -19,6 +19,7 @@ export class MerkleVisualizer {
       paddingX: options.paddingX || 50,
       paddingY: options.paddingY || 50,
       onLeafClick: options.onLeafClick || null,
+      onNodeClick: options.onNodeClick || null,
       onNodeHover: options.onNodeHover || null,
     };
     this.tree = null;
@@ -184,6 +185,8 @@ export class MerkleVisualizer {
         highlight = this.getInclusionHighlightClass(id, this.highlightState.leafIndex);
       } else if (this.highlightState.type === 'consistency') {
         highlight = this.getConsistencyHighlightClass(id, this.highlightState.size1, this.highlightState.size2);
+      } else if (this.highlightState.type === 'game') {
+        highlight = this.highlightState.scannedNodes[id] || null;
       }
     }
 
@@ -286,8 +289,16 @@ export class MerkleVisualizer {
 
       // Event Handlers
       if (node.isLeaf && this.options.onLeafClick) {
-        g.addEventListener('click', () => {
+        g.addEventListener('click', (e) => {
+          // If we also have a node click, don't double fire
+          if (this.options.onNodeClick) return;
           this.options.onLeafClick(node.index, node.value);
+        });
+      }
+
+      if (this.options.onNodeClick) {
+        g.addEventListener('click', () => {
+          this.options.onNodeClick(node);
         });
       }
 
