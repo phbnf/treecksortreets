@@ -1,0 +1,504 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Subtrees Lesson - Binary Sub-Forests</title>
+  <style>
+    :root {
+      --bg-dark: #121212;
+      --panel-bg: #1e1e1e;
+      --border-color: #333333;
+      --text-main: #e0e0e0;
+      --accent: #4fc1ff;
+      --accent-green: #4ec9b0;
+      --accent-orange: #ff9f1c;
+      --accent-purple: #b180d7;
+      --accent-red: #e71d36;
+    }
+
+    body {
+      background-color: var(--bg-dark);
+      color: var(--text-main);
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+      margin: 0;
+      padding: 0;
+      display: flex;
+      flex-direction: column;
+      height: 100vh;
+      overflow: hidden;
+    }
+
+    header {
+      background-color: var(--panel-bg);
+      border-bottom: 1px solid var(--border-color);
+      padding: 12px 25px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      flex-shrink: 0;
+    }
+
+    h1 {
+      margin: 0;
+      font-size: 1.4rem;
+      color: var(--accent);
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+
+    .header-links a {
+      color: var(--text-main);
+      text-decoration: none;
+      font-size: 0.95rem;
+      margin-left: 20px;
+    }
+
+    .header-links a:hover {
+      color: var(--accent);
+    }
+
+    .main-container {
+      display: flex;
+      flex: 1;
+      overflow: hidden;
+    }
+
+    .sidebar {
+      width: 400px;
+      background-color: var(--panel-bg);
+      border-right: 1px solid var(--border-color);
+      display: flex;
+      flex-direction: column;
+      padding: 24px;
+      gap: 20px;
+      overflow-y: auto;
+      flex-shrink: 0;
+    }
+
+    .slide-progress {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      font-size: 0.9rem;
+      color: #888;
+      font-weight: bold;
+      border-bottom: 1px solid var(--border-color);
+      padding-bottom: 12px;
+    }
+
+    .slide-dots {
+      display: flex;
+      gap: 6px;
+    }
+
+    .dot {
+      width: 10px;
+      height: 10px;
+      border-radius: 50%;
+      background: #333;
+    }
+
+    .dot.active {
+      background: var(--accent);
+    }
+
+    .slide-content {
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      gap: 15px;
+    }
+
+    .slide-content h2 {
+      margin: 0;
+      font-size: 1.3rem;
+      color: #fff;
+    }
+
+    .slide-text {
+      font-size: 0.95rem;
+      color: #ccc;
+      line-height: 1.6;
+    }
+
+    .slide-text code {
+      background: #111;
+      padding: 2px 6px;
+      border-radius: 4px;
+      color: var(--accent-orange);
+      font-family: monospace;
+    }
+
+    .interactive-controls {
+      background: #252526;
+      border: 1px solid var(--border-color);
+      border-radius: 6px;
+      padding: 15px;
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+    }
+
+    .interactive-controls h4 {
+      margin: 0 0 5px 0;
+      font-size: 0.9rem;
+      color: var(--accent);
+    }
+
+    .btn-row {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+    }
+
+    .demo-btn {
+      background: #1e1e1e;
+      border: 1px solid var(--border-color);
+      color: var(--text-main);
+      padding: 8px 12px;
+      border-radius: 4px;
+      cursor: pointer;
+      font-size: 0.85rem;
+      transition: all 0.2s;
+      flex: 1;
+      min-width: 110px;
+      text-align: center;
+    }
+
+    .demo-btn:hover {
+      border-color: var(--accent);
+    }
+
+    .demo-btn.active {
+      background: #2b3a4a;
+      border-color: var(--accent);
+      color: #fff;
+      font-weight: bold;
+    }
+
+    .nav-buttons {
+      display: flex;
+      gap: 10px;
+      margin-top: 10px;
+    }
+
+    .nav-btn {
+      flex: 1;
+      background-color: var(--accent);
+      color: #000;
+      border: none;
+      padding: 12px;
+      border-radius: 6px;
+      font-weight: bold;
+      cursor: pointer;
+      font-size: 0.95rem;
+      transition: background 0.2s;
+      text-align: center;
+    }
+
+    .nav-btn:hover {
+      background-color: #3fa8dd;
+    }
+
+    .nav-btn:disabled {
+      background-color: #252526;
+      color: #555;
+      cursor: not-allowed;
+    }
+
+    .canvas-container {
+      flex: 1;
+      background-color: var(--bg-dark);
+      position: relative;
+      overflow: hidden;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      user-select: none;
+    }
+
+    svg {
+      width: 100%;
+      height: 100%;
+    }
+
+    /* SVG Styling */
+    .tree-edge {
+      stroke: #444;
+      stroke-width: 3;
+      fill: none;
+      transition: stroke 0.2s, stroke-width 0.2s;
+    }
+
+    .tree-node-circle {
+      fill: #2c2c2c;
+      stroke: #888;
+      stroke-width: 2;
+      transition: fill 0.2s, stroke 0.2s;
+    }
+
+    .tree-node-text {
+      fill: #fff;
+      font-family: monospace;
+      font-size: 12px;
+      text-anchor: middle;
+      dominant-baseline: central;
+      pointer-events: none;
+    }
+  </style>
+</head>
+<body>
+  <header>
+    <h1>📚 Subtrees Lesson: Binary Sub-Forests</h1>
+    <div class="header-links">
+      <a href="learn.html">← Back to Learning Mode</a>
+      <a href="game-subtrees.html">Play Subtrees Game ↗</a>
+    </div>
+  </header>
+
+  <div class="main-container">
+    <!-- Sidebar -->
+    <div class="sidebar">
+      <div class="slide-progress">
+        <span id="slide-number">Slide 1 of 4</span>
+        <div class="slide-dots">
+          <div class="dot active" id="dot-0"></div>
+          <div class="dot" id="dot-1"></div>
+          <div class="dot" id="dot-2"></div>
+          <div class="dot" id="dot-3"></div>
+        </div>
+      </div>
+
+      <div class="slide-content" id="slide-content">
+        <!-- Dynamic content injected by script -->
+      </div>
+
+      <div class="nav-buttons">
+        <button class="nav-btn" id="prev-btn" onclick="changeSlide(-1)">← Previous</button>
+        <button class="nav-btn" id="next-btn" onclick="changeSlide(1)">Next Slide ➔</button>
+      </div>
+    </div>
+
+    <!-- Main Canvas Area -->
+    <div class="canvas-container">
+      <svg id="lesson-svg" viewBox="0 0 800 500"></svg>
+    </div>
+  </div>
+
+  <script>
+    const svg = document.getElementById('lesson-svg');
+    const slideContentEl = document.getElementById('slide-content');
+    const slideNumEl = document.getElementById('slide-number');
+    const prevBtn = document.getElementById('prev-btn');
+    const nextBtn = document.getElementById('next-btn');
+
+    let currentSlide = 0;
+    let activeDemo = null;
+
+    let treeNodes = [];
+    let treeEdges = [];
+
+    const slides = [
+      {
+        title: "1. Definition of a Subtree",
+        text: `A subtree <code>[start, end)</code> with <code>start &lt; end</code> of a tree of size <code>N</code> where <code>end &le; N</code> is a binary Merkle tree containing entries from index <code>start</code> to <code>end-1</code>.
+        <br><br>
+        In a tree of 8 leaves, valid subtrees include <strong>[0, 4)</strong> (the left half) and <strong>[6, 8)</strong> (the rightmost pair).`,
+        controlsTitle: "Click to preview valid subtrees:",
+        buttons: [
+          { label: "Subtree [0, 4)", id: "s1_04", nodes: ["L0_I0", "L0_I1", "L0_I2", "L0_I3", "L1_I0", "L1_I1", "L2_I0"], color: "#4ec9b0" },
+          { label: "Subtree [6, 8)", id: "s1_68", nodes: ["L0_I6", "L0_I7", "L1_I3"], color: "#ff9f1c" }
+        ]
+      },
+      {
+        title: "2. bitCeil & Invalid Ranges",
+        text: `Not all start and end combinations are valid subtrees: start must also be a multiple of bitCeil(end-start) to ensure that the subtree maintains its shape when separated from the parent tree.
+        <br><br>
+        Compare range <strong>[3, 6)</strong> with a valid size-3 tree <strong>[0, 3)</strong> below:
+        <br>• In a valid size-3 tree <strong>[0, 3)</strong>, leaves 0 and 1 pair up on the left into a parent node, while leaf 2 sits alone on the right.
+        <br>• In range <strong>[3, 6)</strong>, leaf 3 sits alone on the left (orphaned from leaf 2), while leaves 4 and 5 pair up on the right.
+        <br><br>The internal vertices of <strong>[3, 6)</strong> are shifted and misaligned compared to a standard tree of size 3!`,
+        controlsTitle: "Compare alignments:",
+        buttons: [
+          { label: "Invalid [3, 6)", id: "s2_36", invalidNodes: ["L0_I3", "L0_I4", "L0_I5", "L1_I2"], conflictEdges: [{from:"L0_I3",to:"L1_I1"}, {from:"L0_I4",to:"L1_I2"}, {from:"L0_I5",to:"L1_I2"}], color: "#e71d36" },
+          { label: "Valid Compare [0, 3)", id: "s2_03", nodes: ["L0_I0", "L0_I1", "L1_I0", "L0_I2"], color: "#4ec9b0" }
+        ]
+      },
+      {
+        title: "3. Trees Starting at 0 are Always Valid",
+        text: `A beautiful consequence of the IETF rule is that <strong>any tree or subtree range starting at index 0 is always valid!</strong>
+        <br><br>
+        Why? Because 0 is always a multiple of <code>BIT_CEIL(end)</code>, whatever <code>BIT_CEIL</code> is! Therefore, intervals starting at 0 like <strong>[0, 2)</strong>, <strong>[0, 3)</strong>, <strong>[0, 4)</strong>, or <strong>[0, 5)</strong> are always valid Merkle tree hashes!`,
+        controlsTitle: "Explore valid trees starting at 0:",
+        buttons: [
+          { label: "Subtree [0, 2)", id: "s3_02", nodes: ["L0_I0", "L0_I1", "L1_I0"], color: "#4ec9b0" },
+          { label: "Subtree [0, 3)", id: "s3_03", nodes: ["L0_I0", "L0_I1", "L1_I0", "L0_I2"], color: "#4fc1ff" },
+          { label: "Subtree [0, 4)", id: "s3_04", nodes: ["L0_I0", "L0_I1", "L0_I2", "L0_I3", "L1_I0", "L1_I1", "L2_I0"], color: "#b180d7" },
+          { label: "Subtree [0, 5)", id: "s3_05", nodes: ["L0_I0", "L0_I1", "L0_I2", "L0_I3", "L1_I0", "L1_I1", "L2_I0", "L0_I4"], color: "#ff9f1c" }
+        ]
+      },
+      {
+        title: "4. Single Leaf Subtrees",
+        text: `Finally, <strong>any range containing exactly a single leaf <code>[i, i+1)</code> is always valid!</strong>
+        <br><br>
+        Why? For any single leaf, the length is 1, and <code>BIT_CEIL(1) = 1</code>. Since any integer start index <code>i</code> is always a multiple of 1, whatever <code>i</code> is, every single leaf stands alone as a valid subtree!`,
+        controlsTitle: "Click single leaf subtrees:",
+        buttons: [
+          { label: "Leaf [0, 1)", id: "s4_01", nodes: ["L0_I0"], color: "#4ec9b0" },
+          { label: "Leaf [3, 4)", id: "s4_34", nodes: ["L0_I3"], color: "#ff9f1c" },
+          { label: "Leaf [5, 6)", id: "s4_56", nodes: ["L0_I5"], color: "#4fc1ff" },
+          { label: "Leaf [7, 8)", id: "s4_78", nodes: ["L0_I7"], color: "#b180d7" }
+        ]
+      }
+    ];
+
+    window.addEventListener('DOMContentLoaded', () => {
+      buildTreeStructure(8);
+      loadSlide(0);
+    });
+
+    function changeSlide(dir) {
+      const next = currentSlide + dir;
+      if (next >= 0 && next < slides.length) {
+        loadSlide(next);
+      }
+    }
+
+    function loadSlide(idx) {
+      currentSlide = idx;
+      slideNumEl.textContent = `Slide ${idx + 1} of ${slides.length}`;
+      prevBtn.disabled = idx === 0;
+      nextBtn.disabled = idx === slides.length - 1;
+
+      for (let i = 0; i < slides.length; i++) {
+        document.getElementById(`dot-${i}`).classList.toggle('active', i === idx);
+      }
+
+      const data = slides[idx];
+      activeDemo = data.buttons[0]; // default to first demo
+
+      let btnsHtml = '';
+      data.buttons.forEach((b, i) => {
+        btnsHtml += `<button class="demo-btn ${i === 0 ? 'active' : ''}" onclick="selectDemo(${idx}, ${i})" id="btn-demo-${i}">${b.label}</button>`;
+      });
+
+      slideContentEl.innerHTML = `
+        <h2>${data.title}</h2>
+        <div class="slide-text">${data.text}</div>
+        <div class="interactive-controls">
+          <h4>${data.controlsTitle}</h4>
+          <div class="btn-row">${btnsHtml}</div>
+        </div>
+      `;
+
+      renderScene();
+    }
+
+    function selectDemo(slideIdx, btnIdx) {
+      activeDemo = slides[slideIdx].buttons[btnIdx];
+      document.querySelectorAll('.demo-btn').forEach((btn, i) => {
+        btn.classList.toggle('active', i === btnIdx);
+      });
+      renderScene();
+    }
+
+    function buildTreeStructure(leafCount) {
+      treeNodes = [];
+      treeEdges = [];
+
+      const height = Math.log2(leafCount);
+      const widthSvg = 800;
+      const heightSvg = 500;
+      const marginY = 80;
+      const levelSpacing = (heightSvg - marginY * 2) / height;
+
+      for (let l = 0; l <= height; l++) {
+        const count = leafCount / Math.pow(2, l);
+        const spacingX = widthSvg / count;
+
+        for (let i = 0; i < count; i++) {
+          const x = spacingX * i + spacingX / 2;
+          const y = heightSvg - marginY - l * levelSpacing;
+          const id = `L${l}_I${i}`;
+          treeNodes.push({ id, level: l, index: i, x, y });
+
+          if (l < height) {
+            const parentIndex = Math.floor(i / 2);
+            const parentId = `L${l+1}_I${parentIndex}`;
+            treeEdges.push({ from: id, to: parentId });
+          }
+        }
+      }
+    }
+
+    function renderScene() {
+      svg.innerHTML = '';
+
+      const gEdges = document.createElementNS('http://www.w3.org/2000/svg', 'g');
+      const gNodes = document.createElementNS('http://www.w3.org/2000/svg', 'g');
+
+      svg.appendChild(gEdges);
+      svg.appendChild(gNodes);
+
+      treeEdges.forEach(edge => {
+        const n1 = treeNodes.find(n => n.id === edge.from);
+        const n2 = treeNodes.find(n => n.id === edge.to);
+        if (n1 && n2) {
+          const line = document.createElementNS('http://www.w3.org/2000/svg', 'line');
+          line.setAttribute('x1', n1.x);
+          line.setAttribute('y1', n1.y);
+          line.setAttribute('x2', n2.x);
+          line.setAttribute('y2', n2.y);
+          line.setAttribute('class', 'tree-edge');
+
+          if (activeDemo && activeDemo.nodes && activeDemo.nodes.includes(edge.from) && activeDemo.nodes.includes(edge.to)) {
+            line.style.stroke = activeDemo.color;
+            line.style.strokeWidth = "5";
+          } else if (activeDemo && activeDemo.conflictEdges) {
+            const conflict = activeDemo.conflictEdges.some(e => e.from === edge.from && e.to === edge.to);
+            if (conflict) {
+              line.style.stroke = "var(--accent-red)";
+              line.style.strokeWidth = "4";
+              line.style.strokeDasharray = "6";
+            }
+          }
+          gEdges.appendChild(line);
+        }
+      });
+
+      treeNodes.forEach(node => {
+        let hlColor = null;
+        if (activeDemo && activeDemo.nodes && activeDemo.nodes.includes(node.id)) {
+          hlColor = activeDemo.color;
+        } else if (activeDemo && activeDemo.invalidNodes && activeDemo.invalidNodes.includes(node.id)) {
+          hlColor = activeDemo.color;
+        }
+
+        const g = document.createElementNS('http://www.w3.org/2000/svg', 'g');
+        g.setAttribute('class', 'tree-node');
+        g.setAttribute('transform', `translate(${node.x}, ${node.y})`);
+
+        const circle = document.createElementNS('http://www.w3.org/2000/svg', 'circle');
+        circle.setAttribute('r', 22);
+        circle.setAttribute('class', 'tree-node-circle');
+
+        if (hlColor) {
+          circle.style.fill = hlColor + '44';
+          circle.style.stroke = hlColor;
+          circle.style.strokeWidth = "4";
+        }
+
+        const text = document.createElementNS('http://www.w3.org/2000/svg', 'text');
+        text.setAttribute('class', 'tree-node-text');
+        text.textContent = `${node.level},${node.index}`;
+
+        g.appendChild(circle);
+        g.appendChild(text);
+        gNodes.appendChild(g);
+      });
+    }
+  </script>
+</body>
+</html>
