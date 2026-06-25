@@ -1,0 +1,244 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Learning Mode - Treecks or Treets</title>
+  <style>
+    :root {
+      --bg-dark: #121212;
+      --panel-bg: #1e1e1e;
+      --border-color: #333333;
+      --text-main: #e0e0e0;
+      --accent: #4fc1ff;
+    }
+
+    body {
+      background-color: var(--bg-dark);
+      color: var(--text-main);
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+      margin: 0;
+      padding: 0;
+      display: flex;
+      flex-direction: column;
+      min-height: 100vh;
+    }
+
+    header {
+      background-color: var(--panel-bg);
+      border-bottom: 1px solid var(--border-color);
+      padding: 15px 25px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+
+    h1 {
+      margin: 0;
+      font-size: 1.5rem;
+      color: var(--accent);
+    }
+
+    .header-links a {
+      color: var(--text-main);
+      text-decoration: none;
+      font-size: 0.95rem;
+      margin-left: 20px;
+    }
+
+    .header-links a:hover {
+      color: var(--accent);
+    }
+
+    .container {
+      max-width: 1100px;
+      margin: 30px auto;
+      padding: 0 20px;
+      flex: 1;
+    }
+
+    .intro {
+      text-align: center;
+      margin-bottom: 30px;
+    }
+
+    .intro p {
+      color: #aaa;
+      font-size: 1.05rem;
+    }
+
+    .section-title {
+      color: var(--accent);
+      font-size: 1.35rem;
+      margin-top: 40px;
+      margin-bottom: 20px;
+      border-bottom: 1px solid var(--border-color);
+      padding-bottom: 8px;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+
+    /* Grid of Lessons */
+    .lesson-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
+      gap: 20px;
+      margin-bottom: 20px;
+    }
+
+    .lesson-card {
+      background-color: var(--panel-bg);
+      border: 1px solid var(--border-color);
+      border-radius: 8px;
+      padding: 24px;
+      display: flex;
+      flex-direction: column;
+      justify-content: space-between;
+      transition: transform 0.2s, border-color 0.2s;
+    }
+
+    .lesson-card:hover {
+      transform: translateY(-4px);
+      border-color: var(--accent);
+    }
+
+    .lesson-card h2 {
+      margin-top: 0;
+      font-size: 1.2rem;
+      color: #fff;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+
+    .lesson-card p {
+      color: #bbb;
+      font-size: 0.95rem;
+      line-height: 1.5;
+      flex: 1;
+    }
+
+    .learn-btn {
+      background-color: #252526;
+      color: var(--accent);
+      border: 1px solid var(--accent);
+      padding: 10px 16px;
+      border-radius: 4px;
+      font-weight: bold;
+      cursor: pointer;
+      font-size: 0.95rem;
+      transition: all 0.2s;
+      text-align: center;
+      width: 100%;
+      box-sizing: border-box;
+      margin-top: 15px;
+    }
+
+    .learn-btn:hover {
+      background-color: var(--accent);
+      color: #000;
+    }
+  </style>
+</head>
+<body>
+  <header>
+    <h1>📚 Learning Mode</h1>
+    <div class="header-links">
+      <a href="index.html">← Home</a>
+      <a href="tree-generator.html">Tree Generator ↗</a>
+    </div>
+  </header>
+
+  <div class="container">
+    <div class="intro">
+      <p>Select a lesson to explore structured walkthroughs and visual explanations of cryptographic tree concepts!</p>
+    </div>
+
+    <!-- Section 1: Tree Structure -->
+    <h2 class="section-title">🌲 Tree Structure</h2>
+    <div class="lesson-grid">
+      <div class="lesson-card">
+        <div>
+          <h2>🌳 Tree Knowledge</h2>
+          <p>Learn the core theory of general tree structures! Understand fundamental data structure concepts like roots, leaves, depths, heights, and binary trees.</p>
+        </div>
+        <button class="learn-btn" onclick="return false;">Start Lesson</button>
+      </div>
+
+      <div class="lesson-card">
+        <div>
+          <h2>🌲 Subtrees</h2>
+          <p>Explore how binary subtrees work. Learn why complete subtrees always contain a power-of-two number of leaves and how sub-forests merge.</p>
+        </div>
+        <button class="learn-btn" onclick="return false;">Start Lesson</button>
+      </div>
+
+      <div class="lesson-card">
+        <div>
+          <h2>🧱 Tiles</h2>
+          <p>Understand RFC 9162 Tiled Log storage! Discover how massive transparency logs are chunked into fixed-height subtrees (tiles) for efficient caching.</p>
+        </div>
+        <button class="learn-btn" onclick="return false;">Start Lesson</button>
+      </div>
+    </div>
+
+    <!-- Section 2: Proofs -->
+    <h2 class="section-title">🔐 Cryptographic Proofs</h2>
+    <div class="lesson-grid">
+      <div class="lesson-card">
+        <div>
+          <h2>🔍 Inclusion Proofs</h2>
+          <p>Step-by-step breakdown of inclusion proofs. Learn how sibling hashes are combined up the tree to authenticate a single leaf record.</p>
+        </div>
+        <button class="learn-btn" onclick="return false;">Start Lesson</button>
+      </div>
+
+      <div class="lesson-card">
+        <div>
+          <h2>🔗 Consistency Proofs</h2>
+          <p>Explore append-only verification. Understand the mathematical guarantees that prove an older log version is a tamper-free prefix of a newer log.</p>
+        </div>
+        <button class="learn-btn" onclick="return false;">Start Lesson</button>
+      </div>
+
+      <div class="lesson-card">
+        <div>
+          <h2>🌿 Subtree Inclusion Proofs</h2>
+          <p>Learn how to prove that an entire intermediate subtree root is properly embedded within a larger parent Merkle tree.</p>
+        </div>
+        <button class="learn-btn" onclick="return false;">Start Lesson</button>
+      </div>
+
+      <div class="lesson-card">
+        <div>
+          <h2>🔄 Subtree Consistency Proofs</h2>
+          <p>Discover how historical subtree boundaries remain verified across tree growth and different log snapshots over time.</p>
+        </div>
+        <button class="learn-btn" onclick="return false;">Start Lesson</button>
+      </div>
+    </div>
+
+    <!-- Section 3: Advanced -->
+    <h2 class="section-title">⚡ Advanced</h2>
+    <div class="lesson-grid">
+      <div class="lesson-card">
+        <div>
+          <h2>💻 Bit-level Operations</h2>
+          <p>Dive into high-performance tree traversal. Understand how bitwise XOR (<code>^ 1</code>) finds siblings and bit shifts (<code>>> 1</code>) navigate to parents.</p>
+        </div>
+        <button class="learn-btn" onclick="return false;">Start Lesson</button>
+      </div>
+
+      <div class="lesson-card">
+        <div>
+          <h2>📦 Compact Ranges</h2>
+          <p>Study storage optimization techniques. Learn the algorithm for decomposing arbitrary leaf intervals $[A, B)$ into minimal sets of subtree roots.</p>
+        </div>
+        <button class="learn-btn" onclick="return false;">Start Lesson</button>
+      </div>
+    </div>
+
+  </div>
+</body>
+</html>
